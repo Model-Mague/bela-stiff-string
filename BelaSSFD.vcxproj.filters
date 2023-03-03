@@ -65,5 +65,20 @@
     <Text Include="ind.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="out.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="u.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="A.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="aComponent.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="Bmember.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

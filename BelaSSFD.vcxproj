@@ -132,14 +132,19 @@
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="A.txt" />
+    <Text Include="aComponent.txt" />
     <Text Include="B.txt" />
     <Text Include="bComponent.txt" />
+    <Text Include="Bmember.txt" />
     <Text Include="C.txt" />
     <Text Include="ind.txt" />
     <Text Include="M.txt" />
     <Text Include="mComponent.txt" />
     <Text Include="M_toeplitz.txt" />
+    <Text Include="out.txt" />
     <Text Include="rc.txt" />
+    <Text Include="u.txt" />
     <Text Include="u1.txt" />
     <Text Include="u2.txt" />
     <Text Include="xax.txt" />

@@ -205,6 +205,9 @@ bool setup()
 	// A = M + A;
 	A = M + A;
 	//for (int i = 0; i < elementCountMinus; i++) A[i] += M[i];
+	export_matrix(A, "A.txt");
+	export_matrix(M, "M.txt");
+	export_matrix(aComponent, "aComponent.txt");
 
 	// C = M+sparse(toeplitz([-sig1*k/(h^2)-sig0*k/2 sig1*k/(2*h^2) zeros(1,N-3)]));
 	Eigen::VectorXf cComponent(2);
@@ -302,39 +305,38 @@ int main(int argc, char** argv)
 	{
 		Eigen::MatrixXf Bmember = B * u1 - C * u2;
 		Eigen::VectorXf u = A.lu().solve(Bmember);
-
+		//export_matrix(A, "A.txt");
 		//export_matrix(B, "B.txt");
+		//export_matrix(Bmember, "Bmember.txt");
 		//export_matrix(C, "C.txt");
 		//export_matrix(u1, "u1.txt");
 		//export_matrix(u2, "u2.txt");
-
-
-		// u(rp_int)'
 
 		// New vector
 		// First elements is u((int)roundf(rp_int(0))) second element is u((int)roundf(rp_int(1)))
 		int first_index = (int)roundf(rp_int(0));
 		int second_index = (int)roundf(rp_int(1));
-		Eigen::Vector2f urpint;
-		urpint(0) = u(first_index);
-		urpint(1) = u(second_index);
+		Eigen::Vector2f urpint = u.cross(rp_int);
+		urpint.transpose();
+
 
 		auto urpintT = urpint; // tried removing T
-		rp_int.array() += 1;
+		//rp_int.array() += 1;
 
-		Eigen::Vector2f urpintplus;
-		urpintplus(0) = u(first_index);
-		urpintplus(1) = u(second_index);
+		// (1-rp_frac).*u(rp_int)'+rp_frac.*u(rp_int+1)'
+		Eigen::Vector2f add1(1, 1);
+		Eigen::Vector2f urpintplus = u(rp_int + add1);
+		urpintplus.transpose();
 
 		auto urpintplusT = urpintplus; // tried removing T
 		Eigen::Vector2f out = (Eigen::Vector2f::Ones(2) - rp_frac).cwiseProduct(urpintT) + rp_frac.cwiseProduct(urpintplusT); // this is two numbers
-
+		export_matrix(out, "out.txt");
 		// @HERE UNCOMMENT THIS
 		//for (unsigned int channel = 0; context->audioOutChannels; channel++)
 		//{
 		//	audioWrite(context, n, channel, out(channel % 2));
 		//}
-
+		std::cout << out(0) << " " << out(1) << std::endl;
 		// Update
 		u2 = u1;
 		u1 = u;
