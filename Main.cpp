@@ -238,6 +238,7 @@ bool setup()
 		// Copy values into soon-to-be-used matrices
 		xaxMinusWid(i) = xax(i) - ctr - wid / 2;
 		xaxPlusWid(i) = xax(i) - ctr + wid / 2;
+
 		rc(i) = 1 + cos(2 * M_PI * (xax(i) - ctr) / wid);
 	}
 
@@ -253,7 +254,7 @@ bool setup()
 	sign_set(ind);
 
 	// rc = 0.5*ind.*(rc);
-	for (int i = 0; i < N - 1; i++) rc(i) = 0.5 + ind(i) * rc(i);
+	for (int i = 0; i < N - 1; i++) rc(i) = 0.5 * ind(i) * rc(i);
 
 	/*
 		u2 = u0*rc;
@@ -307,7 +308,6 @@ int main(int argc, char** argv)
 		//export_matrix(u1, "u1.txt");
 		//export_matrix(u2, "u2.txt");
 
-		std::cout << "After call to solve" << std::endl << u << std::endl;
 
 		// u(rp_int)'
 
@@ -318,7 +318,6 @@ int main(int argc, char** argv)
 		Eigen::Vector2f urpint;
 		urpint(0) = u(first_index);
 		urpint(1) = u(second_index);
-		std::cout << "urpint: " << urpint << std::endl;
 
 		auto urpintT = urpint; // tried removing T
 		rp_int.array() += 1;
@@ -326,7 +325,6 @@ int main(int argc, char** argv)
 		Eigen::Vector2f urpintplus;
 		urpintplus(0) = u(first_index);
 		urpintplus(1) = u(second_index);
-		std::cout << "After urpintplus" << std::endl << urpintplus;
 
 		auto urpintplusT = urpintplus; // tried removing T
 		Eigen::Vector2f out = (Eigen::Vector2f::Ones(2) - rp_frac).cwiseProduct(urpintT) + rp_frac.cwiseProduct(urpintplusT); // this is two numbers
