@@ -135,11 +135,16 @@
     <Text Include="B.txt" />
     <Text Include="bComponent.txt" />
     <Text Include="C.txt" />
+    <Text Include="ind.txt" />
     <Text Include="M.txt" />
     <Text Include="mComponent.txt" />
     <Text Include="M_toeplitz.txt" />
+    <Text Include="rc.txt" />
     <Text Include="u1.txt" />
     <Text Include="u2.txt" />
+    <Text Include="xax.txt" />
+    <Text Include="xaxMinusWid.txt" />
+    <Text Include="xaxPlusWid.txt" />
     <Text Include="zerosNMinus3.txt" />
     <Text Include="zerosNMinus4.txt" />
   </ItemGroup>

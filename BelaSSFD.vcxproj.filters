@@ -50,5 +50,20 @@
     <Text Include="mComponent.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="rc.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="xax.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="xaxMinusWid.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="xaxPlusWid.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="ind.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

@@ -98,16 +98,19 @@ Eigen::MatrixXf zeros(int n, int m)
 	return Eigen::MatrixXf::Zero(n, m);
 }
 
-void max_set(Eigen::VectorXf inout, float threshold)
+void max_set(Eigen::VectorXf& inout, float threshold)
 {
 	// This modifies the inout array
 	for (int i = 0; i < inout.size(); i++)
 	{
-		if (inout(i) < threshold) inout(i) = threshold;
+		if (inout(i) < threshold)
+		{
+			inout(i) = threshold;
+		}
 	}
 }
 
-void sign_set(Eigen::VectorXf inout)
+void sign_set(Eigen::VectorXf& inout)
 {
 	for (int i = 0; i < inout.size(); i++)
 	{
@@ -191,11 +194,8 @@ bool setup()
 	Eigen::VectorXf mComponent(2);
 	mComponent(0) = theta;
 	mComponent(1) = (1 - theta) / 2;
-	export_matrix(mComponent, "mComponent.txt");
 
 	Eigen::MatrixXf M = toeplitz(mComponent, zerosNMinus3); // @HERE Does this really return a matrix of elementCountMinus elements?  Function returns 25 here
-	export_matrix(zerosNMinus3, "zerosNMinus3.txt");
-	export_matrix(M, "M_toeplitz.txt");
 
 	Eigen::VectorXf aComponent(2);
 	aComponent(0) = sig1 * k / (powf(h, 2)) + sig0 * k / 2;
@@ -214,9 +214,6 @@ bool setup()
 	std::cout << cComponent;
 	// C = M + C
 	C = M + C;
-
-	export_matrix(M, "M.txt");
-	export_matrix(C, "C.txt");
 
 	//for (int i = 0; i < elementCountMinus; i++) C[i] += M[i];
 
@@ -250,7 +247,9 @@ bool setup()
 	// Multiply element-wise (xax-ctr-wid/2).*(xax-ctr+wid/2)
 	for (int i = 0; i < N - 1; i++)	ind(i) = -1 * xaxMinusWid(i) * xaxPlusWid(i);
 
+	export_matrix(ind, "premax.txt");
 	max_set(ind, 0);
+	export_matrix(ind, "postmax.txt");
 	sign_set(ind);
 
 	// rc = 0.5*ind.*(rc);
@@ -274,6 +273,14 @@ bool setup()
 
 	u = zeros(N + 1, 1);
 	out = zeros(NF, 2);
+
+	export_matrix(u1, "u1.txt");
+	export_matrix(u2, "u2.txt");
+	export_matrix(xax, "xax.txt"); // maybe needs tanspose here
+	export_matrix(xaxMinusWid, "xaxMinusWid.txt");
+	export_matrix(xaxPlusWid, "xaxPlusWid.txt");
+	export_matrix(rc, "rc.txt");
+	export_matrix(ind, "ind.txt");
 
 	std::cout << "SETUP DONE" << std::endl;
 
