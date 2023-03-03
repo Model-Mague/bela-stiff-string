@@ -158,11 +158,17 @@ bool setup()
 	{
 		rp_frac(i) = 1 + rp[i] / h - rp_int(i);  // fractional part of readout location
 	}
-	// set scheme loss parameters
-	zeta1 = (-powf(gumo, 2) + sqrt(powf(gumo, 4) + 4 * powf(K, 2) * (2 * M_PI * powf(loss[0][0], 2)))) / (2 * powf(K, 2));
-	zeta2 = (-powf(gumo, 2) + sqrt(powf(gumo, 4) + 4 * powf(K, 2) * (2 * M_PI * powf(loss[1][0], 2)))) / (2 * powf(K, 2));
-	sig0 = 6 * log10(10) * (-zeta2 / loss[0][1] + zeta1 / loss[1][1]) / (zeta1 - zeta2);
-	sig1 = 6 * log10(10) * (1 / loss[0][1] - 1 / loss[1][1]) / (zeta1 - zeta2);
+	// set scheme loss 
+	float gammaSq2 = powf(gumo, 2);
+	float gammaSq4 = powf(gumo, 4);
+	float Ksq2 = powf(K, 2);
+	float piLoss00 = powf(2 * M_PI * loss[0][0], 2);
+	float piLoss10 = powf(2 * M_PI * loss[1][0], 2);
+
+	zeta1 = (-gammaSq2 + sqrt(gammaSq4 + 4 * Ksq2 * piLoss00)) / (2 * Ksq2);
+	zeta2 = (-gammaSq2 + sqrt(gammaSq4 + 4 * Ksq2 * piLoss10)) / (2 * Ksq2);
+	sig0 = 6 * log(10) * (-zeta2 / loss[0][1] + zeta1 / loss[1][1]) / (zeta1 - zeta2);
+	sig1 = 6 * log(10) * (1 / loss[0][1] - 1 / loss[1][1]) / (zeta1 - zeta2);
 
 
 	// create update matrices
@@ -205,9 +211,13 @@ bool setup()
 	cComponent(0) = -sig1 * k / (powf(h, 2)) - sig0 * k / 2;
 	cComponent(1) = sig1 * k / (2 * powf(h, 2));
 	C = toeplitz(cComponent, zerosNMinus3);
-
+	std::cout << cComponent;
 	// C = M + C
 	C = M + C;
+
+	export_matrix(M, "M.txt");
+	export_matrix(C, "C.txt");
+
 	//for (int i = 0; i < elementCountMinus; i++) C[i] += M[i];
 
 	// float B = 2*M+sparse(toeplitz([-2*lambda^2-6*mu^2 lambda^2+4*mu^2 -mu^2 zeros(1,N-4)]));
@@ -302,10 +312,10 @@ int main(int argc, char** argv)
 		Eigen::MatrixXf Bmember = B * u1 - C * u2;
 		Eigen::VectorXf u = A.lu().solve(Bmember);
 
-		export_matrix(B, "B.txt");
-		export_matrix(C, "C.txt");
-		export_matrix(u1, "u1.txt");
-		export_matrix(u2, "u2.txt");
+		//export_matrix(B, "B.txt");
+		//export_matrix(C, "C.txt");
+		//export_matrix(u1, "u1.txt");
+		//export_matrix(u2, "u2.txt");
 
 		std::cout << "After call to solve" << std::endl << u << std::endl;
 
