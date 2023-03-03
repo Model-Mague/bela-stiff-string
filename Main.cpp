@@ -14,12 +14,14 @@ extracted from: https://www2.ph.ed.ac.uk/~sbilbao/matlabpage.html
 */
 #define _USE_MATH_DEFINES
 #include <cmath>
+#include <fstream>
 #include <vector>
 #include <iostream>
 #include <vector>
 #include <array>
 #include "Eigen/Sparse"
 #include "Eigen/LU"
+void export_matrix(Eigen::MatrixXf mx, std::string path);
 
 float inharmonicity = 0.001;                                 // inharmonicity parameter (>0)
 float f0 = 100;                                  // fundamental(Hz)
@@ -63,27 +65,26 @@ Eigen::MatrixXf out;
 
 Eigen::MatrixXf toeplitz(Eigen::VectorXf r, Eigen::MatrixXf zeros_1d_matrix)
 {
-	// @HERE I really don't think the size calculation here is right
 	int size = r.size() + zeros_1d_matrix.cols();
 	Eigen::MatrixXf out(size, size);
-	int n_as_int = (int)roundf(N);
+
 	for (int i = 0; i < size; i++)
 	{
 		for (int j = 0; j < size; j++)
 		{
 			if (i == 0)
 			{
-				if (j < n_as_int)
+				if (j < r.size())
 					out(i, j) = r(j);
 				else
-					out(i, j) = zeros_1d_matrix(0, j - n_as_int);
+					out(i, j) = 0;//zeros_1d_matrix(0, j - r.size());
 			}
 			else if (j == 0)
 			{
-				if (i < n_as_int)
+				if (i < r.size())
 					out(i, j) = r(i);
 				else
-					out(i, j) = zeros_1d_matrix(0, i - n_as_int);
+					out(i, j) = 0;//zeros_1d_matrix(0, i - r.size());
 			}
 			else out(i, j) = out(i - 1, j - 1);
 		}
@@ -130,6 +131,7 @@ bool setup()
 	m(1, 0) = 2.5;
 	m(0, 1) = -1;
 	m(1, 1) = m(1, 0) + m(0, 1);
+
 
 	SR = 44100;//context->audioSampleRate;
 	NF = floor(SR * TF);
@@ -183,11 +185,12 @@ bool setup()
 	Eigen::VectorXf mComponent(2);
 	mComponent(0) = theta;
 	mComponent(1) = (1 - theta) / 2;
+	export_matrix(mComponent, "mComponent.txt");
+
 	Eigen::MatrixXf M = toeplitz(mComponent, zerosNMinus3); // @HERE Does this really return a matrix of elementCountMinus elements?  Function returns 25 here
-	//float* M = (float*)malloc(elementCountMinus * sizeof(float));
+	export_matrix(zerosNMinus3, "zerosNMinus3.txt");
+	export_matrix(M, "M_toeplitz.txt");
 
-
-	// A = M+sparse(toeplitz([sig1*k/(h^2)+sig0*k/2 -sig1*k/(2*h^2) zeros(1,N-3)]));
 	Eigen::VectorXf aComponent(2);
 	aComponent(0) = sig1 * k / (powf(h, 2)) + sig0 * k / 2;
 	aComponent(1) = -sig1 * k / (2 * powf(h, 2));
@@ -212,7 +215,8 @@ bool setup()
 	bComponent(0) = -2 * powf(lambda, 2) - 6 * powf(mu, 2);
 	bComponent(1) = powf(lambda, 2) + 4 * powf(mu, 2);
 	bComponent(2) = -powf(mu, 2);
-	B = toeplitz(bComponent, zerosNMinus4);
+
+	B = 2 * M + toeplitz(bComponent, zerosNMinus4);
 
 
 	// Create raised cosine
@@ -266,6 +270,11 @@ bool setup()
 	return true;
 }
 
+void export_matrix(Eigen::MatrixXf mx, std::string path)
+{
+	std::ofstream out(path);
+	out << mx;
+}
 
 
 int main(int argc, char** argv)
@@ -293,6 +302,11 @@ int main(int argc, char** argv)
 		Eigen::MatrixXf Bmember = B * u1 - C * u2;
 		Eigen::VectorXf u = A.lu().solve(Bmember);
 
+		export_matrix(B, "B.txt");
+		export_matrix(C, "C.txt");
+		export_matrix(u1, "u1.txt");
+		export_matrix(u2, "u2.txt");
+
 		std::cout << "After call to solve" << std::endl << u << std::endl;
 
 		// u(rp_int)'
@@ -315,20 +329,13 @@ int main(int argc, char** argv)
 		std::cout << "After urpintplus" << std::endl << urpintplus;
 
 		auto urpintplusT = urpintplus; // tried removing T
-		// out(n, :) = (1 - rp_frac).*u(rp_int)'+rp_frac.*u(rp_int+1)';
-		// lookatme = (1-rp_frac).*u(rp_int)'+rp_frac.*u(rp_int+1)';  RETURNS Vector2f
-
-		// a([1, 3]) will select elements 1 and 3 from the array
-
-		// (1-rp_frac)  .*  u(rp_int)'  +  rp_frac  .*  u(rp_int+1)';
-
-		//                                    1         - rp_frac      .*      u(rp_int)'  rp_frac          .*      urpintplusT
 		Eigen::Vector2f out = (Eigen::Vector2f::Ones(2) - rp_frac).cwiseProduct(urpintT) + rp_frac.cwiseProduct(urpintplusT); // this is two numbers
+
+		// @HERE UNCOMMENT THIS
 		//for (unsigned int channel = 0; context->audioOutChannels; channel++)
 		//{
 		//	audioWrite(context, n, channel, out(channel % 2));
 		//}
-		//Eigen::VectorXf result(-1); // crash
 
 		// Update
 		u2 = u1;

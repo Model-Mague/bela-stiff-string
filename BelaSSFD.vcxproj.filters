@@ -19,4 +19,36 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="B.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="C.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="u1.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="u2.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="bComponent.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="zerosNMinus4.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="M.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="M_toeplitz.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="zerosNMinus3.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="mComponent.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+  </ItemGroup>
 </Project>

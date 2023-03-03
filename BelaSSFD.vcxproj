@@ -131,6 +131,18 @@
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="B.txt" />
+    <Text Include="bComponent.txt" />
+    <Text Include="C.txt" />
+    <Text Include="M.txt" />
+    <Text Include="mComponent.txt" />
+    <Text Include="M_toeplitz.txt" />
+    <Text Include="u1.txt" />
+    <Text Include="u2.txt" />
+    <Text Include="zerosNMinus3.txt" />
+    <Text Include="zerosNMinus4.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
