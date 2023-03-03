@@ -231,12 +231,12 @@ bool setup()
 
 	// Create raised cosine
 	// xax = [1:N-1]'*h;
-	Eigen::VectorXf xax = gen_consecutive_vec(1, N - 1); // maybe needs tanspose here
-	Eigen::VectorXf xaxMinusWid = gen_consecutive_vec(1, N - 1);
-	Eigen::VectorXf xaxPlusWid = gen_consecutive_vec(1, N - 1);
-	Eigen::VectorXf rc = gen_consecutive_vec(1, N - 1);
+	Eigen::VectorXf xax = gen_consecutive_vec(1, N); // maybe needs tanspose here
+	Eigen::VectorXf xaxMinusWid = gen_consecutive_vec(1, N);
+	Eigen::VectorXf xaxPlusWid = gen_consecutive_vec(1, N);
+	Eigen::VectorXf rc = gen_consecutive_vec(1, N);
 
-	for (int i = 0; i < N - 2; i++) {
+	for (int i = 0; i < N - 1; i++) {
 		xax(i) = xax(i) * h;
 		// Copy values into soon-to-be-used matrices
 		xaxMinusWid(i) = xax(i) - ctr - wid / 2;
@@ -246,15 +246,15 @@ bool setup()
 
 	int n_as_int = (int)roundf(N);
 	// ind = sign(max(-(xax-ctr-wid/2).*(xax-ctr+wid/2),0));
-	Eigen::VectorXf ind(n_as_int - 2);
+	Eigen::VectorXf ind(n_as_int - 1);
 	// Multiply element-wise (xax-ctr-wid/2).*(xax-ctr+wid/2)
-	for (int i = 0; i < N - 2; i++)	ind(i) = -1 * xaxMinusWid(i) * xaxPlusWid(i);
+	for (int i = 0; i < N - 1; i++)	ind(i) = -1 * xaxMinusWid(i) * xaxPlusWid(i);
 
 	max_set(ind, 0);
 	sign_set(ind);
 
 	// rc = 0.5*ind.*(rc);
-	for (int i = 0; i < N - 2; i++) rc(i) = 0.5 + ind(i) * rc(i);
+	for (int i = 0; i < N - 1; i++) rc(i) = 0.5 + ind(i) * rc(i);
 
 	/*
 		u2 = u0*rc;
@@ -262,15 +262,15 @@ bool setup()
 		u = zeros(N+1,1);
 		out = zeros(NF,2);
 	*/
-	u2 = Eigen::VectorXf(n_as_int - 2);
+	u2 = Eigen::VectorXf(n_as_int - 1);
 	// @HERE Should be u2 *= rc; but check how to do this in Eigen
 	u2 = u0 * rc;
-	//for (int i = 0; i < N - 2; i++) u2(i) = rc(i) * u0;
+	//for (int i = 0; i < N - 1; i++) u2(i) = rc(i) * u0;
 
-	u1 = Eigen::VectorXf(n_as_int - 2);
+	u1 = Eigen::VectorXf(n_as_int - 1);
 	u1 = (u0 + k * v0) * rc;
 	// @HERE Should be u1 = (u0 + k * v0) * rc; but check how to do this in Eigen
-	//for (int i = 0; i < N - 2; i++) u1[i] = (u0 + k * v0) * rc[i]; // @HERE was bug, u1[i]
+	//for (int i = 0; i < N - 1; i++) u1[i] = (u0 + k * v0) * rc[i]; // @HERE was bug, u1[i]
 
 	u = zeros(N + 1, 1);
 	out = zeros(NF, 2);
@@ -289,23 +289,6 @@ void export_matrix(Eigen::MatrixXf mx, std::string path)
 
 int main(int argc, char** argv)
 {
-	// B
-	// u1
-	// C
-	// u2
-	// A
-	// rp_int
-	// u
-	// rp_frac
-	//std::cout << "B: " << B << std::endl;
-	//std::cout << "u1 " << u1 << std::endl;
-	//std::cout << "C " << C << std::endl;
-	//std::cout << "u2 " << u2 << std::endl;
-	//std::cout << "A " << A << std::endl;
-	//std::cout << "rp_int " << rp_int << std::endl;
-	//std::cout << "u " << u << std::endl;
-	//std::cout << "rp_frac " << rp_frac << std::endl;
-	//Eigen::VectorXf result(-1); // crash
 	setup();
 	for (unsigned int n = 0; n < 10; n++)
 	{
