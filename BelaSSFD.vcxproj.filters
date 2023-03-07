@@ -80,5 +80,17 @@
     <Text Include="Bmember.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="rp_frac.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="rp_frac_minus1.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="urpint.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="urpintplus.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

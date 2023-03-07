@@ -22,8 +22,11 @@ extracted from: https://www2.ph.ed.ac.uk/~sbilbao/matlabpage.html
 #include "Eigen/Sparse"
 #include "Eigen/LU"
 
-#define DESKTOP_BUILD
+//#define DESKTOP_BUILD
 
+#ifndef DESKTOP_BUILD
+#include <Bela.h>
+#endif
 
 float inharmonicity = 0.001f;                                 // inharmonicity parameter (>0)
 float f0 = 100.f;                                  // fundamental(Hz)
@@ -147,8 +150,11 @@ bool setup(BelaContext* context, void* userData)
 	m(0, 1) = -1;
 	m(1, 1) = m(1, 0) + m(0, 1);
 
-
-	SR = 44100;//context->audioSampleRate;
+#ifdef DESKTOP_BUILD
+	SR = 44100;
+#else
+	SR = context->audioSampleRate;
+#endif
 	NF = floor(SR * TF);
 	k = 1 / SR;                                  // time step
 	gumo = 2 * f0;

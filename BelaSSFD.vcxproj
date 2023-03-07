@@ -144,9 +144,13 @@
     <Text Include="M_toeplitz.txt" />
     <Text Include="out.txt" />
     <Text Include="rc.txt" />
+    <Text Include="rp_frac.txt" />
+    <Text Include="rp_frac_minus1.txt" />
     <Text Include="u.txt" />
     <Text Include="u1.txt" />
     <Text Include="u2.txt" />
+    <Text Include="urpint.txt" />
+    <Text Include="urpintplus.txt" />
     <Text Include="xax.txt" />
     <Text Include="xaxMinusWid.txt" />
     <Text Include="xaxPlusWid.txt" />
