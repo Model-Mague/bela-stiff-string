@@ -182,8 +182,8 @@ bool setup(BelaContext* context, void* userData)
 
 	zeta1 = (-gammaSq2 + sqrt(gammaSq4 + 4 * Ksq2 * piLoss00)) / (2 * Ksq2);
 	zeta2 = (-gammaSq2 + sqrt(gammaSq4 + 4 * Ksq2 * piLoss10)) / (2 * Ksq2);
-	sig0 = 6 * (int)log(10) * (-zeta2 / loss[0][1] + zeta1 / loss[1][1]) / (zeta1 - zeta2);
-	sig1 = 6 * (int)log(10) * (1 / loss[0][1] - 1 / loss[1][1]) / (zeta1 - zeta2);
+	sig0 = 6 * (float)log(10) * (-zeta2 / loss[0][1] + zeta1 / loss[1][1]) / (zeta1 - zeta2);
+	sig1 = 6 * (float)log(10) * (1 / loss[0][1] - 1 / loss[1][1]) / (zeta1 - zeta2);
 
 
 	// create update matrices
