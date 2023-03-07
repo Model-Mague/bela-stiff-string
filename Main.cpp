@@ -22,7 +22,7 @@ extracted from: https://www2.ph.ed.ac.uk/~sbilbao/matlabpage.html
 #include "Eigen/Sparse"
 #include "Eigen/LU"
 
-//#define DESKTOP_BUILD
+#define DESKTOP_BUILD
 
 #ifndef DESKTOP_BUILD
 #include <Bela.h>
@@ -339,14 +339,15 @@ void render(BelaContext* context, void* userData)
 			audioWrite(context, n, channel, out(channel % 2));
 		}
 #endif
-
 		// Update
 		u2 = u1;
 		u1 = u;
 	}
 }
 
+#ifndef DESKTOP_BUILD
 void cleanup(BelaContext* context, void* userData)
 {
 
 }
+#endif
