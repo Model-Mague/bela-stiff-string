@@ -216,10 +216,6 @@ bool setup(BelaContext* context, void* userData)
 
 	// A = M + A;
 	A = M + A;
-	//for (int i = 0; i < elementCountMinus; i++) A[i] += M[i];
-	export_matrix(A, "A.txt");
-	export_matrix(M, "M.txt");
-	export_matrix(aComponent, "aComponent.txt");
 
 	// C = M+sparse(toeplitz([-sig1*k/(h^2)-sig0*k/2 sig1*k/(2*h^2) zeros(1,N-3)]));
 	Eigen::VectorXf cComponent(2);
@@ -229,7 +225,6 @@ bool setup(BelaContext* context, void* userData)
 	// C = M + C
 	C = M + C;
 
-	//for (int i = 0; i < elementCountMinus; i++) C[i] += M[i];
 
 	// float B = 2*M+sparse(toeplitz([-2*lambda^2-6*mu^2 lambda^2+4*mu^2 -mu^2 zeros(1,N-4)]));
 	Eigen::VectorXf bComponent(3);
@@ -262,9 +257,7 @@ bool setup(BelaContext* context, void* userData)
 	// Multiply element-wise (xax-ctr-wid/2).*(xax-ctr+wid/2)
 	for (int i = 0; i < (int)N - 1; i++)	ind(i) = -1 * xaxMinusWid(i) * xaxPlusWid(i);
 
-	export_matrix(ind, "premax.txt");
 	max_set(ind, 0);
-	export_matrix(ind, "postmax.txt");
 	sign_set(ind);
 
 	// rc = 0.5*ind.*(rc);
@@ -277,27 +270,21 @@ bool setup(BelaContext* context, void* userData)
 		out = zeros(NF,2);
 	*/
 	u2 = Eigen::VectorXf(n_as_int - 1);
-	// @HERE Should be u2 *= rc; but check how to do this in Eigen
 	u2 = u0 * rc;
-	//for (int i = 0; i < N - 1; i++) u2(i) = rc(i) * u0;
 
 	u1 = Eigen::VectorXf(n_as_int - 1);
 	u1 = (u0 + k * v0) * rc;
-	// @HERE Should be u1 = (u0 + k * v0) * rc; but check how to do this in Eigen
-	//for (int i = 0; i < N - 1; i++) u1[i] = (u0 + k * v0) * rc[i]; // @HERE was bug, u1[i]
 
 	u = zeros((int)N + 1, 1);
 	out = zeros((int)NF, 2);
 
-	export_matrix(u1, "u1.txt");
-	export_matrix(u2, "u2.txt");
-	export_matrix(xax, "xax.txt"); // maybe needs tanspose here
-	export_matrix(xaxMinusWid, "xaxMinusWid.txt");
-	export_matrix(xaxPlusWid, "xaxPlusWid.txt");
-	export_matrix(rc, "rc.txt");
-	export_matrix(ind, "ind.txt");
-
-	std::cout << "SETUP DONE" << std::endl;
+	//export_matrix(u1, "u1.txt");
+	//export_matrix(u2, "u2.txt");
+	//export_matrix(xax, "xax.txt"); // maybe needs tanspose here
+	//export_matrix(xaxMinusWid, "xaxMinusWid.txt");
+	//export_matrix(xaxPlusWid, "xaxPlusWid.txt");
+	//export_matrix(rc, "rc.txt");
+	//export_matrix(ind, "ind.txt");
 
 	return true;
 }
@@ -318,10 +305,6 @@ void render(BelaContext* context, void* userData)
 
 	Eigen::Vector2f urpint;
 	Eigen::Vector2f urpintplus;
-
-	//auto urpintT = urpint.transpose();
-	//auto urpintplusT = urpintplus.transpose();
-
 	Eigen::Vector2f rp_frac_minus1 = Eigen::Vector2f::Ones(2) - rp_frac;
 
 	for (unsigned int n = 0; n < 20; n++)
@@ -334,13 +317,18 @@ void render(BelaContext* context, void* userData)
 		urpintplus(1) = u(second_index + 1);
 		// (1-rp_frac).*u(rp_int)'+rp_frac.*u(rp_int+1)'
 		Eigen::Vector2f out = (rp_frac_minus1).cwiseProduct(urpint) + rp_frac.cwiseProduct(urpintplus); // this is two numbers
+		//export_matrix(rp_frac_minus1, "rp_frac_minus1.txt"); // OK
+		//export_matrix(urpint, "urpint.txt");  // Precision issue
+		//export_matrix(rp_frac, "rp_frac.txt"); // OK
+		//export_matrix(urpintplus, "urpintplus.txt"); // Precision issue
+
 #ifndef DESKTOP_BUILD
 		for (unsigned int channel = 0; context->audioOutChannels; channel++)
 		{
 			audioWrite(context, n, channel, out(channel % 2));
 		}
 #endif
-		std::cout << n << ": " << out(0) << " " << out(1) << std::endl;
+
 		// Update
 		u2 = u1;
 		u1 = u;
