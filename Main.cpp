@@ -313,8 +313,13 @@ void render(BelaContext* context, void* userData)
 	Eigen::Vector2f urpintplus;
 	Eigen::Vector2f rp_frac_minus1 = Eigen::Vector2f::Ones(2) - rp_frac;
 
+#ifdef DESKTOP_BUILD
 	for (unsigned int n = 0; n < 20; n++)
 	{
+#else
+	for (unsigned int n = 0; n < context->audioFrames; n++)
+	{
+#endif
 		Eigen::MatrixXf Bmember = B * u1 - C * u2;
 		Eigen::VectorXf u = A.lu().solve(Bmember);
 		urpint(0) = u(first_index);
