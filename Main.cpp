@@ -340,3 +340,8 @@ void render(BelaContext* context, void* userData)
 		u1 = u;
 	}
 }
+
+void cleanup(BelaContext* context, void* userData)
+{
+
+}
