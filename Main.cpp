@@ -22,7 +22,8 @@ extracted from: https://www2.ph.ed.ac.uk/~sbilbao/matlabpage.html
 #include "Eigen/Sparse"
 #include "Eigen/LU"
 
-#define DESKTOP_BUILD
+// @HERE Uncomment this to run project on desktop
+//#define DESKTOP_BUILD
 
 #ifndef DESKTOP_BUILD
 #include <Bela.h>
