@@ -332,9 +332,8 @@ void render(BelaContext* context, void* userData)
 		//export_matrix(urpint, "urpint.txt");  // Precision issue
 		//export_matrix(rp_frac, "rp_frac.txt"); // OK
 		//export_matrix(urpintplus, "urpintplus.txt"); // Precision issue
-
 #ifndef DESKTOP_BUILD
-		for (unsigned int channel = 0; context->audioOutChannels; channel++)
+		for (unsigned int channel = 0; channel < context->audioOutChannels; channel++)
 		{
 			audioWrite(context, n, channel, out(channel % 2));
 		}
