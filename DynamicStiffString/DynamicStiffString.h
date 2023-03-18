@@ -21,8 +21,19 @@
 class DynamicStiffString
 {
 public:
-    DynamicStiffString(NamedValueSet& parameters, double k);
-    ~DynamicStiffString() override;
+
+    struct SimulationParameters {
+        double L;
+        double rho;
+        double r;
+        double T;
+        double E;
+        double sigma0;
+        double sigma1;
+    };
+
+    DynamicStiffString(const SimulationParameters& parameters, double k);
+    ~DynamicStiffString();
 
     void calculateScheme();
     void updateStates();

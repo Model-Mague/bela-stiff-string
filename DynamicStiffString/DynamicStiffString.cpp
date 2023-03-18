@@ -10,26 +10,25 @@
 
 #include "DynamicStiffString.h"
 
-#include <cassert>
-
 #define _USE_MATH_DEFINES
 #include <cmath>
+#include <cassert>
 
 
 //==============================================================================
-DynamicStiffString::DynamicStiffString(NamedValueSet& parameters, double k) : k(k)
+DynamicStiffString::DynamicStiffString(const SimulationParameters& parameters, double k) : k(k)
 {
 
     // Initialise member variables using the parameter set
-    L = *parameters.getVarPointer("L");
-    rho = *parameters.getVarPointer("rho");
-    r = *parameters.getVarPointer("r");
+    L = parameters.L;
+    rho = parameters.rho;
+    r = parameters.r;
     A = (double)M_PI * r * r;
-    T = *parameters.getVarPointer("T");
-    E = *parameters.getVarPointer("E");
+    T = parameters.T;
+    E = parameters.E;
     I = (double)M_PI * r * r * r * r * 0.25;
-    sigma0 = *parameters.getVarPointer("sigma0");
-    sigma1 = *parameters.getVarPointer("sigma1");
+    sigma0 = parameters.sigma0;
+    sigma1 = parameters.sigma1;
 
     origR = r;
     origT = T;
