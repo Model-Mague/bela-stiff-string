@@ -278,14 +278,14 @@ void DynamicStiffString::refreshCoefficients(bool init)
             // bigger rho means bigger N
             NfracNext = Nfrac + (*parameterPtrs[i] > parametersToGoTo[i] ? -1 : 1) * NmaxChange;
 
-            paramDiffMax = abs((k * k * L * L * NfracNext * NfracNext * T + 4.0 * I * k * k * NfracNext * NfracNext * NfracNext * NfracNext * E) / (A * L * L * (L * L - 4.0 * k * NfracNext * NfracNext * sigma1)) - rho);
+            paramDiffMax = std::abs((k * k * L * L * NfracNext * NfracNext * T + 4.0 * I * k * k * NfracNext * NfracNext * NfracNext * NfracNext * E) / (A * L * L * (L * L - 4.0 * k * NfracNext * NfracNext * sigma1)) - rho);
         }
         else if (&T == parameterPtrs[i])
         {
             // bigger T means smaller N
             NfracNext = Nfrac + (*parameterPtrs[i] < parametersToGoTo[i] ? -1 : 1) * NmaxChange;
 
-            paramDiffMax = abs((-4.0 * A * k * L * L * NfracNext * NfracNext * rho * sigma1 + A * L * L * L * L * rho - 4.0 * I * k * k * NfracNext * NfracNext * NfracNext * NfracNext * E) / (k * k * L * L * NfracNext * NfracNext) - T);
+            paramDiffMax = std::abs((-4.0 * A * k * L * L * NfracNext * NfracNext * rho * sigma1 + A * L * L * L * L * rho - 4.0 * I * k * k * NfracNext * NfracNext * NfracNext * NfracNext * E) / (k * k * L * L * NfracNext * NfracNext) - T);
         }
         else if (&r == parameterPtrs[i])
         {
@@ -319,7 +319,7 @@ void DynamicStiffString::refreshCoefficients(bool init)
                 int idxToChoose = -1;
                 for (int i = 0; i < rVals.size(); ++i)
                 {
-                    if (isnan(rVals[i]))
+                    if (std::isnan(rVals[i]))
                         continue;
                     // if r is decreased, don't choose larger r values
                     if (rToGoTo < r && rVals[i] > r)
@@ -329,13 +329,13 @@ void DynamicStiffString::refreshCoefficients(bool init)
                     if (rToGoTo > r && rVals[i] < r)
                         continue;
 
-                    if (abs(rVals[i] - r) < rDiff)
+                    if (std::abs(rVals[i] - r) < rDiff)
                     {
                         rDiff = rVals[i] - r;
                         idxToChoose = i;
                     }
                 }
-                paramDiffMax = abs(rVals[idxToChoose] - r);
+                paramDiffMax = std::abs(rVals[idxToChoose] - r);
 
             }
             else
@@ -343,7 +343,7 @@ void DynamicStiffString::refreshCoefficients(bool init)
                 // if E = 0, bigger r means bigger N
                 NfracNext = Nfrac + (*parameterPtrs[i] > parametersToGoTo[i] ? -1 : 1) * NmaxChange;
 
-                paramDiffMax = abs((k * NfracNext * sqrt(T)) / (sqrt(rho) * sqrt(static_cast<double>(M_PI) * L * L - 4.0 * static_cast<double>(M_PI) * k * NfracNext * NfracNext * sigma1)) - r);
+                paramDiffMax = std::abs((k * NfracNext * sqrt(T)) / (sqrt(rho) * sqrt(static_cast<double>(M_PI) * L * L - 4.0 * static_cast<double>(M_PI) * k * NfracNext * NfracNext * sigma1)) - r);
             }
 
         }
@@ -352,7 +352,7 @@ void DynamicStiffString::refreshCoefficients(bool init)
             // bigger E means smaller N
             NfracNext = Nfrac + (*parameterPtrs[i] < parametersToGoTo[i] ? -1 : 1) * NmaxChange;
 
-            paramDiffMax = abs((-4.0 * A * k * L * L * NfracNext * NfracNext * rho * sigma1 + A * L * L * L * L * rho - k * k * L * L * NfracNext * NfracNext * T) / (4.0 * I * k * k * NfracNext * NfracNext * NfracNext * NfracNext) - E);
+            paramDiffMax = std::abs((-4.0 * A * k * L * L * NfracNext * NfracNext * rho * sigma1 + A * L * L * L * L * rho - k * k * L * L * NfracNext * NfracNext * T) / (4.0 * I * k * k * NfracNext * NfracNext * NfracNext * NfracNext) - E);
 
         }
         else if (&sigma1 == parameterPtrs[i])
@@ -360,7 +360,7 @@ void DynamicStiffString::refreshCoefficients(bool init)
             // bigger sigma1 means smaller N
             NfracNext = Nfrac + (*parameterPtrs[i] < parametersToGoTo[i] ? -1 : 1) * NmaxChange;
 
-            paramDiffMax = abs((A * L * L * L * L * rho - k * k * L * L * NfracNext * NfracNext * T - 4.0 * I * k * k * NfracNext * NfracNext * NfracNext * NfracNext * E) / (4.0 * A * k * L * L * NfracNext * NfracNext * rho) - sigma1);
+            paramDiffMax = std::abs((A * L * L * L * L * rho - k * k * L * L * NfracNext * NfracNext * T - 4.0 * I * k * k * NfracNext * NfracNext * NfracNext * NfracNext * E) / (4.0 * A * k * L * L * NfracNext * NfracNext * rho) - sigma1);
 
         }
         else if (&sigma0 == parameterPtrs[i])
@@ -369,7 +369,7 @@ void DynamicStiffString::refreshCoefficients(bool init)
             paramDiffMax = 100;
         }
         //    L = (1-LfilterCoeff) * LtoGoTo + LfilterCoeff * Lpre
-        if (abs(*parameterPtrs[i] - parametersToGoTo[i]) < paramDiffMax)
+        if (std::abs(*parameterPtrs[i] - parametersToGoTo[i]) < paramDiffMax)
         {
             *parameterPtrs[i] = parametersToGoTo[i];
             parameterChanged[i] = false;
@@ -447,7 +447,7 @@ void DynamicStiffString::refreshCoefficients(bool init)
 
 void DynamicStiffString::addRemovePoint()
 {
-    assert(abs(N - Nprev) <= 1);
+    assert(std::abs(N - Nprev) <= 1);
     refreshCustomIp();
     if (N > Nprev)
     {

@@ -16,7 +16,7 @@ Dynamic Stiff String implementation based on DAFx 2022 paper submission https://
 #define _USE_MATH_DEFINES
 
 // @HERE Uncomment this to run project on desktop
-#define DESKTOP_BUILD
+//#define DESKTOP_BUILD
 
 #ifndef DESKTOP_BUILD
 #include <Bela.h>
@@ -24,6 +24,7 @@ Dynamic Stiff String implementation based on DAFx 2022 paper submission https://
 
 #include "DynamicStiffString/DynamicStiffString.h"
 
+#include <memory>
 #include <iostream>
 
 
