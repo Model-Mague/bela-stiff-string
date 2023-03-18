@@ -14,13 +14,6 @@ Dynamic Stiff String implementation based on DAFx 2022 paper submission https://
 
 */
 #define _USE_MATH_DEFINES
-#include <cmath>
-#include <fstream>
-#include <vector>
-#include <iostream>
-#include <vector>
-#include <array>
-
 
 // @HERE Uncomment this to run project on desktop
 #define DESKTOP_BUILD
@@ -29,6 +22,14 @@ Dynamic Stiff String implementation based on DAFx 2022 paper submission https://
 #include <Bela.h>
 #endif
 
+#include "DynamicStiffString/DynamicStiffString.h"
+
+#include <iostream>
+
+
+// Global variables
+std::unique_ptr<DynamicStiffString> pDynamicStiffString;
+
 
 #ifdef DESKTOP_BUILD
 bool setup()
@@ -36,6 +37,24 @@ bool setup()
 bool setup(BelaContext* context, void* userData)
 #endif
 {
+	DynamicStiffString::SimulationParameters parameters = {};
+	parameters.L = 1.0;
+	parameters.rho = 7850.0;
+	parameters.r = 0.0005;
+	parameters.T = 300.0;
+	parameters.E = 2e11;
+	parameters.sigma0 = 1.0;
+	parameters.sigma1 = 0.005;
+
+#ifdef DESKTOP_BUILD
+	double sampleRate = 44100.0;
+#else
+	double sampleRate = context->audioSampleRate;
+#endif
+
+	pDynamicStiffString = std::make_unique<DynamicStiffString>(parameters, 1.0 / sampleRate);
+	pDynamicStiffString->excite();
+
 	return true;
 }
 
@@ -57,11 +76,21 @@ void render(BelaContext* context, void* userData)
 	for (unsigned int n = 0; n < context->audioFrames; n++)
 	{
 #endif
+		// @TODO: Handle parameter changes here
+		// pDynamicStiffString->refreshParameter(paramId, value);
 
-#ifndef DESKTOP_BUILD
+		pDynamicStiffString->refreshCoefficients();
+		pDynamicStiffString->calculateScheme();
+		pDynamicStiffString->updateStates();
+
+		float output = (float)pDynamicStiffString->getOutput();
+
+#ifdef DESKTOP_BUILD
+		std::cout << output << std::endl;
+#else
 		for (unsigned int channel = 0; channel < context->audioOutChannels; channel++)
 		{
-			audioWrite(context, n, channel, 0);
+			audioWrite(context, n, channel, Global::limit(output, -1.0, 1.0));
 		}
 #endif
 	}

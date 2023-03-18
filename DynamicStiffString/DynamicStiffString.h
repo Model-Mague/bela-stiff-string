@@ -10,7 +10,9 @@
 
 #pragma once
 
-#include <fstream>
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 #include <vector>
 
 #include "Global.h"
@@ -102,9 +104,4 @@ private:
 
     std::vector<double> customIp;
 
-    std::ofstream uSave, MvSave, MwSave, alfSave;
-
-#ifdef RECORD
-    int counter = 0;
-#endif
 };

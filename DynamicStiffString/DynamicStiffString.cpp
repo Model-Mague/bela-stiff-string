@@ -10,8 +10,6 @@
 
 #include "DynamicStiffString.h"
 
-#define _USE_MATH_DEFINES
-#include <cmath>
 #include <cassert>
 
 
@@ -23,10 +21,10 @@ DynamicStiffString::DynamicStiffString(const SimulationParameters& parameters, d
     L = parameters.L;
     rho = parameters.rho;
     r = parameters.r;
-    A = (double)M_PI * r * r;
+    A = static_cast<double>(M_PI) * r * r;
     T = parameters.T;
     E = parameters.E;
-    I = (double)M_PI * r * r * r * r * 0.25;
+    I = static_cast<double>(M_PI) * r * r * r * r * 0.25;
     sigma0 = parameters.sigma0;
     sigma1 = parameters.sigma1;
 
@@ -51,14 +49,14 @@ DynamicStiffString::DynamicStiffString(const SimulationParameters& parameters, d
 
     parameterChanged.resize(parameterPtrs.size(), false);
 
-    double cSqMin = 0.5 * T / (2.0 * rho * 2.0 * r * 2.0 * r * (double)M_PI);
+    double cSqMin = 0.5 * T / (2.0 * rho * 2.0 * r * 2.0 * r * static_cast<double>(M_PI));
 
     double hMin = sqrt(cSqMin * k * k + 4.0 * Global::sig1min * k);
-    Nmax = floor(2.0 * L / hMin);
+    Nmax = static_cast<int>(floor(2.0 * L / hMin));
 
     double rMax = 0.5 * r; //?
-    double cSqMax = 2.0 * T / (0.5 * rho * rMax * rMax * (double)M_PI);
-    double kappaSqMax = 2.0 * E * (double)M_PI * rMax * rMax * rMax * rMax * 0.25 / (0.5 * rho * rMax * rMax * (double)M_PI);
+    double cSqMax = 2.0 * T / (0.5 * rho * rMax * rMax * static_cast<double>(M_PI));
+    double kappaSqMax = 2.0 * E * static_cast<double>(M_PI) * rMax * rMax * rMax * rMax * 0.25 / (0.5 * rho * rMax * rMax * static_cast<double>(M_PI));
 
     double hMax = sqrt((cSqMax * k * k + 4.0 * sigma1 * 2.0 * k + sqrt(pow(cSqMax * k * k + 4.0 * sigma1 * 2.0 * k, 2) + 16 * kappaSqMax * k * k)) / 2.0);
 
@@ -236,7 +234,7 @@ void DynamicStiffString::excite(int loc)
     double width = 10;
 
     // make sure we're not going out of bounds at the left boundary
-    int start = (loc == -1) ? std::max(floor((N + 1) * excitationLoc) - floor(width * 0.5), 1.0) : loc;
+    int start = (loc == -1) ? static_cast<int>(std::max(floor((N + 1) * excitationLoc) - floor(width * 0.5), 1.0)) : loc;
 
     for (int l = 0; l < width; ++l)
     {
@@ -244,8 +242,8 @@ void DynamicStiffString::excite(int loc)
         if (l + start > Mv)
             break;
 
-        v[1][l + start] += 0.5 * (1 - cos(2.0 * (double)M_PI * l / (width - 1.0)));
-        v[2][l + start] += 0.5 * (1 - cos(2.0 * (double)M_PI * l / (width - 1.0)));
+        v[1][l + start] += 0.5 * (1 - cos(2.0 * static_cast<double>(M_PI) * l / (width - 1.0)));
+        v[2][l + start] += 0.5 * (1 - cos(2.0 * static_cast<double>(M_PI) * l / (width - 1.0)));
     }
     // Disable the excitation flag to only excite once
     excitationFlag = false;
@@ -261,7 +259,7 @@ void DynamicStiffString::refreshParameter(int changedParameterIdx, double change
 void DynamicStiffString::refreshCoefficients(bool init)
 {
     double NmaxChange = Global::NmaxChange;
-    double paramDiffMax;
+    double paramDiffMax = 0.0;
     double NfracNext;
 
     bool needsRefresh = false;
@@ -306,15 +304,15 @@ void DynamicStiffString::refreshCoefficients(bool init)
                 // The graph of N (y-axis) vs r (x-axis) is a negative parabola. For a change in N (either positive or negative, there are 4 possible r values. Here we're trying to find the one that corresponds to the one we're trying to find.
 
                 // r right side of parabola, increasing N
-                rVals[0] = sqrt((-bCoeffPlus + sqrt(bCoeffPlus * bCoeffPlus - 16.0 * E * k * k / rho * (4.0 * L * L * T * k * k) / (NfracNextPlus * NfracNextPlus * rho * (double)M_PI))) / (8.0 * (E * k * k / rho)));
+                rVals[0] = sqrt((-bCoeffPlus + sqrt(bCoeffPlus * bCoeffPlus - 16.0 * E * k * k / rho * (4.0 * L * L * T * k * k) / (NfracNextPlus * NfracNextPlus * rho * static_cast<double>(M_PI)))) / (8.0 * (E * k * k / rho)));
                 // r right side of parabola, decreasing N
-                rVals[1] = sqrt((-bCoeffMin + sqrt(bCoeffMin * bCoeffMin - 16.0 * E * k * k / rho * (4.0 * L * L * T * k * k) / (NfracNextMin * NfracNextMin * rho * (double)M_PI))) / (8.0 * (E * k * k / rho)));
+                rVals[1] = sqrt((-bCoeffMin + sqrt(bCoeffMin * bCoeffMin - 16.0 * E * k * k / rho * (4.0 * L * L * T * k * k) / (NfracNextMin * NfracNextMin * rho * static_cast<double>(M_PI)))) / (8.0 * (E * k * k / rho)));
 
                 // r left side of parabola, increasing N
-                rVals[2] = sqrt((-bCoeffPlus - sqrt(bCoeffPlus * bCoeffPlus - 16.0 * E * k * k / rho * (4.0 * L * L * T * k * k) / (NfracNextPlus * NfracNextPlus * rho * (double)M_PI))) / (8.0 * (E * k * k / rho)));
+                rVals[2] = sqrt((-bCoeffPlus - sqrt(bCoeffPlus * bCoeffPlus - 16.0 * E * k * k / rho * (4.0 * L * L * T * k * k) / (NfracNextPlus * NfracNextPlus * rho * static_cast<double>(M_PI)))) / (8.0 * (E * k * k / rho)));
 
                 // r left side of parabola, decreasing N
-                rVals[3] = sqrt((-bCoeffMin - sqrt(bCoeffMin * bCoeffMin - 16.0 * E * k * k / rho * (4.0 * L * L * T * k * k) / (NfracNextMin * NfracNextMin * rho * (double)M_PI))) / (8.0 * (E * k * k / rho)));
+                rVals[3] = sqrt((-bCoeffMin - sqrt(bCoeffMin * bCoeffMin - 16.0 * E * k * k / rho * (4.0 * L * L * T * k * k) / (NfracNextMin * NfracNextMin * rho * static_cast<double>(M_PI)))) / (8.0 * (E * k * k / rho)));
 
                 double rDiff = 1;
                 double rToGoTo = parametersToGoTo[i];
@@ -345,7 +343,7 @@ void DynamicStiffString::refreshCoefficients(bool init)
                 // if E = 0, bigger r means bigger N
                 NfracNext = Nfrac + (*parameterPtrs[i] > parametersToGoTo[i] ? -1 : 1) * NmaxChange;
 
-                paramDiffMax = abs((k * NfracNext * sqrt(T)) / (sqrt(rho) * sqrt((double)M_PI * L * L - 4.0 * (double)M_PI * k * NfracNext * NfracNext * sigma1)) - r);
+                paramDiffMax = abs((k * NfracNext * sqrt(T)) / (sqrt(rho) * sqrt(static_cast<double>(M_PI) * L * L - 4.0 * static_cast<double>(M_PI) * k * NfracNext * NfracNext * sigma1)) - r);
             }
 
         }
@@ -393,8 +391,8 @@ void DynamicStiffString::refreshCoefficients(bool init)
     if (!needsRefresh && !init)
         return;
 
-    A = (double)M_PI * r * r;
-    I = (double)M_PI * r * r * r * r * 0.25;
+    A = static_cast<double>(M_PI) * r * r;
+    I = static_cast<double>(M_PI) * r * r * r * r * 0.25;
 
     // Calculate wave speed (squared)
     cSq = T / (rho * A);
@@ -408,7 +406,7 @@ void DynamicStiffString::refreshCoefficients(bool init)
     Nfrac = L / h;
 
     // check if the change does not surpass a limit
-    N = floor(Nfrac);
+    N = static_cast<int>(floor(Nfrac));
     alf = Nfrac - N;
     if (init)
         Nprev = N;
