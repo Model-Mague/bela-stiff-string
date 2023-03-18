@@ -129,6 +129,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DynamicStiffString.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -141,11 +142,14 @@
     <Text Include="ind.txt" />
     <Text Include="M.txt" />
     <Text Include="mComponent.txt" />
+    <Text Include="multime.txt" />
     <Text Include="M_toeplitz.txt" />
     <Text Include="out.txt" />
+    <Text Include="precomputed.txt" />
     <Text Include="rc.txt" />
     <Text Include="rp_frac.txt" />
     <Text Include="rp_frac_minus1.txt" />
+    <Text Include="soltime.txt" />
     <Text Include="u.txt" />
     <Text Include="u1.txt" />
     <Text Include="u2.txt" />
@@ -156,6 +160,10 @@
     <Text Include="xaxPlusWid.txt" />
     <Text Include="zerosNMinus3.txt" />
     <Text Include="zerosNMinus4.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="DynamicStiffString.h" />
+    <ClInclude Include="Global.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

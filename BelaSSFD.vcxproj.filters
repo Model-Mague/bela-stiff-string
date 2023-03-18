@@ -18,6 +18,9 @@
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DynamicStiffString.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="B.txt">
@@ -92,5 +95,22 @@
     <Text Include="urpintplus.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="multime.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="soltime.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="precomputed.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="DynamicStiffString.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Global.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
