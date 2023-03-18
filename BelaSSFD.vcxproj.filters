@@ -15,101 +15,18 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Main.cpp">
+    <ClCompile Include="DynamicStiffString\DynamicStiffString.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DynamicStiffString.cpp">
+    <ClCompile Include="render.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="B.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="C.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="u1.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="u2.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="bComponent.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="zerosNMinus4.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="M.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="M_toeplitz.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="zerosNMinus3.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="mComponent.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="rc.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="xax.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="xaxMinusWid.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="xaxPlusWid.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="ind.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="out.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="u.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="A.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="aComponent.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="Bmember.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="rp_frac.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="rp_frac_minus1.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="urpint.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="urpintplus.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="multime.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="soltime.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="precomputed.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="DynamicStiffString.h">
+    <ClInclude Include="DynamicStiffString\DynamicStiffString.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Global.h">
+    <ClInclude Include="DynamicStiffString\Global.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
