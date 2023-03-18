@@ -11,21 +11,18 @@
 #pragma once
 
 #include <fstream>
+#include <vector>
+
 #include "Global.h"
+
 //==============================================================================
 /*
 */
-class DynamicStiffString : public juce::Component, public KeyListener
+class DynamicStiffString
 {
 public:
     DynamicStiffString(NamedValueSet& parameters, double k);
     ~DynamicStiffString() override;
-
-    void paint(juce::Graphics&) override;
-    void resized() override;
-
-    // function to draw the state of the string
-    Path visualiseState(Graphics& g, double visualScaling, double& length);
 
     void calculateScheme();
     void updateStates();
@@ -42,14 +39,12 @@ public:
     }
 
     void excite(int loc = -1);
-    void mouseDown(const MouseEvent& e) override;
 
     bool shouldExcite() { return excitationFlag; };
 
     void addRemovePoint();
     void refreshCustomIp();
 
-    bool keyPressed(const KeyPress& key, Component* originatingComponent) override;
 private:
 
     // Model parameters
@@ -101,6 +96,4 @@ private:
 #ifdef RECORD
     int counter = 0;
 #endif
-
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DynamicStiffString)
 };

@@ -8,8 +8,13 @@
   ==============================================================================
 */
 
-#include <JuceHeader.h>
 #include "DynamicStiffString.h"
+
+#include <cassert>
+
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 
 //==============================================================================
 DynamicStiffString::DynamicStiffString(NamedValueSet& parameters, double k) : k(k)
@@ -19,10 +24,10 @@ DynamicStiffString::DynamicStiffString(NamedValueSet& parameters, double k) : k(
     L = *parameters.getVarPointer("L");
     rho = *parameters.getVarPointer("rho");
     r = *parameters.getVarPointer("r");
-    A = MathConstants<double>::pi * r * r;
+    A = (double)M_PI * r * r;
     T = *parameters.getVarPointer("T");
     E = *parameters.getVarPointer("E");
-    I = MathConstants<double>::pi * r * r * r * r * 0.25;
+    I = (double)M_PI * r * r * r * r * 0.25;
     sigma0 = *parameters.getVarPointer("sigma0");
     sigma1 = *parameters.getVarPointer("sigma1");
 
@@ -47,14 +52,14 @@ DynamicStiffString::DynamicStiffString(NamedValueSet& parameters, double k) : k(
 
     parameterChanged.resize(parameterPtrs.size(), false);
 
-    double cSqMin = 0.5 * T / (2.0 * rho * 2.0 * r * 2.0 * r * MathConstants<double>::pi);
+    double cSqMin = 0.5 * T / (2.0 * rho * 2.0 * r * 2.0 * r * (double)M_PI);
 
     double hMin = sqrt(cSqMin * k * k + 4.0 * Global::sig1min * k);
     Nmax = floor(2.0 * L / hMin);
 
     double rMax = 0.5 * r; //?
-    double cSqMax = 2.0 * T / (0.5 * rho * rMax * rMax * MathConstants<double>::pi);
-    double kappaSqMax = 2.0 * E * MathConstants<double>::pi * rMax * rMax * rMax * rMax * 0.25 / (0.5 * rho * rMax * rMax * MathConstants<double>::pi);
+    double cSqMax = 2.0 * T / (0.5 * rho * rMax * rMax * (double)M_PI);
+    double kappaSqMax = 2.0 * E * (double)M_PI * rMax * rMax * rMax * rMax * 0.25 / (0.5 * rho * rMax * rMax * (double)M_PI);
 
     double hMax = sqrt((cSqMax * k * k + 4.0 * sigma1 * 2.0 * k + sqrt(pow(cSqMax * k * k + 4.0 * sigma1 * 2.0 * k, 2) + 16 * kappaSqMax * k * k)) / 2.0);
 
@@ -94,145 +99,10 @@ DynamicStiffString::DynamicStiffString(NamedValueSet& parameters, double k) : k(
 
     Nprev = N;
     NfracPrev = Nfrac;
-
-#ifdef RECORD
-    uSave.open("uSaveDynamic.csv");
-    MvSave.open("MvSave.csv");
-    MwSave.open("MwSave.csv");
-    alfSave.open("alfSave.csv");
-    parametersToGoTo[0] = 1;
-    parameterChanged[0] = true;
-
-    excite(54);
-
-#endif
-
 }
 
 DynamicStiffString::~DynamicStiffString()
 {
-}
-
-void DynamicStiffString::paint(juce::Graphics& g)
-{
-    // clear the background
-    g.fillAll(Colours::white);
-
-    // draw the state
-    double length;
-    Path path = visualiseState(g, 100, length);
-    PathStrokeType pst(r / origR * 2.0);
-    //    const float dashLengths[2] = {3.0, 3.0};
-
-    double val = 1.5 - (rho / origRho - 0.5);
-
-    const int numDashPattern = 6;
-    float dashPattern[numDashPattern];
-    dashPattern[0] = 10.0 - 5.0 * val;
-    dashPattern[1] = 5.0 * val;
-    dashPattern[2] = 0;
-    dashPattern[3] = 5.0 * val;
-    dashPattern[4] = 10.0 - 5.0 * val;
-    dashPattern[5] = 0;
-
-    for (int i = 0; i < numDashPattern; ++i)
-    {
-        dashPattern[i] *= L / origL;
-    }
-    pst.createDashedStroke(path, path, &dashPattern[0], numDashPattern);
-    g.strokePath(path, pst);
-
-}
-
-Path DynamicStiffString::visualiseState(Graphics& g, double visualScaling, double& length)
-{
-    // String-boundaries are in the vertical middle of the component
-    double stringBoundaries = getHeight() / 2.0;
-
-    // initialise path
-    Path stringPath;
-
-    // start path
-
-    double spacing = 0.5 * L / origL * static_cast<double>(getWidth()) / Nfrac;
-    double startX = 0.5 * static_cast<double>(getWidth()) - 0.25 * static_cast<double>(getWidth()) * L / origL;
-    //    0.25 * static_cast<double>(getWidth()) - 0.5 * L / origL * static_cast<double>(getWidth());
-    double x = startX;
-    stringPath.startNewSubPath(x, -v[1][0] * visualScaling + stringBoundaries);
-    x += spacing;
-    for (int l = 1; l <= Mv; ++l)
-    {
-        // Needs to be -u, because a positive u would visually go down
-        float newY = -v[1][l] * visualScaling + stringBoundaries;
-
-        // if we get NAN values, make sure that we don't get an exception
-        if (isnan(newY))
-            newY = 0;
-
-        stringPath.lineTo(x, newY);
-        x += spacing;
-    }
-    x -= spacing;
-    x += alf;
-    for (int l = 0; l < Mw; ++l)
-    {
-        float newY = -w[1][l] * visualScaling + stringBoundaries;
-
-        // if we get NAN values, make sure that we don't get an exception
-        if (isnan(newY))
-            newY = 0;
-
-        stringPath.lineTo(x, newY);
-        x += spacing;
-
-    }
-    stringPath.lineTo(x, -w[1][Mw] * visualScaling + stringBoundaries);
-    length = x - startX;
-
-    // Draw boundary points //
-
-    double strokeVal = r / origR * 2.0;
-    AffineTransform trans;
-    double rotVal = 0.5 * (log2(T / origT) + 1.0) * MathConstants<double>::pi;
-
-    // Set colour based on Young's modulus
-    double val = log2(E / origE) * 255;
-    g.setColour(Colour::fromRGBA(Global::limit(val, 0, 255), Global::limit(-abs(val), 0, 255), Global::limit(-val, 0, 255), 255));
-
-    // Draw left boundary
-    trans = trans.rotation(-rotVal, startX, stringBoundaries);
-    g.addTransform(trans);
-    g.drawRoundedRectangle(startX - Global::boundaryEllRad + strokeVal,
-        stringBoundaries - Global::boundaryEllRad + strokeVal,
-        Global::boundaryEllRad * 2 - 2 * strokeVal,
-        Global::boundaryEllRad * 2 - 2 * strokeVal,
-        0.25 * Global::boundaryEllRad,
-        2.0 * strokeVal);
-
-    // Revert transformation
-    trans = trans.rotation(rotVal, startX, stringBoundaries);
-    g.addTransform(trans);
-
-    // Draw right boundary
-    trans = trans.rotation(rotVal, getWidth() - startX, stringBoundaries);
-    g.addTransform(trans);
-    g.drawRoundedRectangle(getWidth() - startX - Global::boundaryEllRad + strokeVal,
-        stringBoundaries - Global::boundaryEllRad + strokeVal,
-        Global::boundaryEllRad * 2 - 2 * strokeVal,
-        Global::boundaryEllRad * 2 - 2 * strokeVal,
-        0.25 * Global::boundaryEllRad,
-        2.0 * strokeVal);
-
-    // Revert transformation
-    trans = trans.rotation(-rotVal, getWidth() - startX, stringBoundaries);
-    g.addTransform(trans);
-
-    return stringPath;
-}
-
-void DynamicStiffString::resized()
-{
-
 }
 
 void DynamicStiffString::calculateScheme()
@@ -340,16 +210,6 @@ void DynamicStiffString::calculateScheme()
 
         }
     }
-#ifdef RECORD
-    for (int i = 0; i <= vStates[0].size(); ++i)
-        uSave << v[1][i] << ",";
-    for (int i = 0; i < Mw; ++i)
-        uSave << w[1][i] << ",";
-    uSave << w[1][Mw] << "\n;";
-#endif
-
-
-
 }
 
 void DynamicStiffString::updateStates()
@@ -367,17 +227,6 @@ void DynamicStiffString::updateStates()
 
     NfracPrev = Nfrac;
     Nprev = N;
-
-#ifdef RECORD
-    ++counter;
-    if (counter > 500)
-    {
-        uSave.close();
-        MvSave.close();
-        MwSave.close();
-        alfSave.close();
-    }
-#endif
 }
 
 void DynamicStiffString::excite(int loc)
@@ -396,26 +245,13 @@ void DynamicStiffString::excite(int loc)
         if (l + start > Mv)
             break;
 
-        v[1][l + start] += 0.5 * (1 - cos(2.0 * MathConstants<double>::pi * l / (width - 1.0)));
-        v[2][l + start] += 0.5 * (1 - cos(2.0 * MathConstants<double>::pi * l / (width - 1.0)));
+        v[1][l + start] += 0.5 * (1 - cos(2.0 * (double)M_PI * l / (width - 1.0)));
+        v[2][l + start] += 0.5 * (1 - cos(2.0 * (double)M_PI * l / (width - 1.0)));
     }
     // Disable the excitation flag to only excite once
     excitationFlag = false;
 }
 
-void DynamicStiffString::mouseDown(const MouseEvent& e)
-{
-    // Get the excitation location as a ratio between the x-location of the mouse-click and the width of the app
-    double startLoc = 0.5 * static_cast<double>(getWidth()) - 0.25 * static_cast<double>(getWidth()) * L / origL;
-
-    excitationLoc = (e.x - startLoc) / (0.5 * static_cast<double>(getWidth()) * L / origL);
-
-    if (excitationLoc < 0 || excitationLoc > 1)
-        return;
-
-    // Activate the excitation flag to be used by the MainComponent to excite the string
-    excitationFlag = true;
-}
 
 void DynamicStiffString::refreshParameter(int changedParameterIdx, double changedParameterValue)
 {
@@ -471,15 +307,15 @@ void DynamicStiffString::refreshCoefficients(bool init)
                 // The graph of N (y-axis) vs r (x-axis) is a negative parabola. For a change in N (either positive or negative, there are 4 possible r values. Here we're trying to find the one that corresponds to the one we're trying to find.
 
                 // r right side of parabola, increasing N
-                rVals[0] = sqrt((-bCoeffPlus + sqrt(bCoeffPlus * bCoeffPlus - 16.0 * E * k * k / rho * (4.0 * L * L * T * k * k) / (NfracNextPlus * NfracNextPlus * rho * MathConstants<double>::pi))) / (8.0 * (E * k * k / rho)));
+                rVals[0] = sqrt((-bCoeffPlus + sqrt(bCoeffPlus * bCoeffPlus - 16.0 * E * k * k / rho * (4.0 * L * L * T * k * k) / (NfracNextPlus * NfracNextPlus * rho * (double)M_PI))) / (8.0 * (E * k * k / rho)));
                 // r right side of parabola, decreasing N
-                rVals[1] = sqrt((-bCoeffMin + sqrt(bCoeffMin * bCoeffMin - 16.0 * E * k * k / rho * (4.0 * L * L * T * k * k) / (NfracNextMin * NfracNextMin * rho * MathConstants<double>::pi))) / (8.0 * (E * k * k / rho)));
+                rVals[1] = sqrt((-bCoeffMin + sqrt(bCoeffMin * bCoeffMin - 16.0 * E * k * k / rho * (4.0 * L * L * T * k * k) / (NfracNextMin * NfracNextMin * rho * (double)M_PI))) / (8.0 * (E * k * k / rho)));
 
                 // r left side of parabola, increasing N
-                rVals[2] = sqrt((-bCoeffPlus - sqrt(bCoeffPlus * bCoeffPlus - 16.0 * E * k * k / rho * (4.0 * L * L * T * k * k) / (NfracNextPlus * NfracNextPlus * rho * MathConstants<double>::pi))) / (8.0 * (E * k * k / rho)));
+                rVals[2] = sqrt((-bCoeffPlus - sqrt(bCoeffPlus * bCoeffPlus - 16.0 * E * k * k / rho * (4.0 * L * L * T * k * k) / (NfracNextPlus * NfracNextPlus * rho * (double)M_PI))) / (8.0 * (E * k * k / rho)));
 
                 // r left side of parabola, decreasing N
-                rVals[3] = sqrt((-bCoeffMin - sqrt(bCoeffMin * bCoeffMin - 16.0 * E * k * k / rho * (4.0 * L * L * T * k * k) / (NfracNextMin * NfracNextMin * rho * MathConstants<double>::pi))) / (8.0 * (E * k * k / rho)));
+                rVals[3] = sqrt((-bCoeffMin - sqrt(bCoeffMin * bCoeffMin - 16.0 * E * k * k / rho * (4.0 * L * L * T * k * k) / (NfracNextMin * NfracNextMin * rho * (double)M_PI))) / (8.0 * (E * k * k / rho)));
 
                 double rDiff = 1;
                 double rToGoTo = parametersToGoTo[i];
@@ -510,7 +346,7 @@ void DynamicStiffString::refreshCoefficients(bool init)
                 // if E = 0, bigger r means bigger N
                 NfracNext = Nfrac + (*parameterPtrs[i] > parametersToGoTo[i] ? -1 : 1) * NmaxChange;
 
-                paramDiffMax = abs((k * NfracNext * sqrt(T)) / (sqrt(rho) * sqrt(MathConstants<double>::pi * L * L - 4.0 * MathConstants<double>::pi * k * NfracNext * NfracNext * sigma1)) - r);
+                paramDiffMax = abs((k * NfracNext * sqrt(T)) / (sqrt(rho) * sqrt((double)M_PI * L * L - 4.0 * (double)M_PI * k * NfracNext * NfracNext * sigma1)) - r);
             }
 
         }
@@ -555,12 +391,11 @@ void DynamicStiffString::refreshCoefficients(bool init)
     }
 
     // if the parameters don't need refresh, return
-#ifndef RECORD
     if (!needsRefresh && !init)
         return;
-#endif
-    A = MathConstants<double>::pi * r * r;
-    I = MathConstants<double>::pi * r * r * r * r * 0.25;
+
+    A = (double)M_PI * r * r;
+    I = (double)M_PI * r * r * r * r * 0.25;
 
     // Calculate wave speed (squared)
     cSq = T / (rho * A);
@@ -584,12 +419,6 @@ void DynamicStiffString::refreshCoefficients(bool init)
         addRemovePoint();
 
     Mv = N - Mw;
-
-#ifdef RECORD
-    MvSave << Mv << ";\n";
-    MwSave << Mw << ";\n";
-    alfSave << alf << ";\n";
-#endif
 
     Iterm = (alf - 1.0) / (alf + 1.0);
 
@@ -621,7 +450,7 @@ void DynamicStiffString::refreshCoefficients(bool init)
 
 void DynamicStiffString::addRemovePoint()
 {
-    jassert(abs(N - Nprev) <= 1);
+    assert(abs(N - Nprev) <= 1);
     refreshCustomIp();
     if (N > Nprev)
     {
@@ -655,12 +484,4 @@ void DynamicStiffString::refreshCustomIp()
     customIp[1] = 2.0 * alf / (alf + 2.0);
     customIp[2] = 2.0 / (alf + 2.0);
     customIp[3] = -2.0 * alf / ((alf + 3.0) * (alf + 2.0));
-}
-
-bool DynamicStiffString::keyPressed(const KeyPress& key, Component* originatingComponent)
-{
-    if (key == KeyPress::spaceKey)
-        excitationFlag = true;
-
-    return true;
 }
