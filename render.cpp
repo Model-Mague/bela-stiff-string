@@ -16,7 +16,7 @@ Dynamic Stiff String implementation based on DAFx 2022 paper submission https://
 #define _USE_MATH_DEFINES
 
 // @HERE Uncomment this to run project on desktop
-#define DESKTOP_BUILD
+//#define DESKTOP_BUILD
 
 #ifndef DESKTOP_BUILD
 #include <Bela.h>
@@ -39,21 +39,21 @@ bool setup(BelaContext* context, void* userData)
 #endif
 {
 	DynamicStiffString::SimulationParameters parameters = {};
-	parameters.L = 1.0;
-	parameters.rho = 7850.0;
-	parameters.r = 0.0005;
-	parameters.T = 300.0;
-	parameters.E = 2e11;
-	parameters.sigma0 = 1.0;
-	parameters.sigma1 = 0.005;
+	parameters.L = 1.0f;
+	parameters.rho = 7850.0f;
+	parameters.r = 0.0005f;
+	parameters.T = 300.0f;
+	parameters.E = 2e11f;
+	parameters.sigma0 = 1.0f;
+	parameters.sigma1 = 0.005f;
 
 #ifdef DESKTOP_BUILD
-	double sampleRate = 44100.0;
+	float sampleRate = 44100.0;
 #else
-	double sampleRate = context->audioSampleRate;
+	float sampleRate = context->audioSampleRate;
 #endif
 
-	pDynamicStiffString = std::make_unique<DynamicStiffString>(parameters, 1.0 / sampleRate);
+	pDynamicStiffString = std::make_unique<DynamicStiffString>(parameters, 1.0f / sampleRate);
 	pDynamicStiffString->excite();
 
 	return true;
