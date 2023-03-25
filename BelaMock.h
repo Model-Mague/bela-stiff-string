@@ -1,5 +1,8 @@
 #pragma once
 #include <cstdint>
+#include <cstdarg>
+#include <iostream>
+#include <sstream>
 
 #define AUDIO_FRAMES 16
 #define ANALOG_FRAMES 8
@@ -96,3 +99,35 @@ static inline void analogWriteOnce(BelaContext* context, int frame, int channel,
  * \return Value of the digital input.
  */
 static inline int digitalRead(BelaContext* context, int frame, int channel) { return 0; }
+
+class Scope {
+public:
+	Scope() : m_nChannels(0) {}
+	void setup(unsigned int numChannels, float sampleRate) { m_nChannels = numChannels; }
+	void log(const float* values)
+	{
+		std::stringstream ss;
+		for (unsigned int i = 0; i < m_nChannels; i++) {
+			ss << i << ": " << values[i];
+			if (i != (m_nChannels - 1)) ss << " | ";
+		}
+		std::cout << ss.str() << std::endl;
+	}
+
+	void log(double chn1, ...)
+	{
+		std::stringstream ss;
+
+		va_list args;
+		va_start(args, chn1);
+		for (unsigned int i = 0; i < m_nChannels; i++) {
+			ss << i << ": " << (float)va_arg(args, double);
+			if (i != (m_nChannels - 1)) ss << " | ";
+		}
+		va_end(args);
+
+		std::cout << ss.str() << std::endl;
+	}
+private:
+	unsigned int m_nChannels;
+};

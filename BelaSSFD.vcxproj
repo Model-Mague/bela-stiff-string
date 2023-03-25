@@ -131,11 +131,13 @@
   <ItemGroup>
     <ClCompile Include="DynamicStiffString\DynamicStiffString.cpp" />
     <ClCompile Include="render.cpp" />
+    <ClCompile Include="Simulation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BelaMock.h" />
     <ClInclude Include="DynamicStiffString\DynamicStiffString.h" />
     <ClInclude Include="DynamicStiffString\Global.h" />
+    <ClInclude Include="Simulation.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -27,23 +27,28 @@ Dynamic Stiff String implementation based on DAFx 2022 paper submission https://
 
 #ifndef DESKTOP_BUILD
 #include <Bela.h>
+#include <libraries/Scope/Scope.h>
 #else
 #include "BelaMock.h"
 #include <chrono>
 #endif
 
 #include "DynamicStiffString/DynamicStiffString.h"
+#include "Simulation.h"
 
 #include <memory>
 #include <iostream>
 
-
 // Global variables
+Scope scope;
 std::unique_ptr<DynamicStiffString> pDynamicStiffString;
+std::unique_ptr<Simulation> pSimulation;
 
 
 bool setup(BelaContext* context, void* userData)
 {
+	scope.setup(Simulation::analogInputs, context->audioSampleRate);
+
 	DynamicStiffString::SimulationParameters parameters = {};
 	parameters.L = 1.0f;
 	parameters.rho = 7850.0f;
@@ -53,35 +58,47 @@ bool setup(BelaContext* context, void* userData)
 	parameters.sigma0 = 1.0f;
 	parameters.sigma1 = 0.005f;
 
-	float sampleRate = context->audioSampleRate;
-	pDynamicStiffString = std::make_unique<DynamicStiffString>(parameters, 1.0f / sampleRate);
+	float inverseSampleRate = 1.0f / context->audioSampleRate;
+	pDynamicStiffString = std::make_unique<DynamicStiffString>(parameters, inverseSampleRate);
+	pSimulation = std::make_unique<Simulation>(context);
 
 	return true;
 }
-
-
 
 void render(BelaContext* context, void* userData)
 {
 	for (unsigned int n = 0; n < context->audioFrames; n++)
 	{
-		if (digitalRead(context, 0, 15))
-		{
-			pDynamicStiffString->excite();
-		}
+		// 1. Read inputs
+		pSimulation->readInputs(context, n);
+
+		//if (digitalRead(context, 0, 15))
+		//{
+		//	pDynamicStiffString->excite();
+		//}
 
 		// @TODO: Handle parameter changes here
 		// pDynamicStiffString->refreshParameter(paramId, value);
 
+		// 2. Update calculations if needed
+
+		// if (parameterChanged) { ...
 		pDynamicStiffString->refreshCoefficients();
 		pDynamicStiffString->calculateScheme();
 		pDynamicStiffString->updateStates();
+		// }
 
+		// 3. Write outputs
+		pSimulation->writeOutputs(context, n);
+
+		// 4. Write out audio
 		float output = (float)pDynamicStiffString->getOutput();
 		for (unsigned int channel = 0; channel < context->audioOutChannels; channel++)
 		{
 			audioWrite(context, n, channel, Global::limit(output, -1.0, 1.0));
 		}
+
+		scope.log(pSimulation->getAnalogIn());
 	}
 }
 

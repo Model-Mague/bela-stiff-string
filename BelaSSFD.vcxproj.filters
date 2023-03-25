@@ -21,6 +21,9 @@
     <ClCompile Include="render.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Simulation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DynamicStiffString\DynamicStiffString.h">
@@ -30,6 +33,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="BelaMock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
