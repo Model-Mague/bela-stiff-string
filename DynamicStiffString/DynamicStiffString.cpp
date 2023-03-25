@@ -234,7 +234,10 @@ void DynamicStiffString::excite(int loc)
     float width = 10;
 
     // make sure we're not going out of bounds at the left boundary
-    int start = (loc == -1) ? static_cast<int>(std::max(floor((N + 1) * excitationLoc) - floor(width * 0.5f), 1.0f)) : loc;
+    float component = floor((N + 1) * excitationLoc) - floor(width * 0.5f); // @TODO: Verify return type
+    float greater = std::max(component, 1.0f);
+
+    int start = (loc == -1) ? static_cast<int>(greater) : loc;
 
     for (int l = 0; l < width; ++l)
     {

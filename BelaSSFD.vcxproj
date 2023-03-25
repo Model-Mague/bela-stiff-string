@@ -133,6 +133,7 @@
     <ClCompile Include="render.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BelaMock.h" />
     <ClInclude Include="DynamicStiffString\DynamicStiffString.h" />
     <ClInclude Include="DynamicStiffString\Global.h" />
   </ItemGroup>

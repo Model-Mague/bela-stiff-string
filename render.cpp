@@ -12,14 +12,24 @@ The first for loop cycles through 'audioFrames', the second through 'audioChanne
 Dynamic Stiff String implementation based on DAFx 2022 paper submission https://dafx2020.mdw.ac.at/proceedings/papers/DAFx20in22_paper_11.pdf
 "Real-Time Implementation of the Dynamic Stiff String using Finite-Difference Time-Domain Methods and the Dynamic Grid" by Silvin Willemsen and Stefania Serafin.
 
+@TODO list:
+1. Triggers to work (digital output)
+2. Recalculate parameters based on analog reads from channels 0-7
+3. Digital write to screen of currently-adjusted input; brighter light if input closer to max
+4. Potentially all params might need to get locked after a button is pressed // possibly multiple modes based on button
+
+
 */
 #define _USE_MATH_DEFINES
 
 // @HERE Uncomment this to run project on desktop
-//#define DESKTOP_BUILD
+#define DESKTOP_BUILD
 
 #ifndef DESKTOP_BUILD
 #include <Bela.h>
+#else
+#include "BelaMock.h"
+#include <chrono>
 #endif
 
 #include "DynamicStiffString/DynamicStiffString.h"
@@ -32,11 +42,7 @@ Dynamic Stiff String implementation based on DAFx 2022 paper submission https://
 std::unique_ptr<DynamicStiffString> pDynamicStiffString;
 
 
-#ifdef DESKTOP_BUILD
-bool setup()
-#else
 bool setup(BelaContext* context, void* userData)
-#endif
 {
 	DynamicStiffString::SimulationParameters parameters = {};
 	parameters.L = 1.0f;
@@ -47,36 +53,23 @@ bool setup(BelaContext* context, void* userData)
 	parameters.sigma0 = 1.0f;
 	parameters.sigma1 = 0.005f;
 
-#ifdef DESKTOP_BUILD
-	float sampleRate = 44100.0;
-#else
 	float sampleRate = context->audioSampleRate;
-#endif
-
 	pDynamicStiffString = std::make_unique<DynamicStiffString>(parameters, 1.0f / sampleRate);
-	pDynamicStiffString->excite();
 
 	return true;
 }
 
 
-#ifdef DESKTOP_BUILD
-int main(int argc, char** argv)
-#else
-void render(BelaContext* context, void* userData)
-#endif
-{
-#ifdef DESKTOP_BUILD
-	setup();
-#endif
 
-#ifdef DESKTOP_BUILD
-	for (unsigned int n = 0; n < 20; n++)
-	{
-#else
+void render(BelaContext* context, void* userData)
+{
 	for (unsigned int n = 0; n < context->audioFrames; n++)
 	{
-#endif
+		if (digitalRead(context, 0, 15))
+		{
+			pDynamicStiffString->excite();
+		}
+
 		// @TODO: Handle parameter changes here
 		// pDynamicStiffString->refreshParameter(paramId, value);
 
@@ -85,21 +78,45 @@ void render(BelaContext* context, void* userData)
 		pDynamicStiffString->updateStates();
 
 		float output = (float)pDynamicStiffString->getOutput();
-
-#ifdef DESKTOP_BUILD
-		std::cout << output << std::endl;
-#else
 		for (unsigned int channel = 0; channel < context->audioOutChannels; channel++)
 		{
 			audioWrite(context, n, channel, Global::limit(output, -1.0, 1.0));
 		}
-#endif
 	}
 }
 
-#ifndef DESKTOP_BUILD
 void cleanup(BelaContext* context, void* userData)
 {
 
+}
+
+#ifdef DESKTOP_BUILD
+int main(int argc, char** argv)
+{
+	std::unique_ptr<BelaContext> context = std::make_unique<BelaContext>();
+	setup(context.get(), nullptr);
+
+	// Max time we can spend producing a frame
+	const float secondsPerFrame = 1000.f / context->audioSampleRate;
+	const float microsecondsPerFrame = secondsPerFrame * 10000.f;
+
+	auto lastUpdate = std::chrono::system_clock::now();
+
+
+	// This loop is meant to run no faster than the real time constraint
+	while (true)
+	{
+		auto currentTime = std::chrono::system_clock::now();
+		auto deltaT = std::chrono::duration_cast<std::chrono::microseconds>(currentTime - lastUpdate).count();
+
+		// At 44.1kHz we need to produce 1 frame every 0.22ms
+		if (deltaT >= microsecondsPerFrame)
+		{
+			render(context.get(), nullptr);
+			lastUpdate = currentTime;
+		}
+	}
+	cleanup(context.get(), nullptr);
+	return 0;
 }
 #endif

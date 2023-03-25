@@ -53,8 +53,6 @@ public:
 
     void excite(int loc = -1);
 
-    bool shouldExcite() { return excitationFlag; };
-
     void addRemovePoint();
     void refreshCustomIp();
 

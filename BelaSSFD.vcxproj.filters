@@ -29,5 +29,8 @@
     <ClInclude Include="DynamicStiffString\Global.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="BelaMock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
