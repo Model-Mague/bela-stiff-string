@@ -1,4 +1,5 @@
 #pragma once
+#define _USE_MATH_DEFINES
 #include <cstdint>
 #include <cstdarg>
 #include <iostream>
@@ -16,12 +17,12 @@ struct BelaContext {
 	const uint32_t audioOutChannels = 2;
 	const uint32_t  analogInChannels = 8;
 	const uint32_t  analogOutChannels = 8;
-	float audioIn[AUDIO_FRAMES * 2]; // 2 channels
-	float audioOut[AUDIO_FRAMES * 2]; // 4 frames * 2 channels
+	float audioIn[AUDIO_FRAMES * 2] = {}; // 2 channels
+	float audioOut[AUDIO_FRAMES * 2] = {}; // 4 frames * 2 channels
 
 	// Analog I/O runs at half the sample rate of audio I/O
-	float analogIn[ANALOG_FRAMES * 8]; // 8 channels
-	float analogOut[ANALOG_FRAMES * 8]; // 8 channels
+	float analogIn[ANALOG_FRAMES * 8] = {}; // 8 channels
+	float analogOut[ANALOG_FRAMES * 8] = {}; // 8 channels
 
 	/// \brief Number of elapsed audio frames since the start of rendering.
 	///

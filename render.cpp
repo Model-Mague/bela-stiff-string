@@ -41,7 +41,7 @@ Dynamic Stiff String implementation based on DAFx 2022 paper submission https://
 
 // Global variables
 Scope scope;
-std::unique_ptr<DynamicStiffString> pDynamicStiffString;
+std::shared_ptr<DynamicStiffString> pDynamicStiffString;
 std::unique_ptr<Simulation> pSimulation;
 
 
@@ -59,7 +59,7 @@ bool setup(BelaContext* context, void* userData)
 	parameters.sigma1 = 0.005f;
 
 	float inverseSampleRate = 1.0f / context->audioSampleRate;
-	pDynamicStiffString = std::make_unique<DynamicStiffString>(parameters, inverseSampleRate);
+	pDynamicStiffString = std::make_shared<DynamicStiffString>(parameters, inverseSampleRate);
 	pSimulation = std::make_unique<Simulation>(context);
 
 	return true;
@@ -69,24 +69,15 @@ void render(BelaContext* context, void* userData)
 {
 	for (unsigned int n = 0; n < context->audioFrames; n++)
 	{
+#ifdef DESKTOP_BUILD
+		context->audioFramesElapsed++; // Bela does this automatically
+#endif
+
 		// 1. Read inputs
 		pSimulation->readInputs(context, n);
 
-		//if (digitalRead(context, 0, 15))
-		//{
-		//	pDynamicStiffString->excite();
-		//}
-
-		// @TODO: Handle parameter changes here
-		// pDynamicStiffString->refreshParameter(paramId, value);
-
 		// 2. Update calculations if needed
-
-		// if (parameterChanged) { ...
-		pDynamicStiffString->refreshCoefficients();
-		pDynamicStiffString->calculateScheme();
-		pDynamicStiffString->updateStates();
-		// }
+		pSimulation->update(context, pDynamicStiffString);
 
 		// 3. Write outputs
 		pSimulation->writeOutputs(context, n);
@@ -118,7 +109,6 @@ int main(int argc, char** argv)
 	const float microsecondsPerFrame = secondsPerFrame * 10000.f;
 
 	auto lastUpdate = std::chrono::system_clock::now();
-
 
 	// This loop is meant to run no faster than the real time constraint
 	while (true)
