@@ -39,25 +39,13 @@ Dynamic Stiff String implementation based on DAFx 2022 paper submission https://
 
 // Global variables
 Scope scope;
-std::shared_ptr<DynamicStiffString> pDynamicStiffString;
 std::unique_ptr<Simulation> pSimulation;
 
 
 bool setup(BelaContext* context, void* userData)
 {
-	scope.setup(Simulation::analogInputs, context->audioSampleRate);
+	scope.setup(Simulation::sAnalogInputCount, context->audioSampleRate);
 
-	DynamicStiffString::SimulationParameters parameters = {};
-	parameters.L = 1.0f;
-	parameters.rho = 7850.0f;
-	parameters.r = 0.0005f;
-	parameters.T = 300.0f;
-	parameters.E = 2e11f;
-	parameters.sigma0 = 1.0f;
-	parameters.sigma1 = 0.005f;
-
-	float inverseSampleRate = 1.0f / context->audioSampleRate;
-	pDynamicStiffString = std::make_shared<DynamicStiffString>(parameters, inverseSampleRate);
 	pSimulation = std::make_unique<Simulation>(context);
 
 	return true;
@@ -75,17 +63,13 @@ void render(BelaContext* context, void* userData)
 		pSimulation->readInputs(context, n);
 
 		// 2. Update calculations if needed
-		pSimulation->update(context, pDynamicStiffString);
+		pSimulation->update(context);
 
 		// 3. Write outputs
 		pSimulation->writeOutputs(context, n);
 
 		// 4. Write out audio
-		float output = (float)pDynamicStiffString->getOutput();
-		for (unsigned int channel = 0; channel < context->audioOutChannels; channel++)
-		{
-			audioWrite(context, n, channel, Global::limit(output, -1.0, 1.0));
-		}
+		pSimulation->writeAudio(context, n);
 
 		scope.log(pSimulation->getAnalogIn());
 	}

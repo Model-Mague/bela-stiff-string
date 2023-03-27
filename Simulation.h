@@ -6,11 +6,14 @@
 #include "Bela.h"
 #endif
 
+#include "AnalogInput.h"
 #include "DynamicStiffString/DynamicStiffString.h"
+
+#include <array>
 
 class Simulation {
 public:
-	static constexpr int analogInputs = 8;
+	static constexpr int sAnalogInputCount = 8;
 
 	enum class Button : size_t {
 		TRIGGER = 0,
@@ -20,29 +23,36 @@ public:
 	};
 
 	Simulation(BelaContext* context);
-	void readInputs(BelaContext* context, int nFrame);
-	void writeOutputs(BelaContext* context, int nFrame);
+	void readInputs(BelaContext* context, int frame);
+	void writeOutputs(BelaContext* context, int frame);
+	void writeAudio(BelaContext* context, int frame);
+
 	const float* getAnalogIn() { return m_analogIn; }
 	const float* getLfo() { return m_lfo; }
 	const float* getPhase() { return m_phase; }
-	const int getAnalogInputCount() { return analogInputs; }
+	const int getAnalogInputCount() { return sAnalogInputCount; }
 
-	void update(BelaContext* context, std::shared_ptr<DynamicStiffString> pDynamicStiffString); // Runs every audio frame
+	void update(BelaContext* context); // Runs every audio frame
 
 	bool isButtonReleased(const Button b) { return m_buttonPreviousState[(size_t)b] != 0 && m_buttonState[(size_t)b] == 0; }
 
 private:
+	std::unique_ptr<DynamicStiffString> m_pDynamicStiffString;
+	bool m_updateParameters;
+
 	int m_audioFramesPerAnalogFrame;
 	float m_inverseSampleRate;
 
-	float m_analogIn[analogInputs] = {};
-	float m_lfo[analogInputs] = {};
-	float m_phase[analogInputs] = {};
+	float m_analogIn[sAnalogInputCount] = {};
+	float m_lfo[sAnalogInputCount] = {};
+	float m_phase[sAnalogInputCount] = {};
 
 	float m_amplitude;
 	float m_frequency;
 
 	unsigned long long frame;
+
+	std::vector<AnalogInput> m_analogInputs;
 
 	int m_buttonPreviousState[4] = {}; // Last button state
 	int m_buttonState[4] = {}; // Current button state
