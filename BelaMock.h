@@ -132,3 +132,14 @@ public:
 private:
 	unsigned int m_nChannels;
 };
+
+// map()
+//
+// Scale an input value from one range to another. Works like its Wiring language equivalent.
+// x is the value to scale; in_min and in_max are the input range; out_min and out_max
+// are the output range.
+
+static inline float map(float x, float in_min, float in_max, float out_min, float out_max)
+{
+	return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}

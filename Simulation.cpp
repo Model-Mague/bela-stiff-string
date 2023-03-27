@@ -23,6 +23,17 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 	parameters.sigma1 = 0.005f;
 	m_pDynamicStiffString = std::make_unique<DynamicStiffString>(parameters, m_inverseSampleRate);
 
+	// Setup parameter ranges
+	std::vector<std::pair<float, float>> parameterRanges;
+	parameterRanges.reserve(8);
+	parameterRanges.push_back({ 0.1f, 2.0f }); // L
+	parameterRanges.push_back({ 0.1f, 2.0f }); // rho
+	parameterRanges.push_back({ 0.1f, 2.0f }); // r
+	parameterRanges.push_back({ 0.f, 2.0f }); // T
+	parameterRanges.push_back({ 1e9f, 4e13f }); // E
+	parameterRanges.push_back({ 0.f, 2.f }); // sigma0
+	parameterRanges.push_back({ Global::sig1min, 20.0f }); // sigma1
+
 	memset((void*)&m_buttonPreviousState, 0, 4);
 	memset((void*)&m_buttonState, 0, 4);
 	memset((void*)&m_lfo, 0, sAnalogInputCount * sizeof(float));
@@ -32,7 +43,7 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 	m_analogInputs.reserve(sAnalogInputCount);
 	for (int i = 0; i < 8; i++)
 	{
-		m_analogInputs.push_back(AnalogInput(i));
+		m_analogInputs.push_back(AnalogInput(i, parameterRanges[i]));
 	}
 
 	m_amplitude = 5;

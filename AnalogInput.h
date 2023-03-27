@@ -8,7 +8,7 @@
 
 class AnalogInput {
 public:
-	AnalogInput(const int channel);
+	AnalogInput(const int channel, const std::pair<float, float>& valueRange);
 
 	float read(BelaContext* context, const int frame);
 	float getCurrentValue() { return m_currentValue; }
@@ -18,6 +18,8 @@ public:
 
 private:
 	int m_channel;
+	const std::pair<float, float> m_valueRange;
+
 	float m_currentValue;
 	float m_previousValue;
 
