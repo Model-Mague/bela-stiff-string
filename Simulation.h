@@ -1,5 +1,11 @@
 #pragma once
+
+#ifdef DESKTOP_BUILD
 #include "BelaMock.h"
+#else
+#include "Bela.h"
+#endif
+
 #include "DynamicStiffString/DynamicStiffString.h"
 
 class Simulation {

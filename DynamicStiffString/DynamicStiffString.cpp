@@ -248,8 +248,6 @@ void DynamicStiffString::excite(int loc)
         v[1][l + start] += 0.5f * (1 - cos(2.0f * static_cast<float>(M_PI) * l / (width - 1.0f)));
         v[2][l + start] += 0.5f * (1 - cos(2.0f * static_cast<float>(M_PI) * l / (width - 1.0f)));
     }
-    // Disable the excitation flag to only excite once
-    excitationFlag = false;
 }
 
 

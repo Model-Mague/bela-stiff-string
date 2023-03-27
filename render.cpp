@@ -22,9 +22,7 @@ Dynamic Stiff String implementation based on DAFx 2022 paper submission https://
 */
 #define _USE_MATH_DEFINES
 
-// @HERE Uncomment this to run project on desktop
-#define DESKTOP_BUILD
-
+// The DESKTOP_BUILD preprocessor definition will be added if compiling with VS
 #ifndef DESKTOP_BUILD
 #include <Bela.h>
 #include <libraries/Scope/Scope.h>

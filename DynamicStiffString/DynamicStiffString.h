@@ -92,9 +92,6 @@ private:
     */
     float Adiv, B0, Bss, B1, B2, C0, C1, S0, S1;
 
-    // flag to tell MainComponent whether to excite the scheme or not
-    bool excitationFlag = false;
-
     // initialise location of excitation
     float excitationLoc = 0.22f;
 
