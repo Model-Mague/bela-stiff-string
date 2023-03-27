@@ -36,6 +36,8 @@ public:
 
 	bool isButtonReleased(const Button b) { return m_buttonPreviousState[(size_t)b] != 0 && m_buttonState[(size_t)b] == 0; }
 
+	std::string getCalibrationResults();
+
 private:
 	std::unique_ptr<DynamicStiffString> m_pDynamicStiffString;
 	bool m_updateParameters;

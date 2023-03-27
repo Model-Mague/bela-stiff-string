@@ -2,6 +2,7 @@
 
 #define _USE_MATH_DEFINES
 #include <cmath>
+#include <tuple>
 
 #define INTERACTION_DELAY 1000 // frames
 
@@ -62,6 +63,18 @@ void Simulation::update(BelaContext* context)
 		if (m_phase[channel] > M_PI)
 			m_phase[channel] -= 2.0f * (float)M_PI;
 	}
+}
+
+std::string Simulation::getCalibrationResults()
+{
+	std::stringstream ss;
+	for (int i = 0; i < m_analogInputs.size(); i++)
+	{
+		float minValue, maxValue;
+		std::tie(minValue, maxValue) = m_analogInputs[i].getValueRange();
+		ss << "Pot " << i << " [" << minValue << ", " << maxValue << "]" << std::endl;
+	}
+	return ss.str();
 }
 
 void Simulation::readInputs(BelaContext* context, int frame)

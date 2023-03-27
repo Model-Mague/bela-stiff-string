@@ -77,7 +77,7 @@ void render(BelaContext* context, void* userData)
 
 void cleanup(BelaContext* context, void* userData)
 {
-
+	std::cout << pSimulation->getCalibrationResults();
 }
 
 #ifdef DESKTOP_BUILD

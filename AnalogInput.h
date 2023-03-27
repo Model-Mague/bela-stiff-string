@@ -14,8 +14,15 @@ public:
 	float getCurrentValue() { return m_currentValue; }
 	float hasChanged() { return m_currentValue != m_previousValue; }
 
+	std::pair<float, float> getValueRange() { return std::make_pair(m_minValue, m_maxValue); }
+
 private:
 	int m_channel;
 	float m_currentValue;
 	float m_previousValue;
+
+	// Calibration
+	bool m_calibrate = 0;
+	float m_maxValue;
+	float m_minValue;
 };
