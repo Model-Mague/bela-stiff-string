@@ -40,6 +40,7 @@ public:
 
 private:
 	std::unique_ptr<DynamicStiffString> m_pDynamicStiffString;
+	float m_excitationLoc;
 	bool m_updateParameters;
 
 	int m_audioFramesPerAnalogFrame;

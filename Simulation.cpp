@@ -6,7 +6,7 @@
 
 #define INTERACTION_DELAY 1000 // frames
 
-Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1f), m_updateParameters(true)
+Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1f), m_updateParameters(true), m_excitationLoc(-1.f)
 {
 	m_inverseSampleRate = 1.0f / context->audioSampleRate;
 	if (context->analogFrames)
@@ -33,6 +33,7 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 	parameterRanges.push_back({ 1e9f, 4e13f }); // E
 	parameterRanges.push_back({ 0.f, 2.f }); // sigma0
 	parameterRanges.push_back({ Global::sig1min, 20.0f }); // sigma1
+	parameterRanges.push_back({ 0.f, 100.f }); // loc (string excite position)
 
 	memset((void*)&m_buttonPreviousState, 0, 4);
 	memset((void*)&m_buttonState, 0, 4);
@@ -64,7 +65,7 @@ void Simulation::update(BelaContext* context)
 	// 2. Handle trigger button (should probably be last)
 	if (isButtonReleased(Button::TRIGGER))
 	{
-		m_pDynamicStiffString->excite();
+		m_pDynamicStiffString->excite(m_excitationLoc);
 	}
 
 	// 3. Update phase
@@ -95,10 +96,16 @@ void Simulation::readInputs(BelaContext* context, int frame)
 	{
 		auto& analogIn = m_analogInputs[channel];
 		m_analogIn[channel] = analogIn.read(context, frame);
-		if (channel > 0 && analogIn.hasChanged())
+		if (analogIn.hasChanged())
 		{
-			m_pDynamicStiffString->refreshParameter(channel, m_analogIn[channel]);
-			m_updateParameters = true;
+			if (channel != 8)
+			{
+				m_pDynamicStiffString->refreshParameter(channel, m_analogIn[channel]);
+				m_updateParameters = true;
+			} else {
+				m_excitationLoc = m_analogIn[channel];
+			}
+
 		}
 	}
 
