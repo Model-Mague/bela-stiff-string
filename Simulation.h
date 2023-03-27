@@ -23,10 +23,7 @@ public:
 
 	void update(BelaContext* context, std::shared_ptr<DynamicStiffString> pDynamicStiffString); // Runs every audio frame
 
-	bool isTriggerPressed() { return m_buttonPressed[(size_t)Button::TRIGGER]; }
-	bool isModePressed() { return m_buttonPressed[(size_t)Button::MODE]; }
-	bool isUpPressed() { return m_buttonPressed[(size_t)Button::UP]; }
-	bool isDownPressed() { return m_buttonPressed[(size_t)Button::DOWN]; }
+	bool isButtonReleased(const Button b) { return m_buttonPreviousState[(size_t)b] != 0 && m_buttonState[(size_t)b] == 0; }
 
 private:
 	int m_audioFramesPerAnalogFrame;
@@ -41,6 +38,7 @@ private:
 
 	unsigned long long frame;
 
-	bool m_buttonPressed[4] = {}; // Buttons pressed at this time
-	uint64_t m_buttonLastActivated[4] = {}; // Timestamp of when the button was last activated
+	int m_buttonPreviousState[4] = {}; // Last button state
+	int m_buttonState[4] = {}; // Current button state
+	//uint64_t m_buttonLastActivated[4] = {}; // Timestamp of when the button was last activated
 };

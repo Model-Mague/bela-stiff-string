@@ -5,13 +5,14 @@
 
 #define INTERACTION_DELAY 1000 // frames
 
-Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1f), m_buttonPressed()
+Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1f)
 {
 	m_inverseSampleRate = 1.0f / context->audioSampleRate;
 	if (context->analogFrames)
 		m_audioFramesPerAnalogFrame = context->audioFrames / context->analogFrames;
 
-	memset((void*)&m_buttonPressed, 0, 4);
+	memset((void*)&m_buttonPreviousState, 0, 4);
+	memset((void*)&m_buttonState, 0, 4);
 	memset((void*)&m_analogIn, 0, analogInputs * sizeof(float));
 	memset((void*)&m_lfo, 0, analogInputs * sizeof(float));
 	memset((void*)&m_phase, 0, analogInputs * sizeof(float));
@@ -32,16 +33,9 @@ void Simulation::update(BelaContext* context, std::shared_ptr<DynamicStiffString
 	// }
 
 	// 2. Handle trigger button (should probably be last)
-	if (isTriggerPressed())
+	if (isButtonReleased(Button::TRIGGER))
 	{
-		const auto lastActivated = m_buttonLastActivated[(size_t)Button::TRIGGER];
-		if (((context->audioFramesElapsed - lastActivated) > INTERACTION_DELAY) || (lastActivated == 0))
-		{
-			m_buttonLastActivated[(size_t)Button::TRIGGER] = context->audioFramesElapsed;
-
-			// Trigger the stiff string
-			pDynamicStiffString->excite();
-		}
+		pDynamicStiffString->excite();
 	}
 
 	// 3. Update phase
@@ -64,10 +58,12 @@ void Simulation::readInputs(BelaContext* context, int nFrame)
 	// Buttons, left to right
 	// 15, 14, 13, 12
 	// Trigger, Mode, Up, Down
-	m_buttonPressed[(size_t)Simulation::Button::TRIGGER] = (bool)digitalRead(context, nFrame, 15);
-	m_buttonPressed[(size_t)Simulation::Button::MODE] = (bool)digitalRead(context, nFrame, 14);
-	m_buttonPressed[(size_t)Simulation::Button::UP] = (bool)digitalRead(context, nFrame, 13);
-	m_buttonPressed[(size_t)Simulation::Button::DOWN] = (bool)digitalRead(context, nFrame, 12);
+	static int buttonChannel[4] = { 15, 14, 13, 12 };
+	for (const auto& button : { Button::TRIGGER, Button::MODE, Button::UP, Button::DOWN })
+	{
+		m_buttonPreviousState[(size_t)button] = m_buttonState[(size_t)button];
+		m_buttonState[(size_t)button] = digitalRead(context, nFrame, buttonChannel[(size_t)button]);
+	}
 }
 
 void Simulation::writeOutputs(BelaContext* context, int nFrame)
