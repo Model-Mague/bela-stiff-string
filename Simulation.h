@@ -10,6 +10,7 @@
 #include "DynamicStiffString/DynamicStiffString.h"
 
 #include <array>
+#include <memory>
 
 class Simulation {
 public:

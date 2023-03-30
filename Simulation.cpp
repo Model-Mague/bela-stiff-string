@@ -3,6 +3,8 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 #include <tuple>
+#include <cstring>
+#include <sstream>
 
 #define INTERACTION_DELAY 1000 // frames
 

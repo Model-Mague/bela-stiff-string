@@ -6,6 +6,8 @@
 #include "Bela.h"
 #endif
 
+#include <utility>
+
 class AnalogInput {
 public:
 	AnalogInput(const int channel, const std::pair<float, float>& valueRange);
