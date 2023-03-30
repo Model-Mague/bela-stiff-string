@@ -37,11 +37,6 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 	parameterRanges.push_back({ Global::sig1min, 20.0f }); // sigma1
 	parameterRanges.push_back({ 0.f, 100.f }); // loc (string excite position)
 
-	memset((void*)&m_buttonPreviousState, 0, 4);
-	memset((void*)&m_buttonState, 0, 4);
-	memset((void*)&m_lfo, 0, sAnalogInputCount * sizeof(float));
-	memset((void*)&m_phase, 0, sAnalogInputCount * sizeof(float));
-
 	// Setup analog inputs
 	m_analogInputs.reserve(sAnalogInputCount);
 	for (int i = 0; i < 8; i++)
@@ -58,6 +53,7 @@ void Simulation::update(BelaContext* context)
 	// 1. Handle parameter changes
 	if (m_updateParameters)
 	{
+		rt_printf("Updating parameters\n");
 		m_pDynamicStiffString->refreshCoefficients();
 		m_pDynamicStiffString->calculateScheme();
 		m_pDynamicStiffString->updateStates();
@@ -67,6 +63,7 @@ void Simulation::update(BelaContext* context)
 	// 2. Handle trigger button (should probably be last)
 	if (isButtonReleased(Button::TRIGGER))
 	{
+		rt_printf("Trigger button released\n");
 		m_pDynamicStiffString->excite(m_excitationLoc);
 	}
 
@@ -100,12 +97,14 @@ void Simulation::readInputs(BelaContext* context, int frame)
 		m_analogIn[channel] = analogIn.read(context, frame);
 		if (analogIn.hasChanged())
 		{
-			if (channel != 8)
+			rt_printf("New analog input at channel %d: %f\n", channel, m_analogIn[channel]);
+			if (channel != 7)
 			{
 				m_pDynamicStiffString->refreshParameter(channel, m_analogIn[channel]);
 				m_updateParameters = true;
 			} else {
-				m_excitationLoc = m_analogIn[channel];
+				// @TODO: For now let's leave out excitation location because the 0~1 range doesn't work
+				//m_excitationLoc = m_analogIn[channel];
 			}
 
 		}

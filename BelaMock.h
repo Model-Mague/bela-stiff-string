@@ -46,7 +46,7 @@ struct BelaContext {
  * (context->analogInChannels - 1), typically 0 to 7 by default.
  * \return Value of the analog input, range 0 to 1.
  */
-static inline float analogRead(BelaContext* context, int frame, int channel) { return 0.f; }
+static inline float analogRead(BelaContext* context, int frame, int channel) { return rand() > (RAND_MAX - 10); }
 
 /**
  * \brief Write an audio output, specifying the frame number (when to write) and the channel.
@@ -99,7 +99,7 @@ static inline void analogWriteOnce(BelaContext* context, int frame, int channel,
  * board you have.
  * \return Value of the digital input.
  */
-static inline int digitalRead(BelaContext* context, int frame, int channel) { return 0; }
+static inline int digitalRead(BelaContext* context, int frame, int channel) { return rand() > (RAND_MAX-1); }
 
 class Scope {
 public:
@@ -142,4 +142,16 @@ private:
 static inline float map(float x, float in_min, float in_max, float out_min, float out_max)
 {
 	return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
+static int rt_printf(const char* format, ...)
+{
+	va_list arg;
+	int done;
+
+	va_start(arg, format);
+	done = vfprintf(stdout, format, arg);
+	va_end(arg);
+
+	return done;
 }
