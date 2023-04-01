@@ -20,7 +20,7 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 	parameters.rho = 7850.0f;
 	parameters.r = 0.0005f;
 	parameters.T = 300.0f;
-	parameters.E = 2e11f;
+	parameters.E = 200000000000.f;
 	parameters.sigma0 = 1.0f;
 	parameters.sigma1 = 0.005f;
 	m_pDynamicStiffString = std::make_unique<DynamicStiffString>(parameters, m_inverseSampleRate);
@@ -28,14 +28,14 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 	// Setup parameter ranges
 	std::vector<std::pair<float, float>> parameterRanges;
 	parameterRanges.reserve(8);
-	parameterRanges.push_back({ 0.1f, 2.0f }); // L
-	parameterRanges.push_back({ 0.1f, 2.0f }); // rho
-	parameterRanges.push_back({ 0.1f, 2.0f }); // r
-	parameterRanges.push_back({ 0.f, 2.0f }); // T
-	parameterRanges.push_back({ 1e9f, 4e13f }); // E
+	parameterRanges.push_back({ 0.5f, 2.0f }); // L
+	parameterRanges.push_back({ 3925.0f, 15700.0f }); // rho
+	parameterRanges.push_back({ 0.00025f, 0.001f }); // r
+	parameterRanges.push_back({ 150.f, 600.0f }); // T
+	parameterRanges.push_back({ 0, 400000000000.f }); // E
 	parameterRanges.push_back({ 0.f, 2.f }); // sigma0
-	parameterRanges.push_back({ Global::sig1min, 20.0f }); // sigma1
-	parameterRanges.push_back({ 0.f, 100.f }); // loc (string excite position)
+	parameterRanges.push_back({ 0.0002f, 0.01f }); // sigma1
+	parameterRanges.push_back({ 0.f, 1.f }); // loc (string excite position)
 
 	// Setup analog inputs
 	m_analogInputs.reserve(sAnalogInputCount);
