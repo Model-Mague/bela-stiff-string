@@ -226,7 +226,7 @@ void DynamicStiffString::updateStates()
     Nprev = N;
 }
 
-void DynamicStiffString::excite(int loc)
+void DynamicStiffString::excite(float excitationLoc)
 {
     //// Arbitrary excitation function (raised cosine) ////
 
@@ -237,7 +237,7 @@ void DynamicStiffString::excite(int loc)
     float component = floor((N + 1) * excitationLoc) - floor(width * 0.5f); // @TODO: Verify return type
     float greater = std::max(component, 1.0f);
 
-    int start = (loc == -1) ? static_cast<int>(greater) : loc;
+    int start = static_cast<int>(greater);
 
     for (int l = 0; l < width; ++l)
     {

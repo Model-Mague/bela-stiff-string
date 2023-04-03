@@ -51,7 +51,7 @@ public:
         return v[1][6]; // set to be fixed due to varying N
     }
 
-    void excite(int loc = -1);
+    void excite(float excitationLoc);
 
     void addRemovePoint();
     void refreshCustomIp();
@@ -91,9 +91,6 @@ private:
         - S for precalculated sigma terms
     */
     float Adiv, B0, Bss, B1, B2, C0, C1, S0, S1;
-
-    // initialise location of excitation
-    float excitationLoc = 0.22f;
 
     bool clamped = true;
 

@@ -8,6 +8,7 @@
 
 #define INTERACTION_DELAY 1000 // frames
 
+
 Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1f), m_updateParameters(true), m_excitationLoc(-1.f)
 {
 	m_inverseSampleRate = 1.0f / context->audioSampleRate;
@@ -32,7 +33,7 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 	parameterRanges.push_back({ 3925.0f, 15700.0f }); // rho
 	parameterRanges.push_back({ 0.00025f, 0.001f }); // r
 	parameterRanges.push_back({ 150.f, 600.0f }); // T
-	parameterRanges.push_back({ 0, 400000000000.f }); // E
+	parameterRanges.push_back({ 0.f, 400000000000.f }); // E
 	parameterRanges.push_back({ 0.f, 2.f }); // sigma0
 	parameterRanges.push_back({ 0.0002f, 0.01f }); // sigma1
 	parameterRanges.push_back({ 0.f, 1.f }); // loc (string excite position)
@@ -53,7 +54,7 @@ void Simulation::update(BelaContext* context)
 	// 1. Handle parameter changes
 	if (m_updateParameters)
 	{
-		rt_printf("Updating parameters\n");
+		//rt_printf("Updating parameters\n");
 		m_pDynamicStiffString->refreshCoefficients();
 		m_pDynamicStiffString->calculateScheme();
 		m_pDynamicStiffString->updateStates();
@@ -63,7 +64,7 @@ void Simulation::update(BelaContext* context)
 	// 2. Handle trigger button (should probably be last)
 	if (isButtonReleased(Button::TRIGGER))
 	{
-		rt_printf("Trigger button released\n");
+		//rt_printf("Trigger button released\n");
 		m_pDynamicStiffString->excite(m_excitationLoc);
 	}
 
@@ -97,14 +98,13 @@ void Simulation::readInputs(BelaContext* context, int frame)
 		m_analogIn[channel] = analogIn.read(context, frame);
 		if (analogIn.hasChanged())
 		{
-			rt_printf("New analog input at channel %d: %f\n", channel, m_analogIn[channel]);
-			if (channel != 7)
+			//rt_printf("New analog input at channel %d: %f\n", channel, m_analogIn[channel]);
+			if (channel == 7)
 			{
+				m_excitationLoc = m_analogIn[channel];
+			} else {
 				m_pDynamicStiffString->refreshParameter(channel, m_analogIn[channel]);
 				m_updateParameters = true;
-			} else {
-				// @TODO: For now let's leave out excitation location because the 0~1 range doesn't work
-				//m_excitationLoc = m_analogIn[channel];
 			}
 
 		}
