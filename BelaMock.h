@@ -84,7 +84,6 @@ static inline void audioWrite(BelaContext* context, int frame, int channel, floa
  */
 static inline void analogWriteOnce(BelaContext* context, int frame, int channel, float value) {}
 
-
 /**
  * \brief Read a digital input, specifying the frame number (when to read) and the pin.
  *
@@ -100,6 +99,27 @@ static inline void analogWriteOnce(BelaContext* context, int frame, int channel,
  * \return Value of the digital input.
  */
 static inline int digitalRead(BelaContext* context, int frame, int channel) { return rand() > (RAND_MAX-1); }
+
+/**
+ * \brief Write a digital output, specifying the frame number (when to write) and the pin.
+ *
+ * This function sets the value of a digital output, at the time indicated by \c frame.
+ * A value of 0 sets the pin low; any other value sets the pin high (3.3V).
+ *
+ * Unlike digitalWrite(), the value written will affect \b only the frame specified, with
+ * future values unchanged. This is faster than digitalWrite() so is better suited
+ * to applications where every frame will be written to a different value.
+ *
+ * \param context The I/O data structure which is passed by Bela to render().
+ * \param frame Which frame (i.e. what time) to write the digital output. Valid values range
+ * from 0 to (context->digitalFrames - 1).
+ * \param channel Which digital output to write. 16 pins across the headers are
+ * available. Check your board diagram to know where they are on the specific
+ * board you have.
+ * \param value Value to write to the output.
+ */
+static inline void digitalWriteOnce(BelaContext* context, int frame, int channel, int value) {}
+
 
 class Scope {
 public:

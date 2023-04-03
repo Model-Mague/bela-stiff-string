@@ -1,5 +1,7 @@
 #include "Simulation.h"
 
+#include "LEDScreen.h"
+
 #define _USE_MATH_DEFINES
 #include <cmath>
 #include <tuple>
