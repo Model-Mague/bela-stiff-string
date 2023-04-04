@@ -41,6 +41,7 @@ Simulation::Simulation(BelaContext* context) : m_excitationLoc(-1.f), m_amplitud
 	for (int i = 0; i < 8; i++)
 	{
 		m_analogInputs.push_back(AnalogInput(i, parameterRanges[i]));
+		m_channelsToUpdate.insert(i); // Force update to read initial values
 	}
 
 	m_amplitude = 5;

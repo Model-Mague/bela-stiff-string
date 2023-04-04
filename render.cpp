@@ -58,9 +58,6 @@ void render(BelaContext* context, void* userData)
 #ifdef DESKTOP_BUILD
 		context->audioFramesElapsed++; // Bela does this automatically
 #endif
-		// @TODO: Sort out analog frames vs digital frames
-		// Analog reads should be happening at a different rate
-
 		// 1. Read inputs
 		pSimulation->readInputs(context, n);
 
