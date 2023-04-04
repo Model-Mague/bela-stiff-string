@@ -41,7 +41,7 @@ Simulation::Simulation(BelaContext* context) : m_excitationLoc(-1.f), m_amplitud
 	for (int i = 0; i < 8; i++)
 	{
 		m_analogInputs.push_back(AnalogInput(i, parameterRanges[i]));
-		m_channelsToUpdate.insert(i); // Force update to read initial values
+		if (i != 7) m_channelsToUpdate.insert(i); // Force update to read initial values
 	}
 
 	m_amplitude = 5;
@@ -108,18 +108,17 @@ void Simulation::readInputs(BelaContext* context, int frame)
 		{
 			auto& analogIn = m_analogInputs[channel];
 			m_rangeMappedInputs[channel] = analogIn.read(context, analogFrame);
-			if (analogIn.hasChanged())
+			// We will always update channel 7 (excitation loc) as this param is only effective during excitation
+			// So there is no risk of too frequent updates
+			if (channel == 7)
+			{
+				m_excitationLoc = m_rangeMappedInputs[channel];
+			}
+			else if (analogIn.hasChanged())
 			{
 				//rt_printf("New analog input at channel %d: %f\n", channel, m_rangeMappedInputs[channel]);
-				if (channel == 7)
-				{
-					m_excitationLoc = m_rangeMappedInputs[channel];
-				}
-				else
-				{
-					// Register channel as one that needs its value read and updated
-					m_channelsToUpdate.insert(channel);
-				}
+				// Register channel as one that needs its value read and updated
+				m_channelsToUpdate.insert(channel);
 			}
 		}
 	}
