@@ -6,10 +6,8 @@
 #include <cstring>
 #include <sstream>
 
-#define INTERACTION_DELAY 1000 // frames
 
-
-Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1f), m_updateParameters(true), m_excitationLoc(-1.f)
+Simulation::Simulation(BelaContext* context) : m_excitationLoc(-1.f), m_amplitude(5.f), m_frequency(0.1f)
 {
 	m_inverseSampleRate = 1.0f / context->audioSampleRate;
 	if (context->analogFrames)
@@ -51,24 +49,35 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 
 void Simulation::update(BelaContext* context)
 {
-	// 1. Handle parameter changes
-	if (m_updateParameters)
-	{
-		//rt_printf("Updating parameters\n");
-		m_pDynamicStiffString->refreshCoefficients();
-		m_pDynamicStiffString->calculateScheme();
-		m_pDynamicStiffString->updateStates();
-		m_updateParameters = false;
-	}
-
-	// 2. Handle trigger button (should probably be last)
+	// 1. Handle trigger button (should probably be last)
 	if (isButtonReleased(Button::TRIGGER))
 	{
-		//rt_printf("Trigger button released\n");
 		m_pDynamicStiffString->excite(m_excitationLoc);
 	}
 
-	// 3. Update phase
+	// 2. Process parameter changes
+	if (!m_channelsToUpdate.empty() && (m_updateFrameCounter == 0))
+	{
+		// Process update queue
+		for (int channel: m_channelsToUpdate)
+		{
+			rt_printf("Updating channel %d with value %f\n", channel, m_rangeMappedInputs[channel]);
+			m_pDynamicStiffString->refreshParameter(channel, m_rangeMappedInputs[channel]);
+		}
+		m_channelsToUpdate.clear();
+		m_updateFrameCounter = sDSSUpdateRate;
+	}
+	else
+	{
+		m_updateFrameCounter = std::max(0, m_updateFrameCounter - 1);
+	}
+
+	// 3. Update DSS simulation
+	m_pDynamicStiffString->refreshCoefficients();
+	m_pDynamicStiffString->calculateScheme();
+	m_pDynamicStiffString->updateStates();
+
+	// 4. Update LFO phase
 	for (int channel = 0; channel < sAnalogInputCount; channel++)
 	{
 		m_phase[channel] += 2.0f * (float)M_PI * m_frequency * m_inverseSampleRate;
@@ -91,22 +100,26 @@ std::string Simulation::getCalibrationResults()
 
 void Simulation::readInputs(BelaContext* context, int frame)
 {
-	frame = frame / m_audioFramesPerAnalogFrame;
-	for (int channel = 0; channel < sAnalogInputCount; channel++) // Start with channels 1-8; 0 is reserved for trigger
+	if (!(frame % m_audioFramesPerAnalogFrame))
 	{
-		auto& analogIn = m_analogInputs[channel];
-		m_analogIn[channel] = analogIn.read(context, frame);
-		if (analogIn.hasChanged())
+		const int analogFrame = frame / m_audioFramesPerAnalogFrame;
+		for (int channel = 0; channel < sAnalogInputCount; channel++) // Start with channels 1-8; 0 is reserved for trigger
 		{
-			//rt_printf("New analog input at channel %d: %f\n", channel, m_analogIn[channel]);
-			if (channel == 7)
+			auto& analogIn = m_analogInputs[channel];
+			m_rangeMappedInputs[channel] = analogIn.read(context, analogFrame);
+			if (analogIn.hasChanged())
 			{
-				m_excitationLoc = m_analogIn[channel];
-			} else {
-				m_pDynamicStiffString->refreshParameter(channel, m_analogIn[channel]);
-				m_updateParameters = true;
+				//rt_printf("New analog input at channel %d: %f\n", channel, m_rangeMappedInputs[channel]);
+				if (channel == 7)
+				{
+					m_excitationLoc = m_rangeMappedInputs[channel];
+				}
+				else
+				{
+					// Register channel as one that needs its value read and updated
+					m_channelsToUpdate.insert(channel);
+				}
 			}
-
 		}
 	}
 

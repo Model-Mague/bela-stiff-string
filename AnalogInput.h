@@ -14,7 +14,7 @@ public:
 
 	float read(BelaContext* context, const int frame);
 	float getCurrentValue() { return m_currentValue; }
-	float hasChanged() { return m_currentValue != m_previousValue; }
+	bool hasChanged() { return m_hasChanged; }
 
 	std::pair<float, float> getValueRange() { return std::make_pair(m_minValue, m_maxValue); }
 
@@ -22,11 +22,11 @@ private:
 	int m_channel;
 	const std::pair<float, float> m_valueRange;
 
+	bool m_hasChanged;
 	float m_currentValue;
-	float m_previousValue;
 
 	// Calibration
-	bool m_calibrate = 0;
+	bool m_calibrate = 1;
 	float m_maxValue;
 	float m_minValue;
 };
