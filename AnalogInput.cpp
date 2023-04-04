@@ -2,15 +2,16 @@
 
 #include <cmath>
 
-AnalogInput::AnalogInput(const int channel, const std::pair<float, float>& valueRange)
-	: m_channel(channel), m_valueRange(valueRange), m_hasChanged(false), m_currentValue(0.f), m_maxValue(-1000.f), m_minValue(1000.f)
+AnalogInput::AnalogInput(const int channel, const std::pair<float, float>& valueRange, const float readThreshold)
+	: m_channel(channel), m_valueRange(valueRange), m_readThreshold(readThreshold),
+	m_hasChanged(false), m_currentValue(0.f), m_maxValue(-1000.f), m_minValue(1000.f)
 {
 }
 
 float AnalogInput::read(BelaContext* context, const int frame)
 {
 	float read = analogRead(context, frame, m_channel);
-	if (fabs(read - m_currentValue) > 0.005f)
+	if (fabs(read - m_currentValue) > m_readThreshold)
 	{
 		m_hasChanged = true;
 		m_currentValue = read;

@@ -10,7 +10,7 @@
 
 class AnalogInput {
 public:
-	AnalogInput(const int channel, const std::pair<float, float>& valueRange);
+	AnalogInput(const int channel, const std::pair<float, float>& valueRange, const float readThreshold = 0.005f);
 
 	float read(BelaContext* context, const int frame);
 	float getCurrentValue() { return m_currentValue; }
@@ -21,6 +21,7 @@ public:
 private:
 	int m_channel;
 	const std::pair<float, float> m_valueRange;
+	float m_readThreshold;
 
 	bool m_hasChanged;
 	float m_currentValue;
