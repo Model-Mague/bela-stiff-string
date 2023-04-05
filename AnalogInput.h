@@ -12,8 +12,11 @@ class AnalogInput {
 public:
 	AnalogInput(const int channel, const std::pair<float, float>& valueRange, const float readThreshold = 0.005f);
 
-	float read(BelaContext* context, const int frame);
-	float getCurrentValue() { return m_currentValue; }
+	void read(BelaContext* context, const int frame);
+
+	float getCurrentValue() const { return m_currentValue; }
+	float getCurrentValueMapped() const;
+
 	bool hasChanged() { return m_hasChanged; }
 
 	std::pair<float, float> getValueRange() { return std::make_pair(m_minValue, m_maxValue); }

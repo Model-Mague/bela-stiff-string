@@ -8,7 +8,7 @@ AnalogInput::AnalogInput(const int channel, const std::pair<float, float>& value
 {
 }
 
-float AnalogInput::read(BelaContext* context, const int frame)
+void AnalogInput::read(BelaContext* context, const int frame)
 {
 	float read = analogRead(context, frame, m_channel);
 	if (fabs(read - m_currentValue) > m_readThreshold)
@@ -28,6 +28,9 @@ float AnalogInput::read(BelaContext* context, const int frame)
 		if (read < m_minValue)
 			m_minValue = read;
 	}
+}
 
-	return map(read, 0.f, 1.f, m_valueRange.first, m_valueRange.second);
+float AnalogInput::getCurrentValueMapped() const
+{
+	return map(m_currentValue, 0.f, 1.f, m_valueRange.first, m_valueRange.second);
 }

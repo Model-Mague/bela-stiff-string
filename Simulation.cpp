@@ -107,7 +107,8 @@ void Simulation::readInputs(BelaContext* context, int frame)
 		for (int channel = 0; channel < sAnalogInputCount; channel++) // Start with channels 1-8; 0 is reserved for trigger
 		{
 			auto& analogIn = m_analogInputs[channel];
-			m_rangeMappedInputs[channel] = analogIn.read(context, analogFrame);
+			analogIn.read(context, analogFrame);
+			m_rangeMappedInputs[channel] = analogIn.getCurrentValueMapped();
 			// We will always update channel 7 (excitation loc) as this param is only effective during excitation
 			// So there is no risk of too frequent updates
 			if (channel == 7)
