@@ -10,8 +10,10 @@
 #include "DynamicStiffString/DynamicStiffString.h"
 
 #include <array>
+#include <map>
 #include <memory>
 #include <set>
+#include <vector>
 
 class Simulation {
 public:
@@ -44,6 +46,9 @@ private:
 	std::unique_ptr<DynamicStiffString> m_pDynamicStiffString;
 	float m_excitationLoc;
 	std::set<int> m_channelsToUpdate;
+
+	std::map<std::string, int> m_parameterIdMap;
+	std::vector<std::string> m_analogChannelToParameter;
 
 	int m_audioFramesPerAnalogFrame;
 	float m_inverseSampleRate;

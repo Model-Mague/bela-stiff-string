@@ -13,6 +13,26 @@ Simulation::Simulation(BelaContext* context) : m_excitationLoc(-1.f), m_amplitud
 	if (context->analogFrames)
 		m_audioFramesPerAnalogFrame = context->audioFrames / context->analogFrames;
 
+	// Order of params in DynamicDSS: L, rho, r, T, E, sigma0, sigma1
+	m_parameterIdMap["L"] = 0;
+	m_parameterIdMap["rho"] = 1;
+	m_parameterIdMap["r"] = 2;
+	m_parameterIdMap["T"] = 3;
+	m_parameterIdMap["E"] = 4;
+	m_parameterIdMap["sigma0"] = 5;
+	m_parameterIdMap["sigma1"] = 6;
+
+	// Order of inputs is L, rho, T, r, loc, E, sigma0, sigma1
+	m_analogChannelToParameter.resize(7);
+	m_analogChannelToParameter[0] = "L";
+	m_analogChannelToParameter[1] = "rho";
+	m_analogChannelToParameter[2] = "T";
+	m_analogChannelToParameter[3] = "r";
+	m_analogChannelToParameter[4] = "loc";
+	m_analogChannelToParameter[5] = "E";
+	m_analogChannelToParameter[6] = "sigma0";
+	m_analogChannelToParameter[7] = "sigma1";
+
 	// Setup Dynamic Stiff String
 	DynamicStiffString::SimulationParameters parameters = {};
 	parameters.L = 1.0f;
@@ -64,7 +84,10 @@ void Simulation::update(BelaContext* context)
 		{
 			const float mappedValue = m_analogInputs[channel].getCurrentValueMapped();
 			rt_printf("Updating channel %d with value %f\n", channel, mappedValue);
-			m_pDynamicStiffString->refreshParameter(channel, mappedValue);
+
+			// Map the analog channel to intended parameter to parameter id in DSS simulation
+			const int parameterId = m_parameterIdMap[m_analogChannelToParameter[channel]];
+			m_pDynamicStiffString->refreshParameter(parameterId, mappedValue);
 		}
 		m_channelsToUpdate.clear();
 		m_updateFrameCounter = sDSSUpdateRate;
