@@ -62,8 +62,9 @@ void Simulation::update(BelaContext* context)
 		// Process update queue
 		for (int channel: m_channelsToUpdate)
 		{
-			rt_printf("Updating channel %d with value %f\n", channel, m_rangeMappedInputs[channel]);
-			m_pDynamicStiffString->refreshParameter(channel, m_rangeMappedInputs[channel]);
+			const float mappedValue = m_analogInputs[channel].getCurrentValueMapped();
+			rt_printf("Updating channel %d with value %f\n", channel, mappedValue);
+			m_pDynamicStiffString->refreshParameter(channel, mappedValue);
 		}
 		m_channelsToUpdate.clear();
 		m_updateFrameCounter = sDSSUpdateRate;
@@ -108,16 +109,14 @@ void Simulation::readInputs(BelaContext* context, int frame)
 		{
 			auto& analogIn = m_analogInputs[channel];
 			analogIn.read(context, analogFrame);
-			m_rangeMappedInputs[channel] = analogIn.getCurrentValueMapped();
 			// We will always update channel 7 (excitation loc) as this param is only effective during excitation
 			// So there is no risk of too frequent updates
 			if (channel == 7)
 			{
-				m_excitationLoc = m_rangeMappedInputs[channel];
+				m_excitationLoc = analogIn.getCurrentValueMapped();
 			}
 			else if (analogIn.hasChanged())
 			{
-				//rt_printf("New analog input at channel %d: %f\n", channel, m_rangeMappedInputs[channel]);
 				// Register channel as one that needs its value read and updated
 				m_channelsToUpdate.insert(channel);
 			}

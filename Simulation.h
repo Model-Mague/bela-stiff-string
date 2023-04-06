@@ -30,7 +30,6 @@ public:
 	void writeOutputs(BelaContext* context, int frame);
 	void writeAudio(BelaContext* context, int frame);
 
-	const float* getAnalogIn() { return m_rangeMappedInputs; }
 	const float* getLfo() { return m_lfo; }
 	const float* getPhase() { return m_phase; }
 	const int getAnalogInputCount() { return sAnalogInputCount; }
@@ -49,7 +48,6 @@ private:
 	int m_audioFramesPerAnalogFrame;
 	float m_inverseSampleRate;
 
-	float m_rangeMappedInputs[sAnalogInputCount] = {};
 	float m_lfo[sAnalogInputCount] = {};
 	float m_phase[sAnalogInputCount] = {};
 

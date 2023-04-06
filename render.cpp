@@ -69,8 +69,6 @@ void render(BelaContext* context, void* userData)
 
 		// 4. Write out audio
 		pSimulation->writeAudio(context, n);
-
-		// scope.log(pSimulation->getAnalogIn());
 	}
 }
 
