@@ -151,4 +151,22 @@ void Simulation::writeAudio(BelaContext* context, int frame)
 	{
 		audioWrite(context, frame, channel, output);
 	}
+		
+	/* Potential De-Clipping solution? How do I reference sigma? :)
+	
+	if (output >= 0.95f)
+	{
+		sigma0 = sigma0*10;
+		sigma1 = sigma1*10;
+	}
+	
+	if (output <= -0.95f)
+	{
+		sigma0 = sigma0*10;
+		sigma1 = sigma1*10;
+	}
+	
+	*/
+	
+	
 }
