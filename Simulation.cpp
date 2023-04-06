@@ -47,13 +47,13 @@ Simulation::Simulation(BelaContext* context) : m_excitationLoc(-1.f), m_amplitud
 	// Setup parameter ranges
 	std::vector<std::pair<float, float>> parameterRanges;
 	parameterRanges.reserve(8);
-	parameterRanges.push_back({ 0.5f, 2.0f }); // L
-	parameterRanges.push_back({ 3925.0f, 15700.0f }); // rho
-	parameterRanges.push_back({ 0.00025f, 0.001f }); // r
-	parameterRanges.push_back({ 150.f, 600.0f }); // T
+	parameterRanges.push_back({ 0.2f, 4.0f }); // L
+	parameterRanges.push_back({ 1962.5f, 15700.0f }); // rho
+	parameterRanges.push_back({ 0.0005f, 0.001f }); // r
+	parameterRanges.push_back({ 150.f, 1200.0f }); // T
 	parameterRanges.push_back({ 0.f, 400000000000.f }); // E
 	parameterRanges.push_back({ 0.f, 2.f }); // sigma0
-	parameterRanges.push_back({ 0.0002f, 0.01f }); // sigma1
+	parameterRanges.push_back({ 0.000f, 0.01f }); // sigma1
 	parameterRanges.push_back({ 0.f, 1.f }); // loc (string excite position)
 
 	// Setup analog inputs
@@ -173,4 +173,22 @@ void Simulation::writeAudio(BelaContext* context, int frame)
 	{
 		audioWrite(context, frame, channel, output);
 	}
+		
+	/* Potential De-Clipping solution? How do I reference sigma? :)
+	
+	if (output >= 0.95f)
+	{
+		sigma0 = sigma0*10;
+		sigma1 = sigma1*10;
+	}
+	
+	if (output <= -0.95f)
+	{
+		sigma0 = sigma0*10;
+		sigma1 = sigma1*10;
+	}
+	
+	*/
+	
+	
 }
