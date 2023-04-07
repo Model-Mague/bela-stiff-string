@@ -44,11 +44,13 @@ Simulation::Simulation(BelaContext* context) : m_excitationLoc(-1.f), m_amplitud
 	parameterRanges["sigma1"] = { 0.000f, 0.01f };
 	parameterRanges["loc"] = { 0.f, 1.f };
 
-	// Setup analog inputs
+	// Order of inputs is L, rho, T, r, loc, E, sigma0, sigma1
+	// Change this if you want to reorder inputs on the device
+	const std::vector<std::string> parameterOrder = { "L", "rho", "T", "r", "loc", "E", "sigma0", "sigma1" };
 	m_analogInputs.reserve(sAnalogInputCount);
 	for (int i = 0; i < 8; i++)
 	{
-		const std::string& parameterName = sParameterOrder[i];
+		const std::string& parameterName = parameterOrder[i];
 		m_analogInputs.push_back(AnalogInput(parameterName, i, parameterRanges[parameterName]));
 		m_labelToAnalogIn[parameterName] = i;
 		if (parameterName != "loc") m_channelsToUpdate.insert(i); // Force update to read initial values

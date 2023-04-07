@@ -19,9 +19,6 @@ class Simulation {
 public:
 	static constexpr int sAnalogInputCount = 8;
 	static constexpr short sDSSUpdateRate = 20; // DSS should be updated no more frequently than every 20 audio frames
-	// Order of inputs is L, rho, T, r, loc, E, sigma0, sigma1
-	// Change this if you want to reorder inputs on the device
-	static constexpr const char* sParameterOrder[sAnalogInputCount] = {"L", "rho", "T", "r", "loc", "E", "sigma0", "sigma1"};
 
 	enum class Button : size_t {
 		TRIGGER = 0,
