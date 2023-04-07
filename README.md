@@ -17,12 +17,12 @@ The simulation is based on the Juce plugin by Silvin Willemsen [github.com/Silvi
 [1] Silvin Willemsen and Stefania Serafin, “REAL-TIME IMPLEMENTATION OF THE DYNAMIC STIFF STRING USING
 FINITE-DIFFERENCE TIME-DOMAIN METHODS AND THE DYNAMIC GRID,”Proceedings of the 25th International Conference on Digital Audio Effects (DAFx20in22), Vienna, Austria, September 6-10, 2022.
 
-### Final To Do's before Testing
+## Final To Do's before Testing
 
-#### Fix handling of sigmas at De-clipping algorithm.
-#### DigitalWrite LED handling.
-#### AnalogOut Parameter values.
-#### Introduce 1V/oct behaviour at Lenght Input.
+### Fix handling of sigmas at De-clipping algorithm.
+### DigitalWrite LED handling.
+### AnalogOut Parameter values.
+### Introduce 1V/oct behaviour at Lenght Input.
 
 This is of the type:
 - minimumLengthValue * 2 ^ (incomingvalue)
