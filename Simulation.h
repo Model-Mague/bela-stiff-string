@@ -62,6 +62,8 @@ private:
 	std::vector<AnalogInput> m_analogInputs;
 
 	short m_updateFrameCounter = 0;
+	
+	bool clippingFlag = false;
 
 	int m_buttonPreviousState[4] = {}; // Last button state
 	int m_buttonState[4] = {}; // Current button state
