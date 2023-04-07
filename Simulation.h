@@ -51,6 +51,7 @@ private:
 	std::set<int> m_channelsToUpdate;
 
 	std::map<std::string, int> m_parameterIdMap;
+	std::map<std::string, int> m_labelToAnalogIn;
 
 	int m_audioFramesPerAnalogFrame;
 	float m_inverseSampleRate;

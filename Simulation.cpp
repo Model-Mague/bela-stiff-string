@@ -50,6 +50,7 @@ Simulation::Simulation(BelaContext* context) : m_excitationLoc(-1.f), m_amplitud
 	{
 		const std::string& parameterName = sParameterOrder[i];
 		m_analogInputs.push_back(AnalogInput(parameterName, i, parameterRanges[parameterName]));
+		m_labelToAnalogIn[parameterName] = i;
 		if (parameterName != "loc") m_channelsToUpdate.insert(i); // Force update to read initial values
 	}
 
@@ -164,21 +165,17 @@ void Simulation::writeAudio(BelaContext* context, int frame)
 		audioWrite(context, frame, channel, output);
 	}
 		
-	/* Potential De-Clipping solution? How do I reference sigma? :)
-	
-	if (output >= 0.95f)
+	// Potential De-Clipping solution
+	// Note that this does not respect the 20 frame constraint and might introduce distortion
+	if ((output >= 0.95f) || (output <= -0.95f))
 	{
-		sigma0 = sigma0*10;
-		sigma1 = sigma1*10;
+		// sigma0
+		int parameterId = m_parameterIdMap["sigma0"];
+		float currentValue = m_analogInputs[m_labelToAnalogIn["sigma0"]].getCurrentValueMapped();
+		m_pDynamicStiffString->refreshParameter(parameterId, currentValue * 10);
+		// sigma1
+		parameterId = m_parameterIdMap["sigma1"];
+		currentValue = m_analogInputs[m_labelToAnalogIn["sigma1"]].getCurrentValueMapped();
+		m_pDynamicStiffString->refreshParameter(parameterId, currentValue * 10);
 	}
-	
-	if (output <= -0.95f)
-	{
-		sigma0 = sigma0*10;
-		sigma1 = sigma1*10;
-	}
-	
-	*/
-	
-	
 }
