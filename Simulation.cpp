@@ -40,8 +40,8 @@ Simulation::Simulation(BelaContext* context) : m_excitationLoc(-1.f), m_amplitud
 	parameterRanges["r"] = { 0.0005f, 0.001f };
 	parameterRanges["T"] = { 150.f, 1200.0f };
 	parameterRanges["E"] = { 0.f, 400000000000.f };
-	parameterRanges["sigma0"] = { 0.f, 2.f };
-	parameterRanges["sigma1"] = { 0.000f, 0.01f };
+	parameterRanges["sigma0"] = { 0.000001f, 2.f };
+	parameterRanges["sigma1"] = { 0.0002f, 0.01f };
 	parameterRanges["loc"] = { 0.f, 1.f };
 
 	// Order of inputs is L, rho, T, r, loc, E, sigma0, sigma1
@@ -80,6 +80,22 @@ void Simulation::update(BelaContext* context)
 			// Map the analog channel to intended parameter to parameter id in DSS simulation
 			const auto& analogIn = m_analogInputs[channel];
 			const int parameterId = m_parameterIdMap[analogIn.getLabel()];
+			
+			if((clippingFlag = true))
+			
+			{
+			// sigma0
+			int parameterId = m_parameterIdMap["sigma0"];
+			float currentValue = m_analogInputs[m_labelToAnalogIn["sigma0"]].getCurrentValueMapped();
+			m_pDynamicStiffString->refreshParameter(parameterId, currentValue * 10.f);
+			// sigma1
+			parameterId = m_parameterIdMap["sigma1"];
+			currentValue = m_analogInputs[m_labelToAnalogIn["sigma1"]].getCurrentValueMapped();
+			m_pDynamicStiffString->refreshParameter(parameterId, currentValue * 10.f);
+			
+			clippingFlag = false;
+			}
+			
 			m_pDynamicStiffString->refreshParameter(parameterId, mappedValue);
 		}
 		m_channelsToUpdate.clear();
@@ -161,23 +177,24 @@ void Simulation::writeOutputs(BelaContext* context, int frame)
 
 void Simulation::writeAudio(BelaContext* context, int frame)
 {
-	float output = Global::limit(m_pDynamicStiffString->getOutput(), -1.0, 1.0);
+
+	float output = Global::limit(m_pDynamicStiffString->getOutput(), -5.f, 5.f);
+	/* Audio range increased then mapped back
+	 5x times more headroom (no clipping unless under loooots of extress) 
+	 but will need external compression - will use compressor modules.
+	 This would be the right place to look into compression algorithms.
+	 Practically its own reasearch branch - > We can come back to this next month. */
+	
+	if ((output >= 3.f) || (output <= -3.f))
+	{
+		clippingFlag = true;
+	}
+	
+	output = map(output, -5.f, 5.f, -1.f, 1.f);
+	
 	for (unsigned int channel = 0; channel < context->audioOutChannels; channel++)
 	{
 		audioWrite(context, frame, channel, output);
 	}
-		
-	// Potential De-Clipping solution
-	// Note that this does not respect the 20 frame constraint and might introduce distortion
-	if ((output >= 0.95f) || (output <= -0.95f))
-	{
-		// sigma0
-		int parameterId = m_parameterIdMap["sigma0"];
-		float currentValue = m_analogInputs[m_labelToAnalogIn["sigma0"]].getCurrentValueMapped();
-		m_pDynamicStiffString->refreshParameter(parameterId, currentValue * 10);
-		// sigma1
-		parameterId = m_parameterIdMap["sigma1"];
-		currentValue = m_analogInputs[m_labelToAnalogIn["sigma1"]].getCurrentValueMapped();
-		m_pDynamicStiffString->refreshParameter(parameterId, currentValue * 10);
-	}
+	
 }
