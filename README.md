@@ -20,8 +20,11 @@ FINITE-DIFFERENCE TIME-DOMAIN METHODS AND THE DYNAMIC GRID,”Proceedings of the
 ## Final To Do's before Testing
 
 ### Fix handling of sigmas at De-clipping algorithm.
+
 ### DigitalWrite LED handling.
+
 ### AnalogOut Parameter values.
+
 ### Introduce 1V/oct behaviour at Lenght Input.
 
 This is of the type:
@@ -30,7 +33,7 @@ This is of the type:
 However, it will require Length to be mapped in reverse:
 - from maximum length to minimum lenght (low pitch to high pitch, since that is how pitch voltage works).
 
-#### Add Spray Function to loc.
+### Add Spray Function to loc.
 
 - while Button "(any button not in use)" = true
 - loc = loc + spread * input[5]
