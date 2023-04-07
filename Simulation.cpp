@@ -14,24 +14,13 @@ Simulation::Simulation(BelaContext* context) : m_excitationLoc(-1.f), m_amplitud
 		m_audioFramesPerAnalogFrame = context->audioFrames / context->analogFrames;
 
 	// Order of params in DynamicDSS: L, rho, r, T, E, sigma0, sigma1
-	m_parameterIdMap["L"] = 0;
-	m_parameterIdMap["rho"] = 1;
-	m_parameterIdMap["r"] = 2;
-	m_parameterIdMap["T"] = 3;
-	m_parameterIdMap["E"] = 4;
-	m_parameterIdMap["sigma0"] = 5;
-	m_parameterIdMap["sigma1"] = 6;
-
-	// Order of inputs is L, rho, T, r, loc, E, sigma0, sigma1
-	m_analogChannelToParameter.resize(7);
-	m_analogChannelToParameter[0] = "L";
-	m_analogChannelToParameter[1] = "rho";
-	m_analogChannelToParameter[2] = "T";
-	m_analogChannelToParameter[3] = "r";
-	m_analogChannelToParameter[4] = "loc";
-	m_analogChannelToParameter[5] = "E";
-	m_analogChannelToParameter[6] = "sigma0";
-	m_analogChannelToParameter[7] = "sigma1";
+	// Do not change this
+	std::vector<std::string> originalParameterOrder = { "L", "rho", "r", "T", "E", "sigma0", "sigma1" };
+	for (int i = 0; i < originalParameterOrder.size(); i++)
+	{
+		const std::string& parameterName = originalParameterOrder[i];
+		m_parameterIdMap[parameterName] = i;
+	}
 
 	// Setup Dynamic Stiff String
 	DynamicStiffString::SimulationParameters parameters = {};
@@ -45,23 +34,23 @@ Simulation::Simulation(BelaContext* context) : m_excitationLoc(-1.f), m_amplitud
 	m_pDynamicStiffString = std::make_unique<DynamicStiffString>(parameters, m_inverseSampleRate);
 
 	// Setup parameter ranges
-	std::vector<std::pair<float, float>> parameterRanges;
-	parameterRanges.reserve(8);
-	parameterRanges.push_back({ 0.2f, 4.0f }); // L
-	parameterRanges.push_back({ 1962.5f, 15700.0f }); // rho
-	parameterRanges.push_back({ 0.0005f, 0.001f }); // r
-	parameterRanges.push_back({ 150.f, 1200.0f }); // T
-	parameterRanges.push_back({ 0.f, 400000000000.f }); // E
-	parameterRanges.push_back({ 0.f, 2.f }); // sigma0
-	parameterRanges.push_back({ 0.000f, 0.01f }); // sigma1
-	parameterRanges.push_back({ 0.f, 1.f }); // loc (string excite position)
+	std::map<std::string, std::pair<float, float>> parameterRanges;
+	parameterRanges["L"] = { 0.2f, 4.0f };
+	parameterRanges["rho"] = { 1962.5f, 15700.0f };
+	parameterRanges["r"] = { 0.0005f, 0.001f };
+	parameterRanges["T"] = { 150.f, 1200.0f };
+	parameterRanges["E"] = { 0.f, 400000000000.f };
+	parameterRanges["sigma0"] = { 0.f, 2.f };
+	parameterRanges["sigma1"] = { 0.000f, 0.01f };
+	parameterRanges["loc"] = { 0.f, 1.f };
 
 	// Setup analog inputs
 	m_analogInputs.reserve(sAnalogInputCount);
 	for (int i = 0; i < 8; i++)
 	{
-		m_analogInputs.push_back(AnalogInput(i, parameterRanges[i]));
-		if (i != 7) m_channelsToUpdate.insert(i); // Force update to read initial values
+		const std::string& parameterName = sParameterOrder[i];
+		m_analogInputs.push_back(AnalogInput(parameterName, i, parameterRanges[parameterName]));
+		if (parameterName != "loc") m_channelsToUpdate.insert(i); // Force update to read initial values
 	}
 
 	m_amplitude = 5;
@@ -86,7 +75,8 @@ void Simulation::update(BelaContext* context)
 			rt_printf("Updating channel %d with value %f\n", channel, mappedValue);
 
 			// Map the analog channel to intended parameter to parameter id in DSS simulation
-			const int parameterId = m_parameterIdMap[m_analogChannelToParameter[channel]];
+			const auto& analogIn = m_analogInputs[channel];
+			const int parameterId = m_parameterIdMap[analogIn.getLabel()];
 			m_pDynamicStiffString->refreshParameter(parameterId, mappedValue);
 		}
 		m_channelsToUpdate.clear();
@@ -134,7 +124,7 @@ void Simulation::readInputs(BelaContext* context, int frame)
 			analogIn.read(context, analogFrame);
 			// We will always update channel 7 (excitation loc) as this param is only effective during excitation
 			// So there is no risk of too frequent updates
-			if (channel == 7)
+			if (analogIn.getLabel() == "loc")
 			{
 				m_excitationLoc = analogIn.getCurrentValueMapped();
 			}

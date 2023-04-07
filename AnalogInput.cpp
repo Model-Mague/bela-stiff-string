@@ -2,8 +2,8 @@
 
 #include <cmath>
 
-AnalogInput::AnalogInput(const int channel, const std::pair<float, float>& valueRange, const float readThreshold)
-	: m_channel(channel), m_valueRange(valueRange), m_readThreshold(readThreshold),
+AnalogInput::AnalogInput(const std::string& label, const int channel, const std::pair<float, float>& valueRange, const float readThreshold)
+	: m_label(label), m_channel(channel), m_valueRange(valueRange), m_readThreshold(readThreshold),
 	m_hasChanged(false), m_currentValue(0.f), m_maxValue(-1000.f), m_minValue(1000.f)
 {
 }
