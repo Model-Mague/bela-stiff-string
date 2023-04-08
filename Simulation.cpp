@@ -7,7 +7,7 @@
 #include <sstream>
 
 
-Simulation::Simulation(BelaContext* context) : m_excitationLoc(-1.f), m_amplitude(5.f), m_frequency(0.1f)
+Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1f)
 {
 	m_inverseSampleRate = 1.0f / context->audioSampleRate;
 	if (context->analogFrames)
@@ -32,6 +32,16 @@ Simulation::Simulation(BelaContext* context) : m_excitationLoc(-1.f), m_amplitud
 	parameters.sigma0 = 1.0f;
 	parameters.sigma1 = 0.005f;
 	m_pDynamicStiffString = std::make_unique<DynamicStiffString>(parameters, m_inverseSampleRate);
+
+	// Setup internal state, cloning the DSS values
+	m_parameters["L"] = parameters.L;
+	m_parameters["rho"] = parameters.rho;
+	m_parameters["r"] = parameters.r;
+	m_parameters["T"] = parameters.T;
+	m_parameters["E"] = parameters.E;
+	m_parameters["sigma0"] = parameters.sigma0;
+	m_parameters["sigma1"] = parameters.sigma1;
+	m_parameters["loc"] = -1.f;
 
 	// Setup parameter ranges
 	std::map<std::string, std::pair<float, float>> parameterRanges;
@@ -65,44 +75,41 @@ void Simulation::update(BelaContext* context)
 	// 1. Handle trigger button (should probably be last)
 	if (isButtonReleased(Button::TRIGGER))
 	{
-		m_pDynamicStiffString->excite(m_excitationLoc);
+		m_pDynamicStiffString->excite(m_parameters["loc"]);
 	}
 
 	// 2. Process parameter changes
-	
 	if (m_updateFrameCounter == 0)
 	{
 		// Process update queue
 		for (int channel: m_channelsToUpdate)
 		{
-			
-			if(!m_channelsToUpdate.empty())
-			{
-				const float mappedValue = m_analogInputs[channel].getCurrentValueMapped();
-				rt_printf("Updating channel %d with value %f\n", channel, mappedValue);
+			const float mappedValue = m_analogInputs[channel].getCurrentValueMapped();
+			rt_printf("Updating channel %d with value %f\n", channel, mappedValue);
 	
-				// Map the analog channel to intended parameter to parameter id in DSS simulation
-				const auto& analogIn = m_analogInputs[channel];
-				const int parameterId = m_parameterIdMap[analogIn.getLabel()];
-				m_pDynamicStiffString->refreshParameter(parameterId, mappedValue);
-			}
-				
+			// Map the analog channel to intended parameter to parameter id in DSS simulation
+			const auto& analogIn = m_analogInputs[channel];
+			const std::string& paramName = analogIn.getLabel();
+			const int parameterId = m_parameterIdMap[paramName];
 
+			// Save state and send change to DSS
+			m_parameters[paramName] = mappedValue;
+			m_pDynamicStiffString->refreshParameter(parameterId, mappedValue);
 		}
 		
-		if(clippingFlag == true)
+		if (clippingFlag == true)
 		{
-			
 			// sigma0
 			int parameterId = m_parameterIdMap["sigma0"];
-			float currentValue = m_analogInputs[m_labelToAnalogIn["sigma0"]].getCurrentValueMapped();
+			float currentValue = m_parameters["sigma0"];
 			currentValue = currentValue * 1.1f;
+			m_parameters["sigma0"] = currentValue;
 			m_pDynamicStiffString->refreshParameter(parameterId, currentValue);
 			rt_printf("Updating sigma0 with value %f\n", currentValue);
 			// sigma1
 			parameterId = m_parameterIdMap["sigma1"];
-			currentValue = m_analogInputs[m_labelToAnalogIn["sigma1"]].getCurrentValueMapped();
-			currentValue = currentValue * 1.1f;
+			currentValue = m_parameters["sigma1"] * 1.1f;
+			m_parameters["sigma1"] = currentValue;
 			m_pDynamicStiffString->refreshParameter(parameterId, currentValue);
 			rt_printf("Updating sigma1 with value %f\n", currentValue);
 			
@@ -116,8 +123,6 @@ void Simulation::update(BelaContext* context)
 	{
 		m_updateFrameCounter = std::max(0, m_updateFrameCounter - 1);
 	}
-
-
 
 	// 3. Update DSS simulation
 	m_pDynamicStiffString->refreshCoefficients();
@@ -158,7 +163,7 @@ void Simulation::readInputs(BelaContext* context, int frame)
 			// So there is no risk of too frequent updates
 			if (analogIn.getLabel() == "loc")
 			{
-				m_excitationLoc = analogIn.getCurrentValueMapped();
+				m_parameters["loc"] = analogIn.getCurrentValueMapped();
 			}
 			else if (analogIn.hasChanged())
 			{
@@ -209,6 +214,4 @@ void Simulation::writeAudio(BelaContext* context, int frame)
 	{
 		audioWrite(context, frame, channel, output);
 	}
-
-	
 }
