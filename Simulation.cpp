@@ -81,19 +81,18 @@ void Simulation::update(BelaContext* context)
 			const auto& analogIn = m_analogInputs[channel];
 			const int parameterId = m_parameterIdMap[analogIn.getLabel()];
 			
-			if((clippingFlag = true))
-			
+			if(clippingFlag)
 			{
-			// sigma0
-			int parameterId = m_parameterIdMap["sigma0"];
-			float currentValue = m_analogInputs[m_labelToAnalogIn["sigma0"]].getCurrentValueMapped();
-			m_pDynamicStiffString->refreshParameter(parameterId, currentValue * 10.f);
-			// sigma1
-			parameterId = m_parameterIdMap["sigma1"];
-			currentValue = m_analogInputs[m_labelToAnalogIn["sigma1"]].getCurrentValueMapped();
-			m_pDynamicStiffString->refreshParameter(parameterId, currentValue * 10.f);
+				// sigma0
+				int parameterId = m_parameterIdMap["sigma0"];
+				float currentValue = m_analogInputs[m_labelToAnalogIn["sigma0"]].getCurrentValueMapped();
+				m_pDynamicStiffString->refreshParameter(parameterId, currentValue * 10.f);
+				// sigma1
+				parameterId = m_parameterIdMap["sigma1"];
+				currentValue = m_analogInputs[m_labelToAnalogIn["sigma1"]].getCurrentValueMapped();
+				m_pDynamicStiffString->refreshParameter(parameterId, currentValue * 10.f);
 			
-			clippingFlag = false;
+				clippingFlag = false;
 			}
 			
 			m_pDynamicStiffString->refreshParameter(parameterId, mappedValue);
