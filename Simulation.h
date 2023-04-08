@@ -10,11 +10,15 @@
 #include "DynamicStiffString/DynamicStiffString.h"
 
 #include <array>
+#include <map>
 #include <memory>
+#include <set>
+#include <vector>
 
 class Simulation {
 public:
 	static constexpr int sAnalogInputCount = 8;
+	static constexpr short sDSSUpdateRate = 20; // DSS should be updated no more frequently than every 20 audio frames
 
 	enum class Button : size_t {
 		TRIGGER = 0,
@@ -28,7 +32,6 @@ public:
 	void writeOutputs(BelaContext* context, int frame);
 	void writeAudio(BelaContext* context, int frame);
 
-	const float* getAnalogIn() { return m_analogIn; }
 	const float* getLfo() { return m_lfo; }
 	const float* getPhase() { return m_phase; }
 	const int getAnalogInputCount() { return sAnalogInputCount; }
@@ -42,21 +45,25 @@ public:
 private:
 	std::unique_ptr<DynamicStiffString> m_pDynamicStiffString;
 	float m_excitationLoc;
-	bool m_updateParameters;
+	std::set<int> m_channelsToUpdate;
+
+	std::map<std::string, int> m_parameterIdMap;
+	std::map<std::string, int> m_labelToAnalogIn;
 
 	int m_audioFramesPerAnalogFrame;
 	float m_inverseSampleRate;
 
-	float m_analogIn[sAnalogInputCount] = {};
 	float m_lfo[sAnalogInputCount] = {};
 	float m_phase[sAnalogInputCount] = {};
 
 	float m_amplitude;
 	float m_frequency;
 
-	unsigned long long frame;
-
 	std::vector<AnalogInput> m_analogInputs;
+
+	short m_updateFrameCounter = 0;
+	
+	bool clippingFlag = false;
 
 	int m_buttonPreviousState[4] = {}; // Last button state
 	int m_buttonState[4] = {}; // Current button state

@@ -58,7 +58,6 @@ void render(BelaContext* context, void* userData)
 #ifdef DESKTOP_BUILD
 		context->audioFramesElapsed++; // Bela does this automatically
 #endif
-
 		// 1. Read inputs
 		pSimulation->readInputs(context, n);
 
@@ -70,8 +69,6 @@ void render(BelaContext* context, void* userData)
 
 		// 4. Write out audio
 		pSimulation->writeAudio(context, n);
-
-		// scope.log(pSimulation->getAnalogIn());
 	}
 }
 

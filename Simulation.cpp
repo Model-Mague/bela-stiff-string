@@ -8,13 +8,21 @@
 #include <cstring>
 #include <sstream>
 
-#define INTERACTION_DELAY 1000 // frames
 
-Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1f), m_updateParameters(true), m_excitationLoc(-1.f)
+Simulation::Simulation(BelaContext* context) : m_excitationLoc(-1.f), m_amplitude(5.f), m_frequency(0.1f)
 {
 	m_inverseSampleRate = 1.0f / context->audioSampleRate;
 	if (context->analogFrames)
 		m_audioFramesPerAnalogFrame = context->audioFrames / context->analogFrames;
+
+	// Order of params in DynamicDSS: L, rho, r, T, E, sigma0, sigma1
+	// Do not change this
+	std::vector<std::string> originalParameterOrder = { "L", "rho", "r", "T", "E", "sigma0", "sigma1" };
+	for (int i = 0; i < originalParameterOrder.size(); i++)
+	{
+		const std::string& parameterName = originalParameterOrder[i];
+		m_parameterIdMap[parameterName] = i;
+	}
 
 	// Setup Dynamic Stiff String
 	DynamicStiffString::SimulationParameters parameters = {};
@@ -28,22 +36,26 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 	m_pDynamicStiffString = std::make_unique<DynamicStiffString>(parameters, m_inverseSampleRate);
 
 	// Setup parameter ranges
-	std::vector<std::pair<float, float>> parameterRanges;
-	parameterRanges.reserve(8);
-	parameterRanges.push_back({ 0.5f, 2.0f }); // L
-	parameterRanges.push_back({ 3925.0f, 15700.0f }); // rho
-	parameterRanges.push_back({ 0.00025f, 0.001f }); // r
-	parameterRanges.push_back({ 150.f, 600.0f }); // T
-	parameterRanges.push_back({ 0, 400000000000.f }); // E
-	parameterRanges.push_back({ 0.f, 2.f }); // sigma0
-	parameterRanges.push_back({ 0.0002f, 0.01f }); // sigma1
-	parameterRanges.push_back({ 0.f, 1.f }); // loc (string excite position)
+	std::map<std::string, std::pair<float, float>> parameterRanges;
+	parameterRanges["L"] = { 0.2f, 4.0f };
+	parameterRanges["rho"] = { 1962.5f, 15700.0f };
+	parameterRanges["r"] = { 0.0005f, 0.001f };
+	parameterRanges["T"] = { 150.f, 1200.0f };
+	parameterRanges["E"] = { 0.f, 400000000000.f };
+	parameterRanges["sigma0"] = { 0.000001f, 2.f };
+	parameterRanges["sigma1"] = { 0.0002f, 0.01f };
+	parameterRanges["loc"] = { 0.f, 1.f };
 
-	// Setup analog inputs
+	// Order of inputs is L, rho, T, r, loc, E, sigma0, sigma1
+	// Change this if you want to reorder inputs on the device
+	const std::vector<std::string> parameterOrder = { "L", "rho", "T", "r", "loc", "E", "sigma0", "sigma1" };
 	m_analogInputs.reserve(sAnalogInputCount);
 	for (int i = 0; i < 8; i++)
 	{
-		m_analogInputs.push_back(AnalogInput(i, parameterRanges[i]));
+		const std::string& parameterName = parameterOrder[i];
+		m_analogInputs.push_back(AnalogInput(parameterName, i, parameterRanges[parameterName]));
+		m_labelToAnalogIn[parameterName] = i;
+		if (parameterName != "loc") m_channelsToUpdate.insert(i); // Force update to read initial values
 	}
 
 	m_amplitude = 5;
@@ -52,24 +64,55 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 
 void Simulation::update(BelaContext* context)
 {
-	// 1. Handle parameter changes
-	if (m_updateParameters)
-	{
-		rt_printf("Updating parameters\n");
-		m_pDynamicStiffString->refreshCoefficients();
-		m_pDynamicStiffString->calculateScheme();
-		m_pDynamicStiffString->updateStates();
-		m_updateParameters = false;
-	}
-
-	// 2. Handle trigger button (should probably be last)
+	// 1. Handle trigger button (should probably be last)
 	if (isButtonReleased(Button::TRIGGER))
 	{
-		rt_printf("Trigger button released\n");
 		m_pDynamicStiffString->excite(m_excitationLoc);
 	}
 
-	// 3. Update phase
+	// 2. Process parameter changes
+	if (!m_channelsToUpdate.empty() && (m_updateFrameCounter == 0))
+	{
+		// Process update queue
+		for (int channel: m_channelsToUpdate)
+		{
+			const float mappedValue = m_analogInputs[channel].getCurrentValueMapped();
+			rt_printf("Updating channel %d with value %f\n", channel, mappedValue);
+
+			// Map the analog channel to intended parameter to parameter id in DSS simulation
+			const auto& analogIn = m_analogInputs[channel];
+			const int parameterId = m_parameterIdMap[analogIn.getLabel()];
+			
+			if(clippingFlag)
+			{
+				// sigma0
+				int parameterId = m_parameterIdMap["sigma0"];
+				float currentValue = m_analogInputs[m_labelToAnalogIn["sigma0"]].getCurrentValueMapped();
+				m_pDynamicStiffString->refreshParameter(parameterId, currentValue * 10.f);
+				// sigma1
+				parameterId = m_parameterIdMap["sigma1"];
+				currentValue = m_analogInputs[m_labelToAnalogIn["sigma1"]].getCurrentValueMapped();
+				m_pDynamicStiffString->refreshParameter(parameterId, currentValue * 10.f);
+			
+				clippingFlag = false;
+			}
+			
+			m_pDynamicStiffString->refreshParameter(parameterId, mappedValue);
+		}
+		m_channelsToUpdate.clear();
+		m_updateFrameCounter = sDSSUpdateRate;
+	}
+	else
+	{
+		m_updateFrameCounter = std::max(0, m_updateFrameCounter - 1);
+	}
+
+	// 3. Update DSS simulation
+	m_pDynamicStiffString->refreshCoefficients();
+	m_pDynamicStiffString->calculateScheme();
+	m_pDynamicStiffString->updateStates();
+
+	// 4. Update LFO phase
 	for (int channel = 0; channel < sAnalogInputCount; channel++)
 	{
 		m_phase[channel] += 2.0f * (float)M_PI * m_frequency * m_inverseSampleRate;
@@ -92,23 +135,24 @@ std::string Simulation::getCalibrationResults()
 
 void Simulation::readInputs(BelaContext* context, int frame)
 {
-	frame = frame / m_audioFramesPerAnalogFrame;
-	for (int channel = 0; channel < sAnalogInputCount; channel++) // Start with channels 1-8; 0 is reserved for trigger
+	if (!(frame % m_audioFramesPerAnalogFrame))
 	{
-		auto& analogIn = m_analogInputs[channel];
-		m_analogIn[channel] = analogIn.read(context, frame);
-		if (analogIn.hasChanged())
+		const int analogFrame = frame / m_audioFramesPerAnalogFrame;
+		for (int channel = 0; channel < sAnalogInputCount; channel++) // Start with channels 1-8; 0 is reserved for trigger
 		{
-			rt_printf("New analog input at channel %d: %f\n", channel, m_analogIn[channel]);
-			if (channel != 7)
+			auto& analogIn = m_analogInputs[channel];
+			analogIn.read(context, analogFrame);
+			// We will always update channel 7 (excitation loc) as this param is only effective during excitation
+			// So there is no risk of too frequent updates
+			if (analogIn.getLabel() == "loc")
 			{
-				m_pDynamicStiffString->refreshParameter(channel, m_analogIn[channel]);
-				m_updateParameters = true;
-			} else {
-				// @TODO: For now let's leave out excitation location because the 0~1 range doesn't work
-				//m_excitationLoc = m_analogIn[channel];
+				m_excitationLoc = analogIn.getCurrentValueMapped();
 			}
-
+			else if (analogIn.hasChanged())
+			{
+				// Register channel as one that needs its value read and updated
+				m_channelsToUpdate.insert(channel);
+			}
 		}
 	}
 
@@ -134,9 +178,24 @@ void Simulation::writeOutputs(BelaContext* context, int frame)
 
 void Simulation::writeAudio(BelaContext* context, int frame)
 {
-	float output = Global::limit(m_pDynamicStiffString->getOutput(), -1.0, 1.0);
+
+	float output = Global::limit(m_pDynamicStiffString->getOutput(), -5.f, 5.f);
+	/* Audio range increased then mapped back
+	 5x times more headroom (no clipping unless under loooots of extress) 
+	 but will need external compression - will use compressor modules.
+	 This would be the right place to look into compression algorithms.
+	 Practically its own reasearch branch - > We can come back to this next month. */
+	
+	if ((output >= 3.f) || (output <= -3.f))
+	{
+		clippingFlag = true;
+	}
+	
+	output = map(output, -5.f, 5.f, -1.f, 1.f);
+	
 	for (unsigned int channel = 0; channel < context->audioOutChannels; channel++)
 	{
 		audioWrite(context, frame, channel, output);
 	}
+	
 }
