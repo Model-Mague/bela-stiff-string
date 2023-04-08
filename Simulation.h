@@ -77,6 +77,7 @@ private:
 	
 	// Set if we're to actively damp the signal in the next update call
 	bool clippingFlag = false;
+	float correctionValue; // Damping proportion
 
 	int m_buttonPreviousState[4] = {}; // Last button state
 	int m_buttonState[4] = {}; // Current button state
