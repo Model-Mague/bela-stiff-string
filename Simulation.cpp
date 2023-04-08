@@ -69,34 +69,46 @@ void Simulation::update(BelaContext* context)
 	}
 
 	// 2. Process parameter changes
-	if (!m_channelsToUpdate.empty() && (m_updateFrameCounter == 0))
+	
+	if (m_updateFrameCounter == 0)
 	{
 		// Process update queue
 		for (int channel: m_channelsToUpdate)
 		{
-			const float mappedValue = m_analogInputs[channel].getCurrentValueMapped();
-			rt_printf("Updating channel %d with value %f\n", channel, mappedValue);
-
-			// Map the analog channel to intended parameter to parameter id in DSS simulation
-			const auto& analogIn = m_analogInputs[channel];
-			const int parameterId = m_parameterIdMap[analogIn.getLabel()];
 			
-			if(clippingFlag)
+			if(!m_channelsToUpdate.empty())
 			{
-				// sigma0
-				int parameterId = m_parameterIdMap["sigma0"];
-				float currentValue = m_analogInputs[m_labelToAnalogIn["sigma0"]].getCurrentValueMapped();
-				m_pDynamicStiffString->refreshParameter(parameterId, currentValue * 10.f);
-				// sigma1
-				parameterId = m_parameterIdMap["sigma1"];
-				currentValue = m_analogInputs[m_labelToAnalogIn["sigma1"]].getCurrentValueMapped();
-				m_pDynamicStiffString->refreshParameter(parameterId, currentValue * 10.f);
-			
-				clippingFlag = false;
+				const float mappedValue = m_analogInputs[channel].getCurrentValueMapped();
+				rt_printf("Updating channel %d with value %f\n", channel, mappedValue);
+	
+				// Map the analog channel to intended parameter to parameter id in DSS simulation
+				const auto& analogIn = m_analogInputs[channel];
+				const int parameterId = m_parameterIdMap[analogIn.getLabel()];
+				m_pDynamicStiffString->refreshParameter(parameterId, mappedValue);
 			}
-			
-			m_pDynamicStiffString->refreshParameter(parameterId, mappedValue);
+				
+
 		}
+		
+		if(clippingFlag == true)
+		{
+			
+			// sigma0
+			int parameterId = m_parameterIdMap["sigma0"];
+			float currentValue = m_analogInputs[m_labelToAnalogIn["sigma0"]].getCurrentValueMapped();
+			currentValue = currentValue * 1.1f;
+			m_pDynamicStiffString->refreshParameter(parameterId, currentValue);
+			rt_printf("Updating sigma0 with value %f\n", currentValue);
+			// sigma1
+			parameterId = m_parameterIdMap["sigma1"];
+			currentValue = m_analogInputs[m_labelToAnalogIn["sigma1"]].getCurrentValueMapped();
+			currentValue = currentValue * 1.1f;
+			m_pDynamicStiffString->refreshParameter(parameterId, currentValue);
+			rt_printf("Updating sigma1 with value %f\n", currentValue);
+			
+			clippingFlag = false;	
+		}	
+		
 		m_channelsToUpdate.clear();
 		m_updateFrameCounter = sDSSUpdateRate;
 	}
@@ -104,6 +116,8 @@ void Simulation::update(BelaContext* context)
 	{
 		m_updateFrameCounter = std::max(0, m_updateFrameCounter - 1);
 	}
+
+
 
 	// 3. Update DSS simulation
 	m_pDynamicStiffString->refreshCoefficients();
@@ -184,7 +198,7 @@ void Simulation::writeAudio(BelaContext* context, int frame)
 	 This would be the right place to look into compression algorithms.
 	 Practically its own reasearch branch - > We can come back to this next month. */
 	
-	if ((output >= 3.f) || (output <= -3.f))
+	if ((output >= 2.5f) || (output <= - 2.5f))
 	{
 		clippingFlag = true;
 	}
@@ -195,5 +209,6 @@ void Simulation::writeAudio(BelaContext* context, int frame)
 	{
 		audioWrite(context, frame, channel, output);
 	}
+
 	
 }
