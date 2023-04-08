@@ -19,21 +19,15 @@ FINITE-DIFFERENCE TIME-DOMAIN METHODS AND THE DYNAMIC GRID,”Proceedings of the
 
 ## Final To Do's before Testing
 
-### Fix handling of sigmas at De-clipping algorithm.
+In order of relevance:
 
-### DigitalWrite LED handling.
+### Fix Calibration. ESSENTIAL
 
-### AnalogOut Parameter values.
+### DigitalWrite LED handling. ESSENTIAL
 
-### Introduce 1V/oct behaviour at Lenght Input.
+### AnalogOut Parameter values. COOL
 
-This is of the type:
-- minimumLengthValue * 2 ^ (incomingvalue)
-
-However, it will require Length to be mapped in reverse:
-- from maximum length to minimum lenght (low pitch to high pitch, since that is how pitch voltage works).
-
-### Add Spray Function to loc.
+### Add Spray Function to loc. COOL
 
 - while Button "(any button not in use)" = true
 - loc = loc + spread * input[5]
@@ -44,4 +38,37 @@ advantage of this is:
 Since the CVinput for loc is lost, it is good to have an extra parameter that randomises loc slightly.
 
 It is also a reference to the "spray parameter in Instruo's Arhbhar: explained in https://youtu.be/hw73DlxVWrI?t=500
+
+### Introduce E handling stage NICE LITTLE DETAIL
+
+need to introduce a de-clipping stage similar to sigmas since 
+
+when L, rho, r and T are in extreme values (at the same time) 
+and 
+E <= a low value
+
+it creates underruns.
+
+So we need to introduce something like:
+
+if (L >= w && rho >= x && r <= y && T <= z)
+{
+E lower range is a bigger number
+}
+
+Exact values need calibrated by ear.
+
+It is optional since I could just increase the lower range of T (it only started happening when ranges were widened).
+
+## DONE
+
+### Introduce 1V/oct behaviour at Lenght Input. DONE
+
+This is of the type:
+- minimumLengthValue * 2 ^ (incomingvalue)
+
+However, it will require Length to be mapped in reverse:
+- from maximum length to minimum lenght (low pitch to high pitch, since that is how pitch voltage works).
+
+### Fix handling of sigmas at De-clipping algorithm. DONE
 

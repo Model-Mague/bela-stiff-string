@@ -43,11 +43,21 @@ public:
 	std::string getCalibrationResults();
 
 private:
+	// DSS simulation
 	std::unique_ptr<DynamicStiffString> m_pDynamicStiffString;
-	float m_excitationLoc;
+
+	// Maintains an internal state of all the simulation parameters
+	// These may be adjusted internally and don't necessarily match up with inputs
+	std::map<std::string, float> m_parameters;
+
+	// Mapping of parameter name to parameter ID in DSS simulation
+	std::map<std::string, int> m_parameterIdMap;
+
+	// When we encounter a change in inputs, we insert the channel # in here
+	// Then this set is consumed in the update function
 	std::set<int> m_channelsToUpdate;
 
-	std::map<std::string, int> m_parameterIdMap;
+	// Mapping of label to AnalogInput (e.g. sigma0 -> AnalogInput for 6th channel) 
 	std::map<std::string, int> m_labelToAnalogIn;
 
 	int m_audioFramesPerAnalogFrame;
@@ -59,13 +69,16 @@ private:
 	float m_amplitude;
 	float m_frequency;
 
+	// Vector of classes that allow us to read from an analog channels (0~7)
 	std::vector<AnalogInput> m_analogInputs;
 
+	// Counter for ensuring no-more-than-every-20-frames update frequency
 	short m_updateFrameCounter = 0;
 	
+	// Set if we're to actively damp the signal in the next update call
 	bool clippingFlag = false;
+	float correctionValue; // Damping proportion
 
 	int m_buttonPreviousState[4] = {}; // Last button state
 	int m_buttonState[4] = {}; // Current button state
-	//uint64_t m_buttonLastActivated[4] = {}; // Timestamp of when the button was last activated
 };

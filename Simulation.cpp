@@ -9,7 +9,7 @@
 #include <sstream>
 
 
-Simulation::Simulation(BelaContext* context) : m_excitationLoc(-1.f), m_amplitude(5.f), m_frequency(0.1f)
+Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1f)
 {
 	m_inverseSampleRate = 1.0f / context->audioSampleRate;
 	if (context->analogFrames)
@@ -35,15 +35,25 @@ Simulation::Simulation(BelaContext* context) : m_excitationLoc(-1.f), m_amplitud
 	parameters.sigma1 = 0.005f;
 	m_pDynamicStiffString = std::make_unique<DynamicStiffString>(parameters, m_inverseSampleRate);
 
+	// Setup internal state, cloning the DSS values
+	m_parameters["L"] = parameters.L;
+	m_parameters["rho"] = parameters.rho;
+	m_parameters["r"] = parameters.r;
+	m_parameters["T"] = parameters.T;
+	m_parameters["E"] = parameters.E;
+	m_parameters["sigma0"] = parameters.sigma0;
+	m_parameters["sigma1"] = parameters.sigma1;
+	m_parameters["loc"] = -1.f;
+
 	// Setup parameter ranges
 	std::map<std::string, std::pair<float, float>> parameterRanges;
 	parameterRanges["L"] = { 0.2f, 4.0f };
-	parameterRanges["rho"] = { 1962.5f, 15700.0f };
-	parameterRanges["r"] = { 0.0005f, 0.001f };
-	parameterRanges["T"] = { 150.f, 1200.0f };
+	parameterRanges["rho"] = {15700.0f, 1962.5f};
+	parameterRanges["r"] = { 0.001f, 0.0005f};
+	parameterRanges["T"] = { 150.f, 1200.0f};
 	parameterRanges["E"] = { 0.f, 400000000000.f };
-	parameterRanges["sigma0"] = { 0.000001f, 2.f };
-	parameterRanges["sigma1"] = { 0.0002f, 0.01f };
+	parameterRanges["sigma0"] = {  2.f, 0.000001f };
+	parameterRanges["sigma1"] = { 0.01f, 0.0002f };
 	parameterRanges["loc"] = { 0.f, 1.f };
 
 	// Order of inputs is L, rho, T, r, loc, E, sigma0, sigma1
@@ -67,38 +77,69 @@ void Simulation::update(BelaContext* context)
 	// 1. Handle trigger button (should probably be last)
 	if (isButtonReleased(Button::TRIGGER))
 	{
-		m_pDynamicStiffString->excite(m_excitationLoc);
+		m_pDynamicStiffString->excite(m_parameters["loc"]);
 	}
 
 	// 2. Process parameter changes
-	if (!m_channelsToUpdate.empty() && (m_updateFrameCounter == 0))
+	if (m_updateFrameCounter == 0)
 	{
 		// Process update queue
 		for (int channel: m_channelsToUpdate)
 		{
-			const float mappedValue = m_analogInputs[channel].getCurrentValueMapped();
+			
+			// if(!m_channelsToUpdate.empty()) <- So is this statement not necessary now?
+			
+			if(channel == 0) // Length Handled differently -> 1V/oct 
+			{
+			const float mappedValue = map((0.2f * powf(2, (m_analogInputs[channel].getCurrentValueMapped()))), 0.2f, 4.f, 4.f, 0.2f); // <- messy af but works! out of tune until fully calibrated though
 			rt_printf("Updating channel %d with value %f\n", channel, mappedValue);
-
+	
 			// Map the analog channel to intended parameter to parameter id in DSS simulation
 			const auto& analogIn = m_analogInputs[channel];
-			const int parameterId = m_parameterIdMap[analogIn.getLabel()];
-			
-			if(clippingFlag)
-			{
-				// sigma0
-				int parameterId = m_parameterIdMap["sigma0"];
-				float currentValue = m_analogInputs[m_labelToAnalogIn["sigma0"]].getCurrentValueMapped();
-				m_pDynamicStiffString->refreshParameter(parameterId, currentValue * 10.f);
-				// sigma1
-				parameterId = m_parameterIdMap["sigma1"];
-				currentValue = m_analogInputs[m_labelToAnalogIn["sigma1"]].getCurrentValueMapped();
-				m_pDynamicStiffString->refreshParameter(parameterId, currentValue * 10.f);
-			
-				clippingFlag = false;
+			const std::string& paramName = analogIn.getLabel();
+			const int parameterId = m_parameterIdMap[paramName];
+
+			// Save state and send change to DSS
+			m_parameters[paramName] = mappedValue;
+			m_pDynamicStiffString->refreshParameter(parameterId, mappedValue);				
 			}
 			
-			m_pDynamicStiffString->refreshParameter(parameterId, mappedValue);
+			else
+			{
+			const float mappedValue = m_analogInputs[channel].getCurrentValueMapped();
+			rt_printf("Updating channel %d with value %f\n", channel, mappedValue);
+	
+			// Map the analog channel to intended parameter to parameter id in DSS simulation
+			const auto& analogIn = m_analogInputs[channel];
+			const std::string& paramName = analogIn.getLabel();
+			const int parameterId = m_parameterIdMap[paramName];
+
+			// Save state and send change to DSS
+			m_parameters[paramName] = mappedValue;
+			m_pDynamicStiffString->refreshParameter(parameterId, mappedValue);				
+			}
+			
 		}
+		
+		if (clippingFlag == true)
+		{
+			// sigma0
+			int parameterId = m_parameterIdMap["sigma0"];
+			float currentValue = m_parameters["sigma0"];
+			currentValue = currentValue * correctionValue;
+			m_parameters["sigma0"] = currentValue;
+			m_pDynamicStiffString->refreshParameter(parameterId, currentValue);
+			rt_printf("Updating sigma0 with value %f\n", currentValue);
+			// sigma1
+			parameterId = m_parameterIdMap["sigma1"];
+			currentValue = m_parameters["sigma1"] * correctionValue;
+			m_parameters["sigma1"] = currentValue;
+			m_pDynamicStiffString->refreshParameter(parameterId, currentValue);
+			rt_printf("Updating sigma1 with value %f\n", currentValue);
+			
+			clippingFlag = false;	
+		}	
+		
 		m_channelsToUpdate.clear();
 		m_updateFrameCounter = sDSSUpdateRate;
 	}
@@ -146,7 +187,7 @@ void Simulation::readInputs(BelaContext* context, int frame)
 			// So there is no risk of too frequent updates
 			if (analogIn.getLabel() == "loc")
 			{
-				m_excitationLoc = analogIn.getCurrentValueMapped();
+				m_parameters["loc"] = analogIn.getCurrentValueMapped();
 			}
 			else if (analogIn.hasChanged())
 			{
@@ -186,9 +227,28 @@ void Simulation::writeAudio(BelaContext* context, int frame)
 	 This would be the right place to look into compression algorithms.
 	 Practically its own reasearch branch - > We can come back to this next month. */
 	
-	if ((output >= 3.f) || (output <= -3.f))
+	if ((output >= 2.5f) || (output <= - 2.5f))
 	{
 		clippingFlag = true;
+		correctionValue = 1.001;
+		
+		if ((output >= 3.5f) || (output <= - 3.5f))
+		{
+			correctionValue = 1.01;
+		}
+		
+			if ((output >= 4.f) || (output <= - 4.5f))
+			{
+				correctionValue = 1.1f;
+			}
+				if ((output >= 4.5f) || (output <= - 4.5f))
+				{
+					correctionValue = 5.f;
+				}
+					if ((output >= 4.9f) || (output <= - 4.9f))
+					{
+					correctionValue = 10.f;
+					}
 	}
 	
 	output = map(output, -5.f, 5.f, -1.f, 1.f);
@@ -197,5 +257,4 @@ void Simulation::writeAudio(BelaContext* context, int frame)
 	{
 		audioWrite(context, frame, channel, output);
 	}
-	
 }
