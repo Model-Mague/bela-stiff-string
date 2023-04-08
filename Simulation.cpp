@@ -46,12 +46,12 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 	// Setup parameter ranges
 	std::map<std::string, std::pair<float, float>> parameterRanges;
 	parameterRanges["L"] = { 0.2f, 4.0f };
-	parameterRanges["rho"] = { 1962.5f, 15700.0f };
-	parameterRanges["r"] = { 0.0005f, 0.001f };
-	parameterRanges["T"] = { 150.f, 1200.0f };
+	parameterRanges["rho"] = {15700.0f, 1962.5f};
+	parameterRanges["r"] = { 0.001f, 0.0005f};
+	parameterRanges["T"] = { 150.f, 1200.0f};
 	parameterRanges["E"] = { 0.f, 400000000000.f };
-	parameterRanges["sigma0"] = { 0.000001f, 2.f };
-	parameterRanges["sigma1"] = { 0.0002f, 0.01f };
+	parameterRanges["sigma0"] = {  2.f, 0.000001f };
+	parameterRanges["sigma1"] = { 0.01f, 0.0002f };
 	parameterRanges["loc"] = { 0.f, 1.f };
 
 	// Order of inputs is L, rho, T, r, loc, E, sigma0, sigma1
@@ -84,6 +84,26 @@ void Simulation::update(BelaContext* context)
 		// Process update queue
 		for (int channel: m_channelsToUpdate)
 		{
+			
+			// if(!m_channelsToUpdate.empty()) <- So is this statement not necessary now?
+			
+			if(channel == 0) // Length Handled differently -> 1V/oct 
+			{
+			const float mappedValue = map((0.2f * powf(2, (m_analogInputs[channel].getCurrentValueMapped()))), 0.2f, 4.f, 4.f, 0.2f); // <- messy af but works! out of tune until fully calibrated though
+			rt_printf("Updating channel %d with value %f\n", channel, mappedValue);
+	
+			// Map the analog channel to intended parameter to parameter id in DSS simulation
+			const auto& analogIn = m_analogInputs[channel];
+			const std::string& paramName = analogIn.getLabel();
+			const int parameterId = m_parameterIdMap[paramName];
+
+			// Save state and send change to DSS
+			m_parameters[paramName] = mappedValue;
+			m_pDynamicStiffString->refreshParameter(parameterId, mappedValue);				
+			}
+			
+			else
+			{
 			const float mappedValue = m_analogInputs[channel].getCurrentValueMapped();
 			rt_printf("Updating channel %d with value %f\n", channel, mappedValue);
 	
@@ -94,7 +114,9 @@ void Simulation::update(BelaContext* context)
 
 			// Save state and send change to DSS
 			m_parameters[paramName] = mappedValue;
-			m_pDynamicStiffString->refreshParameter(parameterId, mappedValue);
+			m_pDynamicStiffString->refreshParameter(parameterId, mappedValue);				
+			}
+			
 		}
 		
 		if (clippingFlag == true)
@@ -102,13 +124,13 @@ void Simulation::update(BelaContext* context)
 			// sigma0
 			int parameterId = m_parameterIdMap["sigma0"];
 			float currentValue = m_parameters["sigma0"];
-			currentValue = currentValue * 1.1f;
+			currentValue = currentValue * correctionValue;
 			m_parameters["sigma0"] = currentValue;
 			m_pDynamicStiffString->refreshParameter(parameterId, currentValue);
 			rt_printf("Updating sigma0 with value %f\n", currentValue);
 			// sigma1
 			parameterId = m_parameterIdMap["sigma1"];
-			currentValue = m_parameters["sigma1"] * 1.1f;
+			currentValue = m_parameters["sigma1"] * correctionValue;
 			m_parameters["sigma1"] = currentValue;
 			m_pDynamicStiffString->refreshParameter(parameterId, currentValue);
 			rt_printf("Updating sigma1 with value %f\n", currentValue);
@@ -206,6 +228,25 @@ void Simulation::writeAudio(BelaContext* context, int frame)
 	if ((output >= 2.5f) || (output <= - 2.5f))
 	{
 		clippingFlag = true;
+		correctionValue = 1.001;
+		
+		if ((output >= 3.5f) || (output <= - 3.5f))
+		{
+			correctionValue = 1.01;
+		}
+		
+			if ((output >= 4.f) || (output <= - 4.5f))
+			{
+				correctionValue = 1.1f;
+			}
+				if ((output >= 4.5f) || (output <= - 4.5f))
+				{
+					correctionValue = 5.f;
+				}
+					if ((output >= 4.9f) || (output <= - 4.9f))
+					{
+					correctionValue = 10.f;
+					}
 	}
 	
 	output = map(output, -5.f, 5.f, -1.f, 1.f);
