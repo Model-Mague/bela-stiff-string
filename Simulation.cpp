@@ -45,13 +45,13 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 
 	// Setup parameter ranges
 	std::map<std::string, std::pair<float, float>> parameterRanges;
-	parameterRanges["L"] = { 0.2f, 4.0f };
+	parameterRanges["L"] = { 0.5f, 4.0f };
 	parameterRanges["rho"] = {15700.0f, 1962.5f};
 	parameterRanges["r"] = { 0.001f, 0.0005f};
 	parameterRanges["T"] = { 150.f, 1200.0f};
-	parameterRanges["E"] = { 0.f, 400000000000.f };
-	parameterRanges["sigma0"] = {  2.f, 0.000001f };
-	parameterRanges["sigma1"] = { 0.01f, 0.0002f };
+	parameterRanges["E"] = { 3000000000.f, 400000000000.f }; // this strange limit on the left hand dodges block-dropping without being perceptible
+	parameterRanges["sigma0"] = {  0.f, 2.f, };
+	parameterRanges["sigma1"] = { 0.0002f, 0.01f};
 	parameterRanges["loc"] = { 0.f, 1.f };
 
 	// Order of inputs is L, rho, T, r, loc, E, sigma0, sigma1
@@ -89,9 +89,9 @@ void Simulation::update(BelaContext* context)
 			
 			if(channel == 0) // Length Handled differently -> 1V/oct 
 			{
-			const float mappedValue = map((0.2f * powf(2, (m_analogInputs[channel].getCurrentValueMapped()))), 0.2f, 4.f, 4.f, 0.2f); // <- messy af but works! out of tune until fully calibrated though
+			const float mappedValue = 0.5f * powf(2, map(Global::limit(m_analogInputs[channel].getCurrentValueMapped(), 0.f, 1.33f), 0.5f, 1.33f, 3.f, 0.f)); // <- magic: input limited to 0-3V (which are the number of octaves made available by changing the Length in our range, then mapped to oposite values, then made exponent. It is very messy, sort of a desperate measure tbh.
 			rt_printf("Updating channel %d with value %f\n", channel, mappedValue);
-	
+			
 			// Map the analog channel to intended parameter to parameter id in DSS simulation
 			const auto& analogIn = m_analogInputs[channel];
 			const std::string& paramName = analogIn.getLabel();
