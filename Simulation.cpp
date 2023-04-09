@@ -233,25 +233,24 @@ void Simulation::writeAudio(BelaContext* context, int frame)
 	if ((output >= 2.5f) || (output <= - 2.5f))
 	{
 		clippingFlag = true;
-		correctionValue = 1.001;
+		correctionValue = 1.001f;
 		
 		if ((output >= 3.5f) || (output <= - 3.5f))
 		{
-			correctionValue = 1.01;
+			correctionValue = 1.01f;
 		}
-		
-			if ((output >= 4.f) || (output <= - 4.5f))
-			{
-				correctionValue = 1.1f;
-			}
-				if ((output >= 4.5f) || (output <= - 4.5f))
-				{
-					correctionValue = 5.f;
-				}
-					if ((output >= 4.9f) || (output <= - 4.9f))
-					{
-					correctionValue = 10.f;
-					}
+		if ((output >= 4.f) || (output <= - 4.5f))
+		{
+			correctionValue = 1.1f;
+		}
+		if ((output >= 4.5f) || (output <= - 4.5f))
+		{
+			correctionValue = 5.f;
+		}
+		if ((output >= 4.9f) || (output <= - 4.9f))
+		{
+			correctionValue = 10.f;
+		}
 	}
 	
 	output = map(output, -5.f, 5.f, -1.f, 1.f);
