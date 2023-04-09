@@ -49,7 +49,7 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 	parameterRanges["rho"] = {15700.0f, 1962.5f};
 	parameterRanges["r"] = { 0.001f, 0.0005f};
 	parameterRanges["T"] = { 150.f, 1200.0f};
-	parameterRanges["E"] = { 3000000000.f, 400000000000.f }; // this strange limit on the left hand dodges block-dropping without being perceptible
+	parameterRanges["E"] = { 5000000000.f, 400000000000.f }; // this strange limit on the left hand dodges block-dropping without being perceptible
 	parameterRanges["sigma0"] = {  0.f, 2.f, };
 	parameterRanges["sigma1"] = { 0.0002f, 0.01f};
 	parameterRanges["loc"] = { 0.f, 1.f };
