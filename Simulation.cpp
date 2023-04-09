@@ -9,7 +9,7 @@
 #include <sstream>
 
 
-Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1f)
+Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1f), m_screen(context)
 {
 	m_inverseSampleRate = 1.0f / context->audioSampleRate;
 	if (context->analogFrames)
@@ -86,7 +86,8 @@ void Simulation::update(BelaContext* context)
 		// Process update queue
 		for (int channel: m_channelsToUpdate)
 		{
-			
+			const auto& analogIn = m_analogInputs[channel];
+
 			// if(!m_channelsToUpdate.empty()) <- So is this statement not necessary now?
 			
 			if(channel == 0) // Length Handled differently -> 1V/oct 
@@ -95,7 +96,6 @@ void Simulation::update(BelaContext* context)
 			rt_printf("Updating channel %d with value %f\n", channel, mappedValue);
 	
 			// Map the analog channel to intended parameter to parameter id in DSS simulation
-			const auto& analogIn = m_analogInputs[channel];
 			const std::string& paramName = analogIn.getLabel();
 			const int parameterId = m_parameterIdMap[paramName];
 
@@ -110,7 +110,6 @@ void Simulation::update(BelaContext* context)
 			rt_printf("Updating channel %d with value %f\n", channel, mappedValue);
 	
 			// Map the analog channel to intended parameter to parameter id in DSS simulation
-			const auto& analogIn = m_analogInputs[channel];
 			const std::string& paramName = analogIn.getLabel();
 			const int parameterId = m_parameterIdMap[paramName];
 
@@ -119,6 +118,7 @@ void Simulation::update(BelaContext* context)
 			m_pDynamicStiffString->refreshParameter(parameterId, mappedValue);				
 			}
 			
+			m_screen.setBrightness(channel, analogIn.getCurrentValue());
 		}
 		
 		if (clippingFlag == true)
@@ -153,7 +153,10 @@ void Simulation::update(BelaContext* context)
 	m_pDynamicStiffString->calculateScheme();
 	m_pDynamicStiffString->updateStates();
 
-	// 4. Update LFO phase
+	// 4. Update screen
+	m_screen.update(context);
+
+	// 5. Update LFO phase
 	for (int channel = 0; channel < sAnalogInputCount; channel++)
 	{
 		m_phase[channel] += 2.0f * (float)M_PI * m_frequency * m_inverseSampleRate;

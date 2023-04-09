@@ -8,8 +8,12 @@
 #define AUDIO_FRAMES 16
 #define ANALOG_FRAMES 8
 
+#define OUTPUT 1
+
 struct BelaContext {
-	float  audioSampleRate = 44100.f;
+	float audioSampleRate = 44100.f;
+	const float digitalSampleRate = 44100.f;
+
 	uint32_t  audioFrames = AUDIO_FRAMES;
 	uint32_t  analogFrames = ANALOG_FRAMES;
 	uint32_t digitalFrames = 16;
@@ -120,6 +124,23 @@ static inline int digitalRead(BelaContext* context, int frame, int channel) { re
  */
 static inline void digitalWriteOnce(BelaContext* context, int frame, int channel, int value) {}
 
+/**
+ * \brief Set the direction of a digital pin to input or output.
+ *
+ * This function sets the direction of a digital pin, at the time indicated by \c frame.
+ * Valid values are \c INPUT and \c OUTPUT. All pins begin as inputs by default.
+ *
+ * The value written will persist for all future frames.
+ *
+ * \param context The I/O data structure which is passed by Bela to render().
+ * \param frame Which frame (i.e. what time) to set the pin direction. Valid values range
+ * from 0 to (context->digitalFrames - 1).
+ * \param channel Which digital channel to set. 16 pins across the headers are
+ * available. Check your board diagram to know where they are on the specific
+ * board you have.
+ * \param mode Direction of the pin (\c INPUT or \c OUTPUT).
+ */
+static inline void pinMode(BelaContext* context, int frame, int channel, int mode) {}
 
 class Scope {
 public:
