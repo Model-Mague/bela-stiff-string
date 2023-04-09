@@ -21,8 +21,6 @@ FINITE-DIFFERENCE TIME-DOMAIN METHODS AND THE DYNAMIC GRID,”Proceedings of the
 
 In order of relevance:
 
-### Fix Calibration. ESSENTIAL
-
 ### DigitalWrite LED handling. ESSENTIAL
 
 ### AnalogOut Parameter values. COOL
@@ -39,7 +37,23 @@ Since the CVinput for loc is lost, it is good to have an extra parameter that ra
 
 It is also a reference to the "spray parameter in Instruo's Arhbhar: explained in https://youtu.be/hw73DlxVWrI?t=500
 
-### Introduce E handling stage NICE LITTLE DETAIL
+
+
+## DONE
+
+### Fix Calibration. DOOOOONEEEE
+
+### Introduce 1V/oct behaviour at Lenght Input. DONE
+
+This is of the type:
+- minimumLengthValue * 2 ^ (incomingvalue)
+
+However, it will require Length to be mapped in reverse:
+- from maximum length to minimum lenght (low pitch to high pitch, since that is how pitch voltage works).
+
+### Fix handling of sigmas at De-clipping algorithm. DONE
+
+### Introduce E handling stage NICE LITTLE DETAIL // UNNECESARY // RANGE DIMINISHED -> UNPERCEPTIBLE
 
 need to introduce a de-clipping stage similar to sigmas since 
 
@@ -59,16 +73,3 @@ E lower range is a bigger number
 Exact values need calibrated by ear.
 
 It is optional since I could just increase the lower range of T (it only started happening when ranges were widened).
-
-## DONE
-
-### Introduce 1V/oct behaviour at Lenght Input. DONE
-
-This is of the type:
-- minimumLengthValue * 2 ^ (incomingvalue)
-
-However, it will require Length to be mapped in reverse:
-- from maximum length to minimum lenght (low pitch to high pitch, since that is how pitch voltage works).
-
-### Fix handling of sigmas at De-clipping algorithm. DONE
-
