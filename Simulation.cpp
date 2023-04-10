@@ -50,8 +50,8 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 	parameterRanges["r"] = { 0.001f, 0.0005f};
 	parameterRanges["T"] = { 150.f, 1200.0f};
 	parameterRanges["E"] = { 5000000000.f, 400000000000.f }; // this strange limit on the left hand dodges block-dropping without being perceptible
-	parameterRanges["sigma0"] = {  0.f, 2.f, };
-	parameterRanges["sigma1"] = { 0.0002f, 0.01f};
+	parameterRanges["sigma0"] = {  0.f, 8.f, }; //     Quadriplied Right side range
+	parameterRanges["sigma1"] = { 0.0002f, 0.04f};//   for that clean P I Z Z I C A T O 
 	parameterRanges["loc"] = { 0.f, 1.f };
 
 	// Order of inputs is L, rho, T, r, loc, E, sigma0, sigma1
