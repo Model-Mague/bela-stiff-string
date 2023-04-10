@@ -22,10 +22,19 @@ void LEDScreen::update(BelaContext* context)
 	{
 		computePhase();
 
-		for (int i = 0; i < sCellCount; i++)
+		for (int i = 0; i < 2; i++) // 0-1
 		{
-			digitalWriteOnce(context, n, m_ledPins[i], squarePWM(m_brightness[i]));
+			digitalWriteOnce(context, n, m_ledPins[i], squarePWM(m_brightness[0]));
 		}
+		for (int i = 2; i < 8; i++) // 2-7
+		{
+			digitalWriteOnce(context, n, m_ledPins[i], squarePWM(m_brightness[i - 1]));
+		}
+		for (int i = 8; i < sCellCount; i++) // 8-9
+		{
+			digitalWriteOnce(context, n, m_ledPins[i], squarePWM(m_brightness[7]));
+		}
+		
 	}
 }
 
