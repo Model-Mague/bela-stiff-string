@@ -84,37 +84,34 @@ void Simulation::update(BelaContext* context)
 		// Process update queue
 		for (int channel: m_channelsToUpdate)
 		{
-			
-			// if(!m_channelsToUpdate.empty()) <- So is this statement not necessary now?
-			
 			if(channel == 0) // Length Handled differently -> 1V/oct 
 			{
-			const float mappedValue = 0.5f * powf(2, map(Global::limit(m_analogInputs[channel].getCurrentValueMapped(), 0.f, 1.33f), 0.5f, 1.33f, 3.f, 0.f)); // <- magic: input limited to 0-3V (which are the number of octaves made available by changing the Length in our range, then mapped to oposite values, then made exponent. It is very messy, sort of a desperate measure tbh.
-			rt_printf("Updating channel %d with value %f\n", channel, mappedValue);
+				const float mappedValue = 0.5f * powf(2, map(Global::limit(m_analogInputs[channel].getCurrentValueMapped(), 0.f, 1.33f), 0.5f, 1.33f, 3.f, 0.f)); // <- magic: input limited to 0-3V (which are the number of octaves made available by changing the Length in our range, then mapped to oposite values, then made exponent. It is very messy, sort of a desperate measure tbh.
+				rt_printf("Updating channel %d with value %f\n", channel, mappedValue);
 			
-			// Map the analog channel to intended parameter to parameter id in DSS simulation
-			const auto& analogIn = m_analogInputs[channel];
-			const std::string& paramName = analogIn.getLabel();
-			const int parameterId = m_parameterIdMap[paramName];
+				// Map the analog channel to intended parameter to parameter id in DSS simulation
+				const auto& analogIn = m_analogInputs[channel];
+				const std::string& paramName = analogIn.getLabel();
+				const int parameterId = m_parameterIdMap[paramName];
 
-			// Save state and send change to DSS
-			m_parameters[paramName] = mappedValue;
-			m_pDynamicStiffString->refreshParameter(parameterId, mappedValue);				
+				// Save state and send change to DSS
+				m_parameters[paramName] = mappedValue;
+				m_pDynamicStiffString->refreshParameter(parameterId, mappedValue);				
 			}
 			
 			else
 			{
-			const float mappedValue = m_analogInputs[channel].getCurrentValueMapped();
-			rt_printf("Updating channel %d with value %f\n", channel, mappedValue);
+				const float mappedValue = m_analogInputs[channel].getCurrentValueMapped();
+				rt_printf("Updating channel %d with value %f\n", channel, mappedValue);
 	
-			// Map the analog channel to intended parameter to parameter id in DSS simulation
-			const auto& analogIn = m_analogInputs[channel];
-			const std::string& paramName = analogIn.getLabel();
-			const int parameterId = m_parameterIdMap[paramName];
+				// Map the analog channel to intended parameter to parameter id in DSS simulation
+				const auto& analogIn = m_analogInputs[channel];
+				const std::string& paramName = analogIn.getLabel();
+				const int parameterId = m_parameterIdMap[paramName];
 
-			// Save state and send change to DSS
-			m_parameters[paramName] = mappedValue;
-			m_pDynamicStiffString->refreshParameter(parameterId, mappedValue);				
+				// Save state and send change to DSS
+				m_parameters[paramName] = mappedValue;
+				m_pDynamicStiffString->refreshParameter(parameterId, mappedValue);				
 			}
 			
 		}
@@ -234,19 +231,18 @@ void Simulation::writeAudio(BelaContext* context, int frame)
 		{
 			correctionValue = 1.01;
 		}
-		
-			if ((output >= 4.f) || (output <= - 4.5f))
-			{
-				correctionValue = 1.1f;
-			}
-				if ((output >= 4.5f) || (output <= - 4.5f))
-				{
-					correctionValue = 5.f;
-				}
-					if ((output >= 4.9f) || (output <= - 4.9f))
-					{
-					correctionValue = 10.f;
-					}
+		if ((output >= 4.f) || (output <= - 4.5f))
+		{
+			correctionValue = 1.1f;
+		}
+		if ((output >= 4.5f) || (output <= - 4.5f))
+		{
+			correctionValue = 5.f;
+		}
+		if ((output >= 4.9f) || (output <= - 4.9f))
+		{
+			correctionValue = 10.f;
+		}
 	}
 	
 	output = map(output, -5.f, 5.f, -1.f, 1.f);
