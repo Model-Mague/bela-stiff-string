@@ -138,7 +138,7 @@ void Simulation::update(BelaContext* context)
 			const std::string& paramName = analogIn.getLabel(); // Calls the parameter Name of the Analog In channel and saves it 
 			float currentValue = m_parameters[paramName]; // Calls the parameter's Name Value and saves it
 			rt_printf("sending channel  %d to the LEDScreen with value %f\n", channel, currentValue);
-			m_screen.setBrightness(channel, currentValue); // Passes the parameter's value to the correct channel <- needs mapped
+			m_screen.setBrightness(channel, analogIn.unmapValue(currentValue)); // Passes the parameter's value to the correct channel
 		}
 		
 		if (clippingFlag == true)
@@ -155,7 +155,9 @@ void Simulation::update(BelaContext* context)
 			m_parameters["sigma0"] = currentValue;
 			m_pDynamicStiffString->refreshParameter(parameterId, currentValue);
 			rt_printf("Updating sigma0 with value %f\n", currentValue);
-			m_screen.setBrightness(7, currentValue); // passes the new value to the LEDScreen < - needs mapped
+
+			const auto& analogInSigma0 = m_analogInputs[m_labelToAnalogIn["sigma0"]];
+			m_screen.setBrightness(7, analogInSigma0.unmapValue(currentValue)); // passes the new value to the LEDScreen
 			         
 			
 			// sigma1
@@ -168,7 +170,8 @@ void Simulation::update(BelaContext* context)
 			m_parameters["sigma1"] = currentValue;
 			m_pDynamicStiffString->refreshParameter(parameterId, currentValue);
 			rt_printf("Updating sigma1 with value %f\n", currentValue);
-			m_screen.setBrightness(8, currentValue); // passes the new value to the LEDScreen
+			const auto& analogInSigma1 = m_analogInputs[m_labelToAnalogIn["sigma0"]];
+			m_screen.setBrightness(8, analogInSigma1.unmapValue(currentValue)); // passes the new value to the LEDScreen
 			
 			clippingFlag = false;	
 		}	
