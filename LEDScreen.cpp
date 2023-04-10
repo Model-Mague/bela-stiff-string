@@ -2,9 +2,10 @@
 
 LEDScreen::LEDScreen(BelaContext* context) : m_phase(0.f)
 {
+	m_ledPins = { 6, 7, 10, 2, 3, 0, 1, 4, 5, 8 }; // Bela Pepper Pin Numbering
 	for (unsigned int i = 0; i < sCellCount; i++)
 	{
-		pinMode(context, 0, sLedPins[i], OUTPUT);
+		pinMode(context, 0, m_ledPins[i], OUTPUT);
 	}
 
 	m_invSampleRate = 1 / context->digitalSampleRate;
@@ -23,7 +24,7 @@ void LEDScreen::update(BelaContext* context)
 
 		for (int i = 0; i < sCellCount; i++)
 		{
-			digitalWriteOnce(context, n, sLedPins[i], squarePWM(m_brightness[i]));
+			digitalWriteOnce(context, n, m_ledPins[i], squarePWM(m_brightness[i]));
 		}
 	}
 }
