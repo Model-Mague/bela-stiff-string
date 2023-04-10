@@ -24,7 +24,7 @@ public:
 	enum class Button : size_t {
 		TRIGGER = 0,
 		MODE = 1,
-		UP = 2,
+		SPRAY = 2,
 		DOWN = 3
 	};
 
@@ -36,7 +36,13 @@ public:
 	const float* getLfo() { return m_lfo; }
 	const float* getPhase() { return m_phase; }
 	const int getAnalogInputCount() { return sAnalogInputCount; }
-
+	
+	//SPRAY VALUES
+	float sprayAmount; // pot 5 when button is pressed
+	float sprayValue;  // randomised -0.5 -> 0.5 * sprayAmount
+	float sprayedloc;  // loc position + sprayValue (sort of)
+	
+	
 	void update(BelaContext* context); // Runs every audio frame
 
 	bool isButtonReleased(const Button b) { return m_buttonPreviousState[(size_t)b] != 0 && m_buttonState[(size_t)b] == 0; }

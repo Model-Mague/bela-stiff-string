@@ -21,25 +21,29 @@ FINITE-DIFFERENCE TIME-DOMAIN METHODS AND THE DYNAMIC GRID,”Proceedings of the
 
 In order of relevance:
 
-### Fix Calibration. ESSENTIAL
-
 ### DigitalWrite LED handling. ESSENTIAL
 
 ### AnalogOut Parameter values. COOL
 
-### Add Spray Function to loc. COOL
 
-- while Button "(any button not in use)" = true
-- loc = loc + spread * input[5]
-- spread = random between -1 and 1
 
-advantage of this is:
 
-Since the CVinput for loc is lost, it is good to have an extra parameter that randomises loc slightly.
 
-It is also a reference to the "spray parameter in Instruo's Arhbhar: explained in https://youtu.be/hw73DlxVWrI?t=500
+## DONE
 
-### Introduce E handling stage NICE LITTLE DETAIL
+### Fix Calibration. DOOOOONEEEE
+
+### Introduce 1V/oct behaviour at Lenght Input. DONE
+
+This is of the type:
+- minimumLengthValue * 2 ^ (incomingvalue)
+
+However, it will require Length to be mapped in reverse:
+- from maximum length to minimum lenght (low pitch to high pitch, since that is how pitch voltage works).
+
+### Fix handling of sigmas at De-clipping algorithm. DONE
+
+### Introduce E handling stage NICE LITTLE DETAIL // UNNECESARY // RANGE DIMINISHED -> UNPERCEPTIBLE
 
 need to introduce a de-clipping stage similar to sigmas since 
 
@@ -60,15 +64,14 @@ Exact values need calibrated by ear.
 
 It is optional since I could just increase the lower range of T (it only started happening when ranges were widened).
 
-## DONE
+### Add Spray Function to loc. DOUNEEE. Also TRIGGER RANDOMIZER OMG
 
-### Introduce 1V/oct behaviour at Lenght Input. DONE
+- while Button "(any button not in use)" = true
+- loc = loc + spread * input[5]
+- spread = random between -1 and 1
 
-This is of the type:
-- minimumLengthValue * 2 ^ (incomingvalue)
+advantage of this is:
 
-However, it will require Length to be mapped in reverse:
-- from maximum length to minimum lenght (low pitch to high pitch, since that is how pitch voltage works).
+Since the CVinput for loc is lost, it is good to have an extra parameter that randomises loc slightly.
 
-### Fix handling of sigmas at De-clipping algorithm. DONE
-
+It is also a reference to the "spray parameter in Instruo's Arhbhar: explained in https://youtu.be/hw73DlxVWrI?t=500

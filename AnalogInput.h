@@ -2,6 +2,7 @@
 
 #ifdef DESKTOP_BUILD
 #include "BelaMock.h"
+#include "vector"
 #else
 #include "Bela.h"
 #endif
@@ -16,6 +17,7 @@ public:
 	void read(BelaContext* context, const int frame);
 
 	float getCurrentValue() const { return m_currentValue; }
+	
 	float getCurrentValueMapped() const;
 
 	bool hasChanged() { return m_hasChanged; }
@@ -31,7 +33,7 @@ private:
 
 	bool m_hasChanged;
 	float m_currentValue;
-
+	
 	// Calibration
 	bool m_calibrate = 1;
 	float m_maxValue;
