@@ -25,17 +25,7 @@ In order of relevance:
 
 ### AnalogOut Parameter values. COOL
 
-### Add Spray Function to loc. COOL
 
-- while Button "(any button not in use)" = true
-- loc = loc + spread * input[5]
-- spread = random between -1 and 1
-
-advantage of this is:
-
-Since the CVinput for loc is lost, it is good to have an extra parameter that randomises loc slightly.
-
-It is also a reference to the "spray parameter in Instruo's Arhbhar: explained in https://youtu.be/hw73DlxVWrI?t=500
 
 
 
@@ -73,3 +63,15 @@ E lower range is a bigger number
 Exact values need calibrated by ear.
 
 It is optional since I could just increase the lower range of T (it only started happening when ranges were widened).
+
+### Add Spray Function to loc. DOUNEEE. Also TRIGGER RANDOMIZER OMG
+
+- while Button "(any button not in use)" = true
+- loc = loc + spread * input[5]
+- spread = random between -1 and 1
+
+advantage of this is:
+
+Since the CVinput for loc is lost, it is good to have an extra parameter that randomises loc slightly.
+
+It is also a reference to the "spray parameter in Instruo's Arhbhar: explained in https://youtu.be/hw73DlxVWrI?t=500
