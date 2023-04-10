@@ -50,8 +50,8 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 	parameterRanges["r"] = { 0.001f, 0.0005f};
 	parameterRanges["T"] = { 150.f, 1200.0f};
 	parameterRanges["E"] = { 5000000000.f, 400000000000.f }; // this strange limit on the left hand dodges block-dropping without being perceptible
-	parameterRanges["sigma0"] = {  0.f, 2.f, };
-	parameterRanges["sigma1"] = { 0.0002f, 0.01f};
+	parameterRanges["sigma0"] = {  0.f, 8.f, }; //     Quadriplied Right side range
+	parameterRanges["sigma1"] = { 0.0002f, 0.04f};//   for that clean P I Z Z I C A T O 
 	parameterRanges["loc"] = { 0.f, 1.f };
 
 	// Order of inputs is L, rho, T, r, loc, E, sigma0, sigma1
@@ -75,8 +75,27 @@ void Simulation::update(BelaContext* context)
 	// 1. Handle trigger button (should probably be last)
 	if (isButtonReleased(Button::TRIGGER))
 	{
+		sprayValue = ((rand() % 100)/100.f); // Since rand() only delivers integers, the range 0 - 100 is divided to be 0.00 - 1.00
+		
+		if (sprayValue > 50) // Since rand() only delivers positive numbers, any number > 50 is - 100 -> making the range -0.50 -> 0.50
+		{
+			sprayValue = sprayValue - 100;
+		}
+		sprayValue = sprayValue * sprayAmount;
+		
+				
+				if(sprayedloc > 1.f || sprayedloc < 0.f) // if over 1 or below 0, sprayValue reversed.
+				{
+					sprayValue =  - sprayValue * 2;
+					sprayedloc = sprayedloc + sprayValue;
+				}
+
+		rt_printf("sprayValue is %f\n", sprayValue);
+		
 		m_pDynamicStiffString->excite(m_parameters["loc"]);
+		
 	}
+
 
 	// 2. Process parameter changes
 	if (m_updateFrameCounter == 0)
@@ -122,12 +141,21 @@ void Simulation::update(BelaContext* context)
 			int parameterId = m_parameterIdMap["sigma0"];
 			float currentValue = m_parameters["sigma0"];
 			currentValue = currentValue * correctionValue;
+			if (currentValue > 2.f)
+			{
+				currentValue = 2.f;
+			}
+			
 			m_parameters["sigma0"] = currentValue;
 			m_pDynamicStiffString->refreshParameter(parameterId, currentValue);
 			rt_printf("Updating sigma0 with value %f\n", currentValue);
 			// sigma1
 			parameterId = m_parameterIdMap["sigma1"];
 			currentValue = m_parameters["sigma1"] * correctionValue;
+			if (currentValue > 0.01f)
+			{
+				currentValue = 0.01f;
+			}
 			m_parameters["sigma1"] = currentValue;
 			m_pDynamicStiffString->refreshParameter(parameterId, currentValue);
 			rt_printf("Updating sigma1 with value %f\n", currentValue);
@@ -182,7 +210,17 @@ void Simulation::readInputs(BelaContext* context, int frame)
 			// So there is no risk of too frequent updates
 			if (analogIn.getLabel() == "loc")
 			{
-				m_parameters["loc"] = analogIn.getCurrentValueMapped();
+					
+				// Handle Spray button
+				if (/*isButtonReleased(Button::SPRAY) && */ m_buttonState[2] == true)
+				{
+					sprayAmount = analogIn.getCurrentValueMapped();
+					rt_printf("Spray Amount is %f\n", sprayAmount);
+				}
+				
+				sprayedloc = analogIn.getCurrentValueMapped() + sprayValue;
+				
+				m_parameters["loc"] = sprayedloc;
 			}
 			else if (analogIn.hasChanged())
 			{
@@ -196,7 +234,7 @@ void Simulation::readInputs(BelaContext* context, int frame)
 	// 15, 14, 13, 12
 	// Trigger, Mode, Up, Down
 	static int buttonChannel[4] = { 15, 14, 13, 12 };
-	for (const auto& button : { Button::TRIGGER, Button::MODE, Button::UP, Button::DOWN })
+	for (const auto& button : { Button::TRIGGER, Button::MODE, Button::SPRAY, Button::DOWN })
 	{
 		m_buttonPreviousState[(size_t)button] = m_buttonState[(size_t)button];
 		m_buttonState[(size_t)button] = digitalRead(context, frame, buttonChannel[(size_t)button]);
