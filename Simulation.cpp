@@ -87,8 +87,6 @@ void Simulation::update(BelaContext* context)
 		for (int channel: m_channelsToUpdate)
 		{
 			const auto& analogIn = m_analogInputs[channel];
-
-			// if(!m_channelsToUpdate.empty()) <- So is this statement not necessary now?
 			
 			if(channel == 0) // Length Handled differently -> 1V/oct 
 			{
@@ -107,7 +105,7 @@ void Simulation::update(BelaContext* context)
 			else
 			{
 			const float mappedValue = m_analogInputs[channel].getCurrentValueMapped();
-			rt_printf("Updating channel %d with value %f\n", channel, mappedValue);
+			//rt_printf("Updating channel %d with value %f\n", channel, mappedValue);
 	
 			// Map the analog channel to intended parameter to parameter id in DSS simulation
 			const std::string& paramName = analogIn.getLabel();
@@ -118,7 +116,10 @@ void Simulation::update(BelaContext* context)
 			m_pDynamicStiffString->refreshParameter(parameterId, mappedValue);				
 			}
 			
-			m_screen.setBrightness(channel, analogIn.getCurrentValue());
+			const std::string& paramName = analogIn.getLabel(); // Calls the parameter Name of the Analog In channel and saves it 
+			float currentValue = m_parameters[paramName]; // Calls the parameter's Name Value and saves it
+			rt_printf("sending channel  %d to the LEDScreen with value %f\n", channel, currentValue);
+			m_screen.setBrightness(channel, currentValue); // Passes the parameter's value to the correct channel <- needs mapped
 		}
 		
 		if (clippingFlag == true)
@@ -130,12 +131,16 @@ void Simulation::update(BelaContext* context)
 			m_parameters["sigma0"] = currentValue;
 			m_pDynamicStiffString->refreshParameter(parameterId, currentValue);
 			rt_printf("Updating sigma0 with value %f\n", currentValue);
+			m_screen.setBrightness(7, currentValue); // passes the new value to the LEDScreen < - needs mapped
+			         
+			
 			// sigma1
 			parameterId = m_parameterIdMap["sigma1"];
 			currentValue = m_parameters["sigma1"] * correctionValue;
 			m_parameters["sigma1"] = currentValue;
 			m_pDynamicStiffString->refreshParameter(parameterId, currentValue);
 			rt_printf("Updating sigma1 with value %f\n", currentValue);
+			m_screen.setBrightness(8, currentValue); // passes the new value to the LEDScreen
 			
 			clippingFlag = false;	
 		}	
@@ -191,6 +196,7 @@ void Simulation::readInputs(BelaContext* context, int frame)
 			if (analogIn.getLabel() == "loc")
 			{
 				m_parameters["loc"] = analogIn.getCurrentValueMapped();
+				m_screen.setBrightness(channel, analogIn.getCurrentValue()); // needs mapped
 			}
 			else if (analogIn.hasChanged())
 			{
