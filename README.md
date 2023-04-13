@@ -48,6 +48,9 @@ Substitute Raised Cosine function by
     - Bow (with a violin bow)
     
 These will require research and further searching but there are tons of papers about it from S. Bilbao, S. Willensen, etc...
+In fact https://github.com/SilvinWillemsen/BowedStringJUCE/blob/master/Source/ViolinString.cpp
+
+
 
 ### Bounds Info.
 
