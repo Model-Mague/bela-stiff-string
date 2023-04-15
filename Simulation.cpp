@@ -1,5 +1,7 @@
 #include "Simulation.h"
 
+#include "LEDScreen.h"
+
 #define _USE_MATH_DEFINES
 #include <cmath>
 #include <tuple>
@@ -7,7 +9,7 @@
 #include <sstream>
 
 
-Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1f)
+Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1f), m_screen(context)
 {
 	m_inverseSampleRate = 1.0f / context->audioSampleRate;
 	if (context->analogFrames)
@@ -103,13 +105,13 @@ void Simulation::update(BelaContext* context)
 		// Process update queue
 		for (int channel: m_channelsToUpdate)
 		{
+			const auto& analogIn = m_analogInputs[channel];
 			if(channel == 0) // Length Handled differently -> 1V/oct 
 			{
 				const float mappedValue = 0.5f * powf(2, map(Global::limit(m_analogInputs[channel].getCurrentValueMapped(), 0.f, 1.33f), 0.5f, 1.33f, 3.f, 0.f)); // <- magic: input limited to 0-3V (which are the number of octaves made available by changing the Length in our range, then mapped to oposite values, then made exponent. It is very messy, sort of a desperate measure tbh.
 				rt_printf("Updating channel %d with value %f\n", channel, mappedValue);
 			
 				// Map the analog channel to intended parameter to parameter id in DSS simulation
-				const auto& analogIn = m_analogInputs[channel];
 				const std::string& paramName = analogIn.getLabel();
 				const int parameterId = m_parameterIdMap[paramName];
 
@@ -133,6 +135,10 @@ void Simulation::update(BelaContext* context)
 				m_pDynamicStiffString->refreshParameter(parameterId, mappedValue);				
 			}
 			
+			const std::string& paramName = analogIn.getLabel(); // Calls the parameter Name of the Analog In channel and saves it 
+			float currentValue = m_parameters[paramName]; // Calls the parameter's Name Value and saves it
+			rt_printf("sending channel  %d to the LEDScreen with value %f\n", channel, currentValue);
+			m_screen.setBrightness(channel, analogIn.unmapValue(currentValue)); // Passes the parameter's value to the correct channel
 		}
 		
 		if (clippingFlag == true)
@@ -149,6 +155,11 @@ void Simulation::update(BelaContext* context)
 			m_parameters["sigma0"] = currentValue;
 			m_pDynamicStiffString->refreshParameter(parameterId, currentValue);
 			rt_printf("Updating sigma0 with value %f\n", currentValue);
+
+			const auto& analogInSigma0 = m_analogInputs[m_labelToAnalogIn["sigma0"]];
+			m_screen.setBrightness(7, analogInSigma0.unmapValue(currentValue)); // passes the new value to the LEDScreen
+			         
+			
 			// sigma1
 			parameterId = m_parameterIdMap["sigma1"];
 			currentValue = m_parameters["sigma1"] * correctionValue;
@@ -159,6 +170,8 @@ void Simulation::update(BelaContext* context)
 			m_parameters["sigma1"] = currentValue;
 			m_pDynamicStiffString->refreshParameter(parameterId, currentValue);
 			rt_printf("Updating sigma1 with value %f\n", currentValue);
+			const auto& analogInSigma1 = m_analogInputs[m_labelToAnalogIn["sigma0"]];
+			m_screen.setBrightness(8, analogInSigma1.unmapValue(currentValue)); // passes the new value to the LEDScreen
 			
 			clippingFlag = false;	
 		}	
@@ -176,7 +189,10 @@ void Simulation::update(BelaContext* context)
 	m_pDynamicStiffString->calculateScheme();
 	m_pDynamicStiffString->updateStates();
 
-	// 4. Update LFO phase
+	// 4. Update screen
+	m_screen.update(context);
+
+	// 5. Update LFO phase
 	for (int channel = 0; channel < sAnalogInputCount; channel++)
 	{
 		m_phase[channel] += 2.0f * (float)M_PI * m_frequency * m_inverseSampleRate;
@@ -210,7 +226,6 @@ void Simulation::readInputs(BelaContext* context, int frame)
 			// So there is no risk of too frequent updates
 			if (analogIn.getLabel() == "loc")
 			{
-					
 				// Handle Spray button
 				if (/*isButtonReleased(Button::SPRAY) && */ m_buttonState[2] == true)
 				{
@@ -221,6 +236,7 @@ void Simulation::readInputs(BelaContext* context, int frame)
 				sprayedloc = analogIn.getCurrentValueMapped() + sprayValue;
 				
 				m_parameters["loc"] = sprayedloc;
+				m_screen.setBrightness(channel, analogIn.getCurrentValue()); // needs mapped
 			}
 			else if (analogIn.hasChanged())
 			{
@@ -263,11 +279,11 @@ void Simulation::writeAudio(BelaContext* context, int frame)
 	if ((output >= 2.5f) || (output <= - 2.5f))
 	{
 		clippingFlag = true;
-		correctionValue = 1.001;
+		correctionValue = 1.001f;
 		
 		if ((output >= 3.5f) || (output <= - 3.5f))
 		{
-			correctionValue = 1.01;
+			correctionValue = 1.01f;
 		}
 		if ((output >= 4.f) || (output <= - 4.5f))
 		{

@@ -27,6 +27,9 @@
     <ClCompile Include="AnalogInput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LEDScreen.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DynamicStiffString\DynamicStiffString.h">
@@ -42,6 +45,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AnalogInput.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LEDScreen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

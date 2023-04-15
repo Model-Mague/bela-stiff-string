@@ -17,61 +17,60 @@ The simulation is based on the Juce plugin by Silvin Willemsen [github.com/Silvi
 [1] Silvin Willemsen and Stefania Serafin, “REAL-TIME IMPLEMENTATION OF THE DYNAMIC STIFF STRING USING
 FINITE-DIFFERENCE TIME-DOMAIN METHODS AND THE DYNAMIC GRID,”Proceedings of the 25th International Conference on Digital Audio Effects (DAFx20in22), Vienna, Austria, September 6-10, 2022.
 
-## Final To Do's before Testing
+## Improvements.
 
-In order of relevance:
+### AnalogOut Parameter values.
+### String Reverb.
 
-### DigitalWrite LED handling. ESSENTIAL
+If(AudioIn != 0)
+    {audioinFlag = true;)
 
-### AnalogOut Parameter values. COOL
+if(audioinFlag)
+    exciteFlag = true and quickly false // constant excite
+    raisedCosineFunction = AudioIn // Basically, if there is any audio coming in, this should substitute the raised cosine operation.
+    
+### ReadOut.
+
+The points at which the variable "output" reads the information. These could be user definable to widen the stereo feeling.
+
+### Several Others recommended by Instruo Staff
+
+Will come up with full list after testing is finished.
+
+## Model Extension.
+
+### Exciter.
+
+Substitute Raised Cosine function by
+
+    - Struck (with a hammer - like in a piano)
+    - Pluck (with a pick or finger - like in a guitar or harp)
+    - Bow (with a violin bow)
+    
+These will require research and further searching but there are tons of papers about it from S. Bilbao, S. Willensen, etc...
+In fact https://github.com/SilvinWillemsen/BowedStringJUCE/blob/master/Source/ViolinString.cpp
+
+
+
+### Bounds Info.
+
+Bounds can be input in the model, as to say, limits. The same way that the sound is different at the edges, different several bounds
+can be imposed on the system. This way you can create guitar frets.
+
+### Several Strings/Poliphony.
+
+On Numerical Sound Synthesis, S. Bilbao explains a chapter on how different strings interact between each other. This could be added into the model.
+
+
+## The NESS project.
+
+S. Bilboa studied several of these models under the NESS project at Edinburgh University. He managed to get all these working (not real time).
+Anyhow, they have got very short videos that are very interesting explaining these things that can be taken as a reference.
+
+
+- Guitar: https://www.youtube.com/watch?v=NTp7dRuld08 (pluck exciting mechanism + bounds + several strings)
+- Bowed String: https://www.youtube.com/watch?v=fQMJm-YMXuQ (bowed exciting mechanism + bounds + several strings)
 
 
 
 
-
-## DONE
-
-### Fix Calibration. DOOOOONEEEE
-
-### Introduce 1V/oct behaviour at Lenght Input. DONE
-
-This is of the type:
-- minimumLengthValue * 2 ^ (incomingvalue)
-
-However, it will require Length to be mapped in reverse:
-- from maximum length to minimum lenght (low pitch to high pitch, since that is how pitch voltage works).
-
-### Fix handling of sigmas at De-clipping algorithm. DONE
-
-### Introduce E handling stage NICE LITTLE DETAIL // UNNECESARY // RANGE DIMINISHED -> UNPERCEPTIBLE
-
-need to introduce a de-clipping stage similar to sigmas since 
-
-when L, rho, r and T are in extreme values (at the same time) 
-and 
-E <= a low value
-
-it creates underruns.
-
-So we need to introduce something like:
-
-if (L >= w && rho >= x && r <= y && T <= z)
-{
-E lower range is a bigger number
-}
-
-Exact values need calibrated by ear.
-
-It is optional since I could just increase the lower range of T (it only started happening when ranges were widened).
-
-### Add Spray Function to loc. DOUNEEE. Also TRIGGER RANDOMIZER OMG
-
-- while Button "(any button not in use)" = true
-- loc = loc + spread * input[5]
-- spread = random between -1 and 1
-
-advantage of this is:
-
-Since the CVinput for loc is lost, it is good to have an extra parameter that randomises loc slightly.
-
-It is also a reference to the "spray parameter in Instruo's Arhbhar: explained in https://youtu.be/hw73DlxVWrI?t=500

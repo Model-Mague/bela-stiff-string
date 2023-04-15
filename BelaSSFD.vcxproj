@@ -131,6 +131,7 @@
   <ItemGroup>
     <ClCompile Include="AnalogInput.cpp" />
     <ClCompile Include="DynamicStiffString\DynamicStiffString.cpp" />
+    <ClCompile Include="LEDScreen.cpp" />
     <ClCompile Include="render.cpp" />
     <ClCompile Include="Simulation.cpp" />
   </ItemGroup>
@@ -139,6 +140,7 @@
     <ClInclude Include="DynamicStiffString\DynamicStiffString.h" />
     <ClInclude Include="DynamicStiffString\Global.h" />
     <ClInclude Include="AnalogInput.h" />
+    <ClInclude Include="LEDScreen.h" />
     <ClInclude Include="Simulation.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

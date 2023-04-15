@@ -7,6 +7,7 @@
 #endif
 
 #include "AnalogInput.h"
+#include "LEDScreen.h"
 #include "DynamicStiffString/DynamicStiffString.h"
 
 #include <array>
@@ -49,6 +50,9 @@ public:
 	std::string getCalibrationResults();
 
 private:
+	// Screen
+	LEDScreen m_screen;
+
 	// DSS simulation
 	std::unique_ptr<DynamicStiffString> m_pDynamicStiffString;
 

@@ -3,6 +3,10 @@
 #include <cmath>
 #include <vector>
 
+// Now incoming values are limited by imposed limits -> we loose an unperceptible amount of tweaking but guarantees the range limits are reachable
+static std::vector<float> sUpperLimitValue = { 0.89f, 0.89f, 0.87f, 0.89f, 0.92f, 0.92f, 0.91f, 0.92f };
+static std::vector<float> sLowerLimitValue = { 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f };
+
 AnalogInput::AnalogInput(const std::string& label, const int channel, const std::pair<float, float>& valueRange, const float readThreshold)
 	: m_label(label), m_channel(channel), m_valueRange(valueRange), m_readThreshold(readThreshold),
 	m_hasChanged(false), m_currentValue(0.f), m_maxValue(-1000.f), m_minValue(1000.f)
@@ -17,12 +21,12 @@ void AnalogInput::read(BelaContext* context, const int frame)
 		m_hasChanged = true;
 		m_currentValue = read;
 		/* <-- I planned to update the values as I went but I have realized exactitude does not pay off.
-		if(read > upperlimitValue[m_channel])
-			upperlimitValue[m_channel] = read;
-			//rt_printf("updated channel %d upper limit with value %f\n" , m_channel, upperlimitValue[m_channel]);
-		if(read < lowerlimitValue[m_channel])
-			lowerlimitValue[m_channel] = read;
-			//rt_printf("updated channel %d lower limit with value %f\n" , m_channel, lowerlimitValue[m_channel]);
+		if(read > sUpperLimitValue[m_channel])
+			sUpperLimitValue[m_channel] = read;
+			//rt_printf("updated channel %d upper limit with value %f\n" , m_channel, sUpperLimitValue[m_channel]);
+		if(read < sLowerLimitValue[m_channel])
+			sLowerLimitValue[m_channel] = read;
+			//rt_printf("updated channel %d lower limit with value %f\n" , m_channel, sLowerLimitValue[m_channel]);
 		*/	
 	}
 	else
@@ -42,8 +46,16 @@ void AnalogInput::read(BelaContext* context, const int frame)
 
 float AnalogInput::getCurrentValueMapped() const
 {
-	static std::vector<float> upperlimitValue = { 0.89, 0.89, 0.87, 0.89, 0.92, 0.92, 0.91, 0.92 };
-	static std::vector<float> lowerlimitValue = { 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01 };
+	return mapValue(m_currentValue);
+} 
 
-	return map(Global::limit(m_currentValue, lowerlimitValue[m_channel], upperlimitValue[m_channel]), lowerlimitValue[m_channel], upperlimitValue[m_channel], m_valueRange.first, m_valueRange.second);
-} // Now incoming values are limited by imposed limits -> we loose an unperceptible amount of tweaking but guarantees the range limits are reachable
+float AnalogInput::mapValue(const float value) const
+{
+	return map(Global::limit(value, sLowerLimitValue[m_channel], sUpperLimitValue[m_channel]), sLowerLimitValue[m_channel], sUpperLimitValue[m_channel], m_valueRange.first, m_valueRange.second);
+}
+
+float AnalogInput::unmapValue(const float value) const
+{
+	return map(value, m_valueRange.first, m_valueRange.second, sLowerLimitValue[m_channel], sUpperLimitValue[m_channel]);
+
+}
