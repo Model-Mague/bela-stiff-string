@@ -10,6 +10,7 @@
 #include "Button.h"
 #include "LEDScreen.h"
 #include "DynamicStiffString/DynamicStiffString.h"
+#include "Parameters.h"
 
 #include <array>
 #include <map>
@@ -42,8 +43,6 @@ public:
 	std::string getCalibrationResults();
 
 private:
-	void setupParameters();
-
 	// Screen
 	LEDScreen m_screen;
 
@@ -52,10 +51,7 @@ private:
 
 	// Maintains an internal state of all the simulation parameters
 	// These may be adjusted internally and don't necessarily match up with inputs
-	std::map<std::string, float> m_parameters;
-
-	// Mapping of parameter name to parameter ID in DSS simulation
-	std::map<std::string, int> m_parameterIdMap;
+	Parameters m_parameters;
 
 	// Mapping of button type to button object
 	std::map<Button::Type, Button> m_buttons;

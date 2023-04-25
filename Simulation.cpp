@@ -26,65 +26,20 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 	m_amplitude = 5;
 	m_frequency = 0.1f;
 
-	setupParameters();
-}
-
-
-void Simulation::setupParameters()
-{
-	// Order of params in DynamicDSS: L, rho, r, T, E, sigma0, sigma1
-	// Do not change this
-	std::vector<std::string> originalParameterOrder = { "L", "rho", "r", "T", "E", "sigma0", "sigma1" };
-	for (int i = 0; i < originalParameterOrder.size(); i++)
-	{
-		const std::string& parameterName = originalParameterOrder[i];
-		m_parameterIdMap[parameterName] = i;
-	}
-
-	// Setup Dynamic Stiff String
-	DynamicStiffString::SimulationParameters parameters = {};
-	parameters.L = 1.0f;
-	parameters.rho = 7850.0f;
-	parameters.r = 0.0005f;
-	parameters.T = 300.0f;
-	parameters.E = 200000000000.f;
-	parameters.sigma0 = 1.0f;
-	parameters.sigma1 = 0.005f;
-	m_pDynamicStiffString = std::make_unique<DynamicStiffString>(parameters, m_inverseSampleRate);
-
-	// Setup internal state, cloning the DSS values
-	m_parameters["L"] = parameters.L;
-	m_parameters["rho"] = parameters.rho;
-	m_parameters["r"] = parameters.r;
-	m_parameters["T"] = parameters.T;
-	m_parameters["E"] = parameters.E;
-	m_parameters["sigma0"] = parameters.sigma0;
-	m_parameters["sigma1"] = parameters.sigma1;
-	m_parameters["loc"] = -1.f;
-
-	// Setup parameter ranges
-	std::map<std::string, std::pair<float, float>> parameterRanges;
-	parameterRanges["L"] = { 0.5f, 4.0f };
-	parameterRanges["rho"] = { 15700.0f, 1962.5f };
-	parameterRanges["r"] = { 0.001f, 0.0005f };
-	parameterRanges["T"] = { 150.f, 1200.0f };
-	parameterRanges["E"] = { 5000000000.f, 400000000000.f }; // this strange limit on the left hand dodges block-dropping without being perceptible
-	parameterRanges["sigma0"] = { 0.f, 8.f, }; //     Quadriplied Right side range
-	parameterRanges["sigma1"] = { 0.0002f, 0.04f };//   for that clean P I Z Z I C A T O 
-	parameterRanges["loc"] = { 0.f, 1.f };
+	m_pDynamicStiffString = std::make_unique<DynamicStiffString>(m_parameters.getDSSParameters(), m_inverseSampleRate);
 
 	// Order of inputs is L, rho, T, r, loc, E, sigma0, sigma1
 	// Change this if you want to reorder inputs on the device
-	const std::vector<std::string> parameterOrder = { "L", "rho", "T", "r", "loc", "E", "sigma0", "sigma1" };
-	m_analogInputs.reserve(sAnalogInputCount);
-	for (int i = 0; i < 8; i++)
+	m_analogInputs.reserve(Parameters::sNames.size());
+	for (int i = 0; i < Parameters::sNames.size(); i++)
 	{
-		const std::string& parameterName = parameterOrder[i];
-		m_analogInputs.push_back(AnalogInput(parameterName, i, parameterRanges[parameterName]));
+		const std::string& parameterName = Parameters::sNames[i];
+		m_analogInputs.push_back(AnalogInput(parameterName, i, m_parameters.getParameter(parameterName).getRange()));
 		m_labelToAnalogIn[parameterName] = i;
 		if (parameterName != "loc") m_channelsToUpdate.insert(i); // Force update to read initial values
 	}
 }
+
 
 void Simulation::update(BelaContext* context)
 {
@@ -108,10 +63,8 @@ void Simulation::update(BelaContext* context)
 
 		rt_printf("sprayValue is %f\n", sprayValue);
 		
-		m_pDynamicStiffString->excite(m_parameters["loc"]);
-		
+		m_pDynamicStiffString->excite(m_parameters.getParameter("loc").getValue());
 	}
-
 
 	// 2. Process parameter changes
 	if (m_updateFrameCounter == 0)
@@ -120,75 +73,53 @@ void Simulation::update(BelaContext* context)
 		for (int channel: m_channelsToUpdate)
 		{
 			const auto& analogIn = m_analogInputs[channel];
-			if(channel == 0) // Length Handled differently -> 1V/oct 
+			float mappedValue = m_analogInputs[channel].getCurrentValueMapped();
+			if (channel == 0) // Length Handled differently -> 1V/oct 
 			{
-				const float mappedValue = 0.5f * powf(2, map(Global::limit(m_analogInputs[channel].getCurrentValueMapped(), 0.f, 1.33f), 0.5f, 1.33f, 3.f, 0.f)); // <- magic: input limited to 0-3V (which are the number of octaves made available by changing the Length in our range, then mapped to oposite values, then made exponent. It is very messy, sort of a desperate measure tbh.
-				rt_printf("Updating channel %d with value %f\n", channel, mappedValue);
-			
-				// Map the analog channel to intended parameter to parameter id in DSS simulation
-				const std::string& paramName = analogIn.getLabel();
-				const int parameterId = m_parameterIdMap[paramName];
-
-				// Save state and send change to DSS
-				m_parameters[paramName] = mappedValue;
-				m_pDynamicStiffString->refreshParameter(parameterId, mappedValue);				
+				mappedValue = 0.5f * powf(2, map(Global::limit(mappedValue, 0.f, 1.33f), 0.5f, 1.33f, 3.f, 0.f)); // <- magic: input limited to 0-3V (which are the number of octaves made available by changing the Length in our range, then mapped to oposite values, then made exponent. It is very messy, sort of a desperate measure tbh.
 			}
-			
-			else
-			{
-				const float mappedValue = m_analogInputs[channel].getCurrentValueMapped();
-				rt_printf("Updating channel %d with value %f\n", channel, mappedValue);
+
+			rt_printf("Updating channel %d with value %f\n", channel, mappedValue);
 	
-				// Map the analog channel to intended parameter to parameter id in DSS simulation
-				const auto& analogIn = m_analogInputs[channel];
-				const std::string& paramName = analogIn.getLabel();
-				const int parameterId = m_parameterIdMap[paramName];
+			// Map the analog channel to intended parameter to parameter id in DSS simulation
+			const std::string& paramName = analogIn.getLabel();
+			auto& parameter = m_parameters.getParameter(paramName);
 
-				// Save state and send change to DSS
-				m_parameters[paramName] = mappedValue;
-				m_pDynamicStiffString->refreshParameter(parameterId, mappedValue);				
-			}
+			// Save state and send change to DSS
+			parameter.setValue(mappedValue);
+			m_pDynamicStiffString->refreshParameter(parameter.getId(), mappedValue);
 			
-			const std::string& paramName = analogIn.getLabel(); // Calls the parameter Name of the Analog In channel and saves it 
-			float currentValue = m_parameters[paramName]; // Calls the parameter's Name Value and saves it
-			rt_printf("sending channel  %d to the LEDScreen with value %f\n", channel, currentValue);
-			m_screen.setBrightness(channel, analogIn.unmapValue(currentValue)); // Passes the parameter's value to the correct channel
+			// Update screen
+			rt_printf("sending channel %d to the LEDScreen with value %f\n", channel, mappedValue);
+			m_screen.setBrightness(channel, analogIn.unmapValue(mappedValue)); // Passes the parameter's value to the correct channel
 		}
 		
 		if (clippingFlag == true)
 		{
 			// sigma0
-			int parameterId = m_parameterIdMap["sigma0"];
-			float currentValue = m_parameters["sigma0"];
-			currentValue = currentValue * correctionValue;
-			if (currentValue > 2.f)
-			{
-				currentValue = 2.f;
-			}
-			
-			m_parameters["sigma0"] = currentValue;
-			m_pDynamicStiffString->refreshParameter(parameterId, currentValue);
-			rt_printf("Updating sigma0 with value %f\n", currentValue);
+			auto& sigma0 = m_parameters.getParameter("sigma0");
+			float updatedValue = std::min(sigma0.getValue() * correctionValue, 2.f);
+			sigma0.setValue(updatedValue);
+			m_pDynamicStiffString->refreshParameter(sigma0.getId(), updatedValue);
+			rt_printf("Updating sigma0 with value %f\n", updatedValue);
 
+			// Update screen
 			const auto& analogInSigma0 = m_analogInputs[m_labelToAnalogIn["sigma0"]];
-			m_screen.setBrightness(7, analogInSigma0.unmapValue(currentValue)); // passes the new value to the LEDScreen
-			         
-			
+			m_screen.setBrightness(7, analogInSigma0.unmapValue(updatedValue)); // passes the new value to the LEDScreen
+
 			// sigma1
-			parameterId = m_parameterIdMap["sigma1"];
-			currentValue = m_parameters["sigma1"] * correctionValue;
-			if (currentValue > 0.01f)
-			{
-				currentValue = 0.01f;
-			}
-			m_parameters["sigma1"] = currentValue;
-			m_pDynamicStiffString->refreshParameter(parameterId, currentValue);
-			rt_printf("Updating sigma1 with value %f\n", currentValue);
-			const auto& analogInSigma1 = m_analogInputs[m_labelToAnalogIn["sigma0"]];
-			m_screen.setBrightness(8, analogInSigma1.unmapValue(currentValue)); // passes the new value to the LEDScreen
+			auto& sigma1 = m_parameters.getParameter("sigma1");
+			updatedValue = std::min(sigma1.getValue() * correctionValue, 0.01f);
+			sigma1.setValue(updatedValue);
+			m_pDynamicStiffString->refreshParameter(sigma1.getId(), updatedValue);
+			rt_printf("Updating sigma1 with value %f\n", updatedValue);
+
+			// Update screen
+			const auto& analogInSigma1 = m_analogInputs[m_labelToAnalogIn["sigma1"]];
+			m_screen.setBrightness(8, analogInSigma1.unmapValue(updatedValue)); // passes the new value to the LEDScreen
 			
 			clippingFlag = false;	
-		}	
+		}
 		
 		m_channelsToUpdate.clear();
 		m_updateFrameCounter = sDSSUpdateRate;
@@ -249,7 +180,7 @@ void Simulation::readInputs(BelaContext* context, int frame)
 				
 				sprayedloc = analogIn.getCurrentValueMapped() + sprayValue;
 				
-				m_parameters["loc"] = sprayedloc;
+				m_parameters.getParameter("loc").setValue(sprayedloc);
 				m_screen.setBrightness(channel, analogIn.getCurrentValue()); // needs mapped
 			}
 			else if (analogIn.hasChanged())

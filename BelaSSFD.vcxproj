@@ -100,11 +100,13 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level4</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;DESKTOP_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>
+      </DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -133,6 +135,7 @@
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="DynamicStiffString\DynamicStiffString.cpp" />
     <ClCompile Include="LEDScreen.cpp" />
+    <ClCompile Include="Parameters.cpp" />
     <ClCompile Include="render.cpp" />
     <ClCompile Include="Simulation.cpp" />
   </ItemGroup>
@@ -143,6 +146,7 @@
     <ClInclude Include="DynamicStiffString\Global.h" />
     <ClInclude Include="AnalogInput.h" />
     <ClInclude Include="LEDScreen.h" />
+    <ClInclude Include="Parameters.h" />
     <ClInclude Include="Simulation.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
