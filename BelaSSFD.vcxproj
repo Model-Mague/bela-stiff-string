@@ -100,7 +100,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;DESKTOP_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
@@ -130,6 +130,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AnalogInput.cpp" />
+    <ClCompile Include="Button.cpp" />
     <ClCompile Include="DynamicStiffString\DynamicStiffString.cpp" />
     <ClCompile Include="LEDScreen.cpp" />
     <ClCompile Include="render.cpp" />
@@ -137,6 +138,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BelaMock.h" />
+    <ClInclude Include="Button.h" />
     <ClInclude Include="DynamicStiffString\DynamicStiffString.h" />
     <ClInclude Include="DynamicStiffString\Global.h" />
     <ClInclude Include="AnalogInput.h" />

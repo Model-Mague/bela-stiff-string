@@ -15,6 +15,23 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 	if (context->analogFrames)
 		m_audioFramesPerAnalogFrame = context->audioFrames / context->analogFrames;
 
+	// Setup buttons
+	static const int buttonChannel[4] = { 15, 14, 13, 12 };
+	static const Button::Type buttonTypes[4] = { Button::Type::TRIGGER, Button::Type::MODE, Button::Type::SPRAY, Button::Type::DOWN };
+	for (int i = 0; i < 4; i++)
+	{
+		m_buttons[buttonTypes[i]] = Button(buttonChannel[i]);
+	}
+
+	m_amplitude = 5;
+	m_frequency = 0.1f;
+
+	setupParameters();
+}
+
+
+void Simulation::setupParameters()
+{
 	// Order of params in DynamicDSS: L, rho, r, T, E, sigma0, sigma1
 	// Do not change this
 	std::vector<std::string> originalParameterOrder = { "L", "rho", "r", "T", "E", "sigma0", "sigma1" };
@@ -48,12 +65,12 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 	// Setup parameter ranges
 	std::map<std::string, std::pair<float, float>> parameterRanges;
 	parameterRanges["L"] = { 0.5f, 4.0f };
-	parameterRanges["rho"] = {15700.0f, 1962.5f};
-	parameterRanges["r"] = { 0.001f, 0.0005f};
-	parameterRanges["T"] = { 150.f, 1200.0f};
+	parameterRanges["rho"] = { 15700.0f, 1962.5f };
+	parameterRanges["r"] = { 0.001f, 0.0005f };
+	parameterRanges["T"] = { 150.f, 1200.0f };
 	parameterRanges["E"] = { 5000000000.f, 400000000000.f }; // this strange limit on the left hand dodges block-dropping without being perceptible
-	parameterRanges["sigma0"] = {  0.f, 8.f, }; //     Quadriplied Right side range
-	parameterRanges["sigma1"] = { 0.0002f, 0.04f};//   for that clean P I Z Z I C A T O 
+	parameterRanges["sigma0"] = { 0.f, 8.f, }; //     Quadriplied Right side range
+	parameterRanges["sigma1"] = { 0.0002f, 0.04f };//   for that clean P I Z Z I C A T O 
 	parameterRanges["loc"] = { 0.f, 1.f };
 
 	// Order of inputs is L, rho, T, r, loc, E, sigma0, sigma1
@@ -67,15 +84,12 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 		m_labelToAnalogIn[parameterName] = i;
 		if (parameterName != "loc") m_channelsToUpdate.insert(i); // Force update to read initial values
 	}
-
-	m_amplitude = 5;
-	m_frequency = 0.1f;
 }
 
 void Simulation::update(BelaContext* context)
 {
 	// 1. Handle trigger button (should probably be last)
-	if (isButtonReleased(Button::TRIGGER))
+	if (m_buttons[Button::Type::TRIGGER].isReleased())
 	{
 		sprayValue = ((rand() % 100)/100.f); // Since rand() only delivers integers, the range 0 - 100 is divided to be 0.00 - 1.00
 		
@@ -86,11 +100,11 @@ void Simulation::update(BelaContext* context)
 		sprayValue = sprayValue * sprayAmount;
 		
 				
-				if(sprayedloc > 1.f || sprayedloc < 0.f) // if over 1 or below 0, sprayValue reversed.
-				{
-					sprayValue =  - sprayValue * 2;
-					sprayedloc = sprayedloc + sprayValue;
-				}
+		if (sprayedloc > 1.f || sprayedloc < 0.f) // if over 1 or below 0, sprayValue reversed.
+		{
+			sprayValue =  - sprayValue * 2;
+			sprayedloc = sprayedloc + sprayValue;
+		}
 
 		rt_printf("sprayValue is %f\n", sprayValue);
 		
@@ -227,7 +241,7 @@ void Simulation::readInputs(BelaContext* context, int frame)
 			if (analogIn.getLabel() == "loc")
 			{
 				// Handle Spray button
-				if (/*isButtonReleased(Button::SPRAY) && */ m_buttonState[2] == true)
+				if (m_buttons[Button::Type::SPRAY].isPressed())
 				{
 					sprayAmount = analogIn.getCurrentValueMapped();
 					rt_printf("Spray Amount is %f\n", sprayAmount);
@@ -246,14 +260,10 @@ void Simulation::readInputs(BelaContext* context, int frame)
 		}
 	}
 
-	// Buttons, left to right
-	// 15, 14, 13, 12
-	// Trigger, Mode, Up, Down
-	static int buttonChannel[4] = { 15, 14, 13, 12 };
-	for (const auto& button : { Button::TRIGGER, Button::MODE, Button::SPRAY, Button::DOWN })
+	for (auto& kvp : m_buttons)
 	{
-		m_buttonPreviousState[(size_t)button] = m_buttonState[(size_t)button];
-		m_buttonState[(size_t)button] = digitalRead(context, frame, buttonChannel[(size_t)button]);
+		const int read = digitalRead(context, frame, kvp.second.getChannel());
+		kvp.second.updateState(read);
 	}
 }
 

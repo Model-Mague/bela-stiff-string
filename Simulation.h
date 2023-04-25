@@ -7,6 +7,7 @@
 #endif
 
 #include "AnalogInput.h"
+#include "Button.h"
 #include "LEDScreen.h"
 #include "DynamicStiffString/DynamicStiffString.h"
 
@@ -20,13 +21,6 @@ class Simulation {
 public:
 	static constexpr int sAnalogInputCount = 8;
 	static constexpr short sDSSUpdateRate = 20; // DSS should be updated no more frequently than every 20 audio frames
-
-	enum class Button : size_t {
-		TRIGGER = 0,
-		MODE = 1,
-		SPRAY = 2,
-		DOWN = 3
-	};
 
 	Simulation(BelaContext* context);
 	void readInputs(BelaContext* context, int frame);
@@ -45,11 +39,11 @@ public:
 	
 	void update(BelaContext* context); // Runs every audio frame
 
-	bool isButtonReleased(const Button b) { return m_buttonPreviousState[(size_t)b] != 0 && m_buttonState[(size_t)b] == 0; }
-
 	std::string getCalibrationResults();
 
 private:
+	void setupParameters();
+
 	// Screen
 	LEDScreen m_screen;
 
@@ -62,6 +56,9 @@ private:
 
 	// Mapping of parameter name to parameter ID in DSS simulation
 	std::map<std::string, int> m_parameterIdMap;
+
+	// Mapping of button type to button object
+	std::map<Button::Type, Button> m_buttons;
 
 	// When we encounter a change in inputs, we insert the channel # in here
 	// Then this set is consumed in the update function
@@ -88,7 +85,4 @@ private:
 	// Set if we're to actively damp the signal in the next update call
 	bool clippingFlag = false;
 	float correctionValue; // Damping proportion
-
-	int m_buttonPreviousState[4] = {}; // Last button state
-	int m_buttonState[4] = {}; // Current button state
 };
