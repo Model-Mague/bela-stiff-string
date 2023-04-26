@@ -21,16 +21,32 @@ private:
 
 class Parameters {
 public:
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+	// Order of inputs is L, rho, T, r, loc, E, sigma0, sigma1
+	// Change the order if you want to reorder inputs on the device
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+	enum class Name : uint8_t {
+		L,
+		rho,
+		T,
+		r,
+		loc,
+		E,
+		sigma0,
+		sigma1
+	};
+	
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+	using ParameterMap = std::map<Parameters::Name, Parameter>;
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	Parameters();
-	Parameter& getParameter(const std::string& name) { return m_parameters.find(name)->second; }
+	Parameter& getParameter(const Parameters::Name name) { return m_parameters.find(name)->second; }
 	DynamicStiffString::SimulationParameters getDSSParameters() const;
+	ParameterMap getParameters() { return m_parameters; }
 
-	static std::vector<std::string> sNames;
 private:
 	// Maintains an internal state of all the simulation parameters
 	// These may be adjusted internally and don't necessarily match up with inputs
-	std::map<std::string, Parameter> m_parameters;
-
-	// Mapping of parameter name to parameter ID in DSS simulation
-	std::map<std::string, int> m_parameterIdMap;
+	ParameterMap m_parameters;
 };

@@ -61,7 +61,7 @@ private:
 	std::set<int> m_channelsToUpdate;
 
 	// Mapping of label to AnalogInput (e.g. sigma0 -> AnalogInput for 6th channel) 
-	std::map<std::string, int> m_labelToAnalogIn;
+	std::map<Parameters::Name, int> m_labelToAnalogIn;
 
 	int m_audioFramesPerAnalogFrame;
 	float m_inverseSampleRate;

@@ -30,13 +30,14 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 
 	// Order of inputs is L, rho, T, r, loc, E, sigma0, sigma1
 	// Change this if you want to reorder inputs on the device
-	m_analogInputs.reserve(Parameters::sNames.size());
-	for (int i = 0; i < Parameters::sNames.size(); i++)
+	const auto parameters = m_parameters.getParameters();
+	m_analogInputs.reserve(parameters.size());
+	for (int i = 0; i < parameters.size(); i++)
 	{
-		const std::string& parameterName = Parameters::sNames[i];
-		m_analogInputs.push_back(AnalogInput(parameterName, i, m_parameters.getParameter(parameterName).getRange()));
-		m_labelToAnalogIn[parameterName] = i;
-		if (parameterName != "loc") m_channelsToUpdate.insert(i); // Force update to read initial values
+		const Parameters::Name name = static_cast<Parameters::Name>(i);
+		m_analogInputs.push_back(AnalogInput(name, i, m_parameters.getParameter(name).getRange()));
+		m_labelToAnalogIn[name] = i;
+		if (name != Parameters::Name::loc) m_channelsToUpdate.insert(i); // Force update to read initial values
 	}
 }
 
@@ -63,7 +64,7 @@ void Simulation::update(BelaContext* context)
 
 		rt_printf("sprayValue is %f\n", sprayValue);
 		
-		m_pDynamicStiffString->excite(m_parameters.getParameter("loc").getValue());
+		m_pDynamicStiffString->excite(m_parameters.getParameter(Parameters::Name::loc).getValue());
 	}
 
 	// 2. Process parameter changes
@@ -82,7 +83,7 @@ void Simulation::update(BelaContext* context)
 			rt_printf("Updating channel %d with value %f\n", channel, mappedValue);
 	
 			// Map the analog channel to intended parameter to parameter id in DSS simulation
-			const std::string& paramName = analogIn.getLabel();
+			const auto paramName = analogIn.getName();
 			auto& parameter = m_parameters.getParameter(paramName);
 
 			// Save state and send change to DSS
@@ -97,25 +98,25 @@ void Simulation::update(BelaContext* context)
 		if (clippingFlag == true)
 		{
 			// sigma0
-			auto& sigma0 = m_parameters.getParameter("sigma0");
+			auto& sigma0 = m_parameters.getParameter(Parameters::Name::sigma0);
 			float updatedValue = std::min(sigma0.getValue() * correctionValue, 2.f);
 			sigma0.setValue(updatedValue);
 			m_pDynamicStiffString->refreshParameter(sigma0.getId(), updatedValue);
 			rt_printf("Updating sigma0 with value %f\n", updatedValue);
 
 			// Update screen
-			const auto& analogInSigma0 = m_analogInputs[m_labelToAnalogIn["sigma0"]];
+			const auto& analogInSigma0 = m_analogInputs[m_labelToAnalogIn[Parameters::Name::sigma0]];
 			m_screen.setBrightness(7, analogInSigma0.unmapValue(updatedValue)); // passes the new value to the LEDScreen
 
 			// sigma1
-			auto& sigma1 = m_parameters.getParameter("sigma1");
+			auto& sigma1 = m_parameters.getParameter(Parameters::Name::sigma1);
 			updatedValue = std::min(sigma1.getValue() * correctionValue, 0.01f);
 			sigma1.setValue(updatedValue);
 			m_pDynamicStiffString->refreshParameter(sigma1.getId(), updatedValue);
 			rt_printf("Updating sigma1 with value %f\n", updatedValue);
 
 			// Update screen
-			const auto& analogInSigma1 = m_analogInputs[m_labelToAnalogIn["sigma1"]];
+			const auto& analogInSigma1 = m_analogInputs[m_labelToAnalogIn[Parameters::Name::sigma1]];
 			m_screen.setBrightness(8, analogInSigma1.unmapValue(updatedValue)); // passes the new value to the LEDScreen
 			
 			clippingFlag = false;	
@@ -169,7 +170,7 @@ void Simulation::readInputs(BelaContext* context, int frame)
 			analogIn.read(context, analogFrame);
 			// We will always update channel 7 (excitation loc) as this param is only effective during excitation
 			// So there is no risk of too frequent updates
-			if (analogIn.getLabel() == "loc")
+			if (analogIn.getName() == Parameters::Name::loc)
 			{
 				// Handle Spray button
 				if (m_buttons[Button::Type::SPRAY].isPressed())
@@ -180,7 +181,7 @@ void Simulation::readInputs(BelaContext* context, int frame)
 				
 				sprayedloc = analogIn.getCurrentValueMapped() + sprayValue;
 				
-				m_parameters.getParameter("loc").setValue(sprayedloc);
+				m_parameters.getParameter(Parameters::Name::loc).setValue(sprayedloc);
 				m_screen.setBrightness(channel, analogIn.getCurrentValue()); // needs mapped
 			}
 			else if (analogIn.hasChanged())

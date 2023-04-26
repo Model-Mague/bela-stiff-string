@@ -7,12 +7,14 @@
 #include "Bela.h"
 #endif
 
+#include "Parameters.h"
+
 #include <string>
 #include <utility>
 
 class AnalogInput {
 public:
-	AnalogInput(const std::string& label, const int channel, const std::pair<float, float>& valueRange, const float readThreshold = 0.005f);
+	AnalogInput(const Parameters::Name label, const int channel, const std::pair<float, float>& valueRange, const float readThreshold = 0.005f);
 
 	void read(BelaContext* context, const int frame);
 
@@ -24,11 +26,11 @@ public:
 
 	bool hasChanged() { return m_hasChanged; }
 
-	const std::string& getLabel() const { return m_label; }
+	Parameters::Name getName() const { return m_name; }
 	std::pair<float, float> getValueRange() { return std::make_pair(m_minValue, m_maxValue); }
 
 private:
-	const std::string m_label;
+	const Parameters::Name m_name;
 	int m_channel;
 	const std::pair<float, float> m_valueRange;
 	float m_readThreshold;
