@@ -10,6 +10,7 @@
 #include "Button.h"
 #include "LEDScreen.h"
 #include "DynamicStiffString/DynamicStiffString.h"
+#include "Parameters.h"
 
 #include <array>
 #include <map>
@@ -42,8 +43,6 @@ public:
 	std::string getCalibrationResults();
 
 private:
-	void setupParameters();
-
 	// Screen
 	LEDScreen m_screen;
 
@@ -52,20 +51,14 @@ private:
 
 	// Maintains an internal state of all the simulation parameters
 	// These may be adjusted internally and don't necessarily match up with inputs
-	std::map<std::string, float> m_parameters;
-
-	// Mapping of parameter name to parameter ID in DSS simulation
-	std::map<std::string, int> m_parameterIdMap;
+	Parameters m_parameters;
 
 	// Mapping of button type to button object
 	std::map<Button::Type, Button> m_buttons;
 
 	// When we encounter a change in inputs, we insert the channel # in here
 	// Then this set is consumed in the update function
-	std::set<int> m_channelsToUpdate;
-
-	// Mapping of label to AnalogInput (e.g. sigma0 -> AnalogInput for 6th channel) 
-	std::map<std::string, int> m_labelToAnalogIn;
+	std::set<ParameterName> m_parametersToUpdate;
 
 	int m_audioFramesPerAnalogFrame;
 	float m_inverseSampleRate;
@@ -75,9 +68,6 @@ private:
 
 	float m_amplitude;
 	float m_frequency;
-
-	// Vector of classes that allow us to read from an analog channels (0~7)
-	std::vector<AnalogInput> m_analogInputs;
 
 	// Counter for ensuring no-more-than-every-20-frames update frequency
 	short m_updateFrameCounter = 0;
