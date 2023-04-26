@@ -8,8 +8,8 @@
 static std::vector<float> sUpperLimitValue = { 0.89f, 0.89f, 0.87f, 0.89f, 0.92f, 0.92f, 0.91f, 0.92f };
 static std::vector<float> sLowerLimitValue = { 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f };
 
-AnalogInput::AnalogInput(const Parameters::Name name, const int channel, const std::pair<float, float>& valueRange, const float readThreshold)
-	: m_name(name), m_channel(channel), m_valueRange(valueRange), m_readThreshold(readThreshold),
+AnalogInput::AnalogInput(const int channel, const std::pair<float, float>& valueRange, const float readThreshold)
+	: m_channel(channel), m_valueRange(valueRange), m_readThreshold(readThreshold),
 	m_hasChanged(false), m_currentValue(0.f), m_maxValue(-1000.f), m_minValue(1000.f)
 {
 }

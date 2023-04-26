@@ -58,10 +58,7 @@ private:
 
 	// When we encounter a change in inputs, we insert the channel # in here
 	// Then this set is consumed in the update function
-	std::set<int> m_channelsToUpdate;
-
-	// Mapping of label to AnalogInput (e.g. sigma0 -> AnalogInput for 6th channel) 
-	std::map<Parameters::Name, int> m_labelToAnalogIn;
+	std::set<ParameterName> m_parametersToUpdate;
 
 	int m_audioFramesPerAnalogFrame;
 	float m_inverseSampleRate;
@@ -71,9 +68,6 @@ private:
 
 	float m_amplitude;
 	float m_frequency;
-
-	// Vector of classes that allow us to read from an analog channels (0~7)
-	std::vector<AnalogInput> m_analogInputs;
 
 	// Counter for ensuring no-more-than-every-20-frames update frequency
 	short m_updateFrameCounter = 0;

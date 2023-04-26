@@ -3,6 +3,7 @@
 #include "LEDScreen.h"
 
 #define _USE_MATH_DEFINES
+#include <algorithm>
 #include <cmath>
 #include <tuple>
 #include <cstring>
@@ -28,16 +29,10 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 
 	m_pDynamicStiffString = std::make_unique<DynamicStiffString>(m_parameters.getDSSParameters(), m_inverseSampleRate);
 
-	// Order of inputs is L, rho, T, r, loc, E, sigma0, sigma1
-	// Change this if you want to reorder inputs on the device
-	const auto parameters = m_parameters.getParameters();
-	m_analogInputs.reserve(parameters.size());
-	for (int i = 0; i < parameters.size(); i++)
+	for (auto& parameter: m_parameters.getParameters())
 	{
-		const Parameters::Name name = static_cast<Parameters::Name>(i);
-		m_analogInputs.push_back(AnalogInput(name, i, m_parameters.getParameter(name).getRange()));
-		m_labelToAnalogIn[name] = i;
-		if (name != Parameters::Name::loc) m_channelsToUpdate.insert(i); // Force update to read initial values
+		const auto name = parameter.second.getName();
+		if (name != ParameterName::loc) m_parametersToUpdate.insert(name); // Force update to read initial values
 	}
 }
 
@@ -64,65 +59,60 @@ void Simulation::update(BelaContext* context)
 
 		rt_printf("sprayValue is %f\n", sprayValue);
 		
-		m_pDynamicStiffString->excite(m_parameters.getParameter(Parameters::Name::loc).getValue());
+		m_pDynamicStiffString->excite(m_parameters.getParameter(ParameterName::loc).getValue());
 	}
 
 	// 2. Process parameter changes
 	if (m_updateFrameCounter == 0)
 	{
 		// Process update queue
-		for (int channel: m_channelsToUpdate)
+		for (const auto parameterName: m_parametersToUpdate)
 		{
-			const auto& analogIn = m_analogInputs[channel];
-			float mappedValue = m_analogInputs[channel].getCurrentValueMapped();
-			if (channel == 0) // Length Handled differently -> 1V/oct 
+			auto& parameter = m_parameters.getParameter(parameterName);
+
+			float mappedValue = parameter.getAnalogInput()->getCurrentValueMapped();
+			if (parameterName == ParameterName::L) // Length Handled differently -> 1V/oct 
 			{
 				mappedValue = 0.5f * powf(2, map(Global::limit(mappedValue, 0.f, 1.33f), 0.5f, 1.33f, 3.f, 0.f)); // <- magic: input limited to 0-3V (which are the number of octaves made available by changing the Length in our range, then mapped to oposite values, then made exponent. It is very messy, sort of a desperate measure tbh.
 			}
 
-			rt_printf("Updating channel %d with value %f\n", channel, mappedValue);
+			rt_printf("Updating channel %d with value %f\n", parameter.getChannel(), mappedValue);
 	
-			// Map the analog channel to intended parameter to parameter id in DSS simulation
-			const auto paramName = analogIn.getName();
-			auto& parameter = m_parameters.getParameter(paramName);
-
 			// Save state and send change to DSS
 			parameter.setValue(mappedValue);
 			m_pDynamicStiffString->refreshParameter(parameter.getId(), mappedValue);
 			
 			// Update screen
-			rt_printf("sending channel %d to the LEDScreen with value %f\n", channel, mappedValue);
-			m_screen.setBrightness(channel, analogIn.unmapValue(mappedValue)); // Passes the parameter's value to the correct channel
+			rt_printf("sending channel %d to the LEDScreen with value %f\n", parameter.getChannel(), mappedValue);
+			m_screen.setBrightness(parameter.getChannel(), parameter.getAnalogInput()->unmapValue(mappedValue)); // Passes the parameter's value to the correct channel
 		}
 		
 		if (clippingFlag == true)
 		{
 			// sigma0
-			auto& sigma0 = m_parameters.getParameter(Parameters::Name::sigma0);
+			auto& sigma0 = m_parameters.getParameter(ParameterName::sigma0);
 			float updatedValue = std::min(sigma0.getValue() * correctionValue, 2.f);
 			sigma0.setValue(updatedValue);
 			m_pDynamicStiffString->refreshParameter(sigma0.getId(), updatedValue);
 			rt_printf("Updating sigma0 with value %f\n", updatedValue);
 
 			// Update screen
-			const auto& analogInSigma0 = m_analogInputs[m_labelToAnalogIn[Parameters::Name::sigma0]];
-			m_screen.setBrightness(7, analogInSigma0.unmapValue(updatedValue)); // passes the new value to the LEDScreen
+			m_screen.setBrightness(7, sigma0.getAnalogInput()->unmapValue(updatedValue)); // passes the new value to the LEDScreen
 
 			// sigma1
-			auto& sigma1 = m_parameters.getParameter(Parameters::Name::sigma1);
+			auto& sigma1 = m_parameters.getParameter(ParameterName::sigma1);
 			updatedValue = std::min(sigma1.getValue() * correctionValue, 0.01f);
 			sigma1.setValue(updatedValue);
 			m_pDynamicStiffString->refreshParameter(sigma1.getId(), updatedValue);
 			rt_printf("Updating sigma1 with value %f\n", updatedValue);
 
 			// Update screen
-			const auto& analogInSigma1 = m_analogInputs[m_labelToAnalogIn[Parameters::Name::sigma1]];
-			m_screen.setBrightness(8, analogInSigma1.unmapValue(updatedValue)); // passes the new value to the LEDScreen
+			m_screen.setBrightness(8, sigma1.getAnalogInput()->unmapValue(updatedValue)); // passes the new value to the LEDScreen
 			
 			clippingFlag = false;	
 		}
 		
-		m_channelsToUpdate.clear();
+		m_parametersToUpdate.clear();
 		m_updateFrameCounter = sDSSUpdateRate;
 	}
 	else
@@ -150,11 +140,11 @@ void Simulation::update(BelaContext* context)
 std::string Simulation::getCalibrationResults()
 {
 	std::stringstream ss;
-	for (int i = 0; i < m_analogInputs.size(); i++)
+	for (auto& parameter: m_parameters.getParameters())
 	{
 		float minValue, maxValue;
-		std::tie(minValue, maxValue) = m_analogInputs[i].getValueRange();
-		ss << "Pot " << i << " [" << minValue << ", " << maxValue << "]" << std::endl;
+		std::tie(minValue, maxValue) = parameter.second.getRange();
+		ss << "Pot " << parameter.second.getChannel() << " [" << minValue << ", " << maxValue << "]" << std::endl;
 	}
 	return ss.str();
 }
@@ -164,30 +154,32 @@ void Simulation::readInputs(BelaContext* context, int frame)
 	if (!(frame % m_audioFramesPerAnalogFrame))
 	{
 		const int analogFrame = frame / m_audioFramesPerAnalogFrame;
-		for (int channel = 0; channel < sAnalogInputCount; channel++) // Start with channels 1-8; 0 is reserved for trigger
+		for (auto kvp: m_parameters.getParameters()) // Start with channels 1-8; 0 is reserved for trigger
 		{
-			auto& analogIn = m_analogInputs[channel];
-			analogIn.read(context, analogFrame);
+			auto& parameter = kvp.second;
+			auto analogIn = kvp.second.getAnalogInput();
+
+			analogIn->read(context, analogFrame);
 			// We will always update channel 7 (excitation loc) as this param is only effective during excitation
 			// So there is no risk of too frequent updates
-			if (analogIn.getName() == Parameters::Name::loc)
+			if (parameter.getName() == ParameterName::loc)
 			{
 				// Handle Spray button
 				if (m_buttons[Button::Type::SPRAY].isPressed())
 				{
-					sprayAmount = analogIn.getCurrentValueMapped();
+					sprayAmount = analogIn->getCurrentValueMapped();
 					rt_printf("Spray Amount is %f\n", sprayAmount);
 				}
 				
-				sprayedloc = analogIn.getCurrentValueMapped() + sprayValue;
+				sprayedloc = analogIn->getCurrentValueMapped() + sprayValue;
 				
-				m_parameters.getParameter(Parameters::Name::loc).setValue(sprayedloc);
-				m_screen.setBrightness(channel, analogIn.getCurrentValue()); // needs mapped
+				m_parameters.getParameter(ParameterName::loc).setValue(sprayedloc);
+				m_screen.setBrightness(parameter.getChannel(), analogIn->getCurrentValue()); // needs mapped
 			}
-			else if (analogIn.hasChanged())
+			else if (analogIn->hasChanged())
 			{
 				// Register channel as one that needs its value read and updated
-				m_channelsToUpdate.insert(channel);
+				m_parametersToUpdate.insert(parameter.getName());
 			}
 		}
 	}
