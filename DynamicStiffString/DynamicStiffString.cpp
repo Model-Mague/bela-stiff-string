@@ -226,15 +226,15 @@ void DynamicStiffString::updateStates()
     Nprev = N;
 }
 
-void DynamicStiffString::excite(float excitationLoc)
+void DynamicStiffString::excite(float excitationLoc, std::function<float(int, int)> excitationFunction)
 {
     //// Arbitrary excitation function (raised cosine) ////
 
     // width (in grid points) of the excitation
-    float width = 10;
+    const int width = 10;
 
     // make sure we're not going out of bounds at the left boundary
-    float component = floor((N + 1) * excitationLoc) - floor(width * 0.5f); // @TODO: Verify return type
+    float component = floor((N + 1) * excitationLoc) - floor((float)width * 0.5f); // @TODO: Verify return type
     float greater = std::max(component, 1.0f);
 
     int start = static_cast<int>(greater);
@@ -245,11 +245,10 @@ void DynamicStiffString::excite(float excitationLoc)
         if (l + start > Mv)
             break;
 
-        v[1][l + start] += 0.5f * (1 - cos(2.0f * static_cast<float>(M_PI) * l / (width - 1.0f)));
-        v[2][l + start] += 0.5f * (1 - cos(2.0f * static_cast<float>(M_PI) * l / (width - 1.0f)));
+        v[1][l + start] += excitationFunction(l, width);
+        v[2][l + start] += excitationFunction(l, width);
     }
 }
-
 
 void DynamicStiffString::refreshParameter(int changedParameterIdx, float changedParameterValue)
 {

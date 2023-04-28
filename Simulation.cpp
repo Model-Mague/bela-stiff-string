@@ -10,7 +10,7 @@
 #include <sstream>
 
 
-Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1f), m_screen(context)
+Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1f), m_screen(context), m_audioBuffer(10)
 {
 	m_inverseSampleRate = 1.0f / context->audioSampleRate;
 	if (context->analogFrames)
@@ -34,6 +34,14 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 		const auto name = parameter.second.getName();
 		if (name != ParameterName::loc) m_parametersToUpdate.insert(name); // Force update to read initial values
 	}
+
+	// Setup excitation functions
+	m_fnRaisedCos = [](int index, int size) {
+		return 0.5f * (1 - cos(2.0f * static_cast<float>(M_PI) * index / (size - 1.0f)));
+	};
+	m_fnSampleExcitation = [this](int index, int size) {
+		return m_audioBuffer.get(index);
+	};
 }
 
 
@@ -58,8 +66,9 @@ void Simulation::update(BelaContext* context)
 		}
 
 		rt_printf("sprayValue is %f\n", sprayValue);
-		
-		m_pDynamicStiffString->excite(m_parameters.getParameter(ParameterName::loc).getValue());
+
+		auto fnExcitation = m_audioBuffer.containsSilence() ? m_fnRaisedCos : m_fnSampleExcitation;
+		m_pDynamicStiffString->excite(m_parameters.getParameter(ParameterName::loc).getValue(), fnExcitation);
 	}
 
 	// 2. Process parameter changes
@@ -151,6 +160,9 @@ std::string Simulation::getCalibrationResults()
 
 void Simulation::readInputs(BelaContext* context, int frame)
 {
+	// First, read in a frame of audio from the input
+	m_audioBuffer.put(audioRead(context, frame, 0));
+
 	if (!(frame % m_audioFramesPerAnalogFrame))
 	{
 		const int analogFrame = frame / m_audioFramesPerAnalogFrame;

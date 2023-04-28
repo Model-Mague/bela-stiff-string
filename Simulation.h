@@ -7,6 +7,7 @@
 #endif
 
 #include "AnalogInput.h"
+#include "AudioBuffer.h"
 #include "Button.h"
 #include "LEDScreen.h"
 #include "DynamicStiffString/DynamicStiffString.h"
@@ -59,6 +60,15 @@ private:
 	// When we encounter a change in inputs, we insert the channel # in here
 	// Then this set is consumed in the update function
 	std::set<ParameterName> m_parametersToUpdate;
+
+	// Circular buffer for receiving audio input
+	AudioBuffer m_audioBuffer;
+
+	// Excitation functions. Take the current index and a total length and returns a float
+	// Raised cosine
+	std::function<float(int, int)> m_fnRaisedCos;
+	// Sample based excitation
+	std::function<float(int, int)> m_fnSampleExcitation;
 
 	int m_audioFramesPerAnalogFrame;
 	float m_inverseSampleRate;
