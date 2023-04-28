@@ -11,8 +11,14 @@ void AudioBuffer::put(float value)
 {
 	const auto size = m_buffer.size();
 	m_buffer[m_head++ % size] = value;
-	if (value != 0.f) m_silenceCounter = static_cast<int>(size);
-	else m_silenceCounter = std::max(0, m_silenceCounter - 1);
+	if (value != 0.f)
+	{
+		m_silenceCounter = static_cast<int>(size);
+	}
+	else 
+	{
+		m_silenceCounter = std::max(0, m_silenceCounter - 1);
+	}
 }
 
 float AudioBuffer::get(const int index)
