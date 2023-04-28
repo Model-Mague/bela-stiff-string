@@ -132,6 +132,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AnalogInput.cpp" />
+    <ClCompile Include="AudioBuffer.cpp" />
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="DynamicStiffString\DynamicStiffString.cpp" />
     <ClCompile Include="LEDScreen.cpp" />
@@ -140,6 +141,7 @@
     <ClCompile Include="Simulation.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AudioBuffer.h" />
     <ClInclude Include="BelaMock.h" />
     <ClInclude Include="Button.h" />
     <ClInclude Include="DynamicStiffString\DynamicStiffString.h" />

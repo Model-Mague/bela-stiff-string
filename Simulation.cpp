@@ -10,7 +10,7 @@
 #include <sstream>
 
 
-Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1f), m_screen(context)
+Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1f), m_screen(context), m_audioBuffer(10)
 {
 	m_inverseSampleRate = 1.0f / context->audioSampleRate;
 	if (context->analogFrames)
@@ -151,6 +151,9 @@ std::string Simulation::getCalibrationResults()
 
 void Simulation::readInputs(BelaContext* context, int frame)
 {
+	// First, read in a frame of audio from the input
+	m_audioBuffer.put(audioRead(context, frame, 0));
+
 	if (!(frame % m_audioFramesPerAnalogFrame))
 	{
 		const int analogFrame = frame / m_audioFramesPerAnalogFrame;

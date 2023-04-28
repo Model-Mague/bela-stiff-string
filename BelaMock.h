@@ -53,6 +53,21 @@ struct BelaContext {
 static inline float analogRead(BelaContext* context, int frame, int channel) { return rand() > (RAND_MAX - 10); }
 
 /**
+ * \brief Read an audio input, specifying the frame number (when to read) and the channel.
+ *
+ * This function returns the value of an audio input, at the time indicated by \c frame.
+ * The returned value ranges from -1 to 1.
+ *
+ * \param context The I/O data structure which is passed by Bela to render().
+ * \param frame Which frame (i.e. what time) to read the audio input. Valid values range
+ * from 0 to (context->audioFrames - 1).
+ * \param channel Which audio input to read. Valid values are between 0 and
+ * (context->audioChannels - 1), typically 0 to 1 by default.
+ * \return Value of the analog input, range  to 1.
+ */
+static inline float audioRead(BelaContext* context, int frame, int channel) { return 0.f; }
+
+/**
  * \brief Write an audio output, specifying the frame number (when to write) and the channel.
  *
  * This function sets the value of an audio output, at the time indicated by \c frame. Valid
