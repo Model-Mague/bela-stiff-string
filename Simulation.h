@@ -64,6 +64,12 @@ private:
 	// Circular buffer for receiving audio input
 	AudioBuffer m_audioBuffer;
 
+	// Excitation functions. Take the current index and a total length and returns a float
+	// Raised cosine
+	std::function<float(int, int)> m_fnRaisedCos;
+	// Sample based excitation
+	std::function<float(int, int)> m_fnSampleExcitation;
+
 	int m_audioFramesPerAnalogFrame;
 	float m_inverseSampleRate;
 

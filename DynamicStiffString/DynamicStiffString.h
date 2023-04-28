@@ -13,6 +13,7 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
+#include <functional>
 #include <vector>
 
 #include "Global.h"
@@ -51,7 +52,8 @@ public:
         return v[1][6]; // set to be fixed due to varying N
     }
 
-    void excite(float excitationLoc);
+    // Modification - take custom excitation function
+    void excite(float excitationLoc, std::function<float(int, int)> excitationFunction);
 
     void addRemovePoint();
     void refreshCustomIp();
