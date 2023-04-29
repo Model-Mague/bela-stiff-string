@@ -13,54 +13,78 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\core">
+      <UniqueIdentifier>{f735604f-dd4b-4112-aeb8-07b634a2b598}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\components">
+      <UniqueIdentifier>{5b88f769-139f-4592-a178-5115bbf5061b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\core">
+      <UniqueIdentifier>{e382bf55-1dcf-457f-8075-22a33fe70fb0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\components">
+      <UniqueIdentifier>{49af22a3-2b87-4a60-ba91-bc2d635dad1f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\dss">
+      <UniqueIdentifier>{f508c4e3-8d09-429e-88d7-a18f52ff16e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\dss">
+      <UniqueIdentifier>{525524c0-9d46-4a12-9812-bd509fa9fc2e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DynamicStiffString\DynamicStiffString.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="render.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Simulation.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="components\AnalogInput.cpp">
+      <Filter>Source Files\components</Filter>
     </ClCompile>
-    <ClCompile Include="AnalogInput.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="core\AudioBuffer.cpp">
+      <Filter>Source Files\core</Filter>
     </ClCompile>
-    <ClCompile Include="LEDScreen.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="components\Button.cpp">
+      <Filter>Source Files\components</Filter>
     </ClCompile>
-    <ClCompile Include="Button.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="DynamicStiffString\DynamicStiffString.cpp">
+      <Filter>Source Files\dss</Filter>
     </ClCompile>
-    <ClCompile Include="Parameters.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="components\LEDScreen.cpp">
+      <Filter>Source Files\components</Filter>
+    </ClCompile>
+    <ClCompile Include="core\Parameters.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="core\Simulation.cpp">
+      <Filter>Source Files\core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DynamicStiffString\DynamicStiffString.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DynamicStiffString\Global.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="BelaMock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Simulation.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="core\AudioBuffer.h">
+      <Filter>Header Files\core</Filter>
     </ClInclude>
-    <ClInclude Include="AnalogInput.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="components\AnalogInput.h">
+      <Filter>Header Files\components</Filter>
     </ClInclude>
-    <ClInclude Include="LEDScreen.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="components\Button.h">
+      <Filter>Header Files\components</Filter>
     </ClInclude>
-    <ClInclude Include="Button.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="components\LEDScreen.h">
+      <Filter>Header Files\components</Filter>
     </ClInclude>
-    <ClInclude Include="Parameters.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="core\Parameters.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\Simulation.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="DynamicStiffString\DynamicStiffString.h">
+      <Filter>Header Files\dss</Filter>
+    </ClInclude>
+    <ClInclude Include="DynamicStiffString\Global.h">
+      <Filter>Header Files\dss</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

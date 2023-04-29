@@ -32,7 +32,7 @@ Dynamic Stiff String implementation based on DAFx 2022 paper submission https://
 #endif
 
 #include "DynamicStiffString/DynamicStiffString.h"
-#include "Simulation.h"
+#include "core/Simulation.h"
 
 #include <memory>
 #include <iostream>

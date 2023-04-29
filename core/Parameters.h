@@ -1,6 +1,6 @@
 #pragma once
 #include "DynamicStiffString/DynamicStiffString.h"
-#include "AnalogInput.h"
+#include "../components/AnalogInput.h"
 
 #include <map>
 #include <string>

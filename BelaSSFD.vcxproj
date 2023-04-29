@@ -104,7 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;DESKTOP_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\justa\source\repos\stiff-string-sim;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>
       </DisableSpecificWarnings>
     </ClCompile>
@@ -131,25 +131,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AnalogInput.cpp" />
-    <ClCompile Include="AudioBuffer.cpp" />
-    <ClCompile Include="Button.cpp" />
+    <ClCompile Include="components\AnalogInput.cpp" />
+    <ClCompile Include="core\AudioBuffer.cpp" />
+    <ClCompile Include="components\Button.cpp" />
     <ClCompile Include="DynamicStiffString\DynamicStiffString.cpp" />
-    <ClCompile Include="LEDScreen.cpp" />
-    <ClCompile Include="Parameters.cpp" />
+    <ClCompile Include="components\LEDScreen.cpp" />
+    <ClCompile Include="core\Parameters.cpp" />
     <ClCompile Include="render.cpp" />
-    <ClCompile Include="Simulation.cpp" />
+    <ClCompile Include="core\Simulation.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AudioBuffer.h" />
+    <ClInclude Include="core\AudioBuffer.h" />
     <ClInclude Include="BelaMock.h" />
-    <ClInclude Include="Button.h" />
+    <ClInclude Include="components\Button.h" />
     <ClInclude Include="DynamicStiffString\DynamicStiffString.h" />
     <ClInclude Include="DynamicStiffString\Global.h" />
-    <ClInclude Include="AnalogInput.h" />
-    <ClInclude Include="LEDScreen.h" />
-    <ClInclude Include="Parameters.h" />
-    <ClInclude Include="Simulation.h" />
+    <ClInclude Include="components\AnalogInput.h" />
+    <ClInclude Include="components\LEDScreen.h" />
+    <ClInclude Include="core\Parameters.h" />
+    <ClInclude Include="core\Simulation.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

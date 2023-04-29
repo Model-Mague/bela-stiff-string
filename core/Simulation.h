@@ -6,10 +6,10 @@
 #include "Bela.h"
 #endif
 
-#include "AnalogInput.h"
+#include "../components/AnalogInput.h"
+#include "../components/Button.h"
+#include "../components/LEDScreen.h"
 #include "AudioBuffer.h"
-#include "Button.h"
-#include "LEDScreen.h"
 #include "DynamicStiffString/DynamicStiffString.h"
 #include "Parameters.h"
 
