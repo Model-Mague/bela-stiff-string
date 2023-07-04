@@ -6,6 +6,7 @@
 #include <tuple>
 #include <cstring>
 #include <sstream>
+#include <random>
 
 
 Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1f), m_screen(context), m_audioBuffer(10)
@@ -48,20 +49,34 @@ void Simulation::update(BelaContext* context)
 	// 1. Handle trigger button (should probably be last)
 	if (m_buttons[Button::Type::TRIGGER].isReleased())
 	{
-		sprayValue = ((rand() % 100)/100.f); // Since rand() only delivers integers, the range 0 - 100 is divided to be 0.00 - 1.00
+		/*sprayValue = ((rand() % 100) / 100.f); // Since rand() only delivers integers, the range 0 - 100 is divided to be 0.00 - 1.00
 		
 		if (sprayValue > 50) // Since rand() only delivers positive numbers, any number > 50 is - 100 -> making the range -0.50 -> 0.50
 		{
 			sprayValue = sprayValue - 100;
 		}
-		sprayValue = sprayValue * sprayAmount;
+		*/
+
+		static std::mt19937 gen(0); 
+		static std::uniform_real_distribution<float> dis(-0.5, 0.5);
+
+		sprayValue = dis(gen) * sprayAmount;
+		sprayedloc += sprayValue;
+
+		sprayedloc = [](float location) 
+		{ 
+			if (location < 0) return -location;
+			else if (location > 1) return 1 - (location - 1);
+			else return location; 
+		} (sprayedloc);
 		
-				
+		/*
 		if (sprayedloc > 1.f || sprayedloc < 0.f) // if over 1 or below 0, sprayValue reversed.
 		{
 			sprayValue =  - sprayValue * 2;
-			sprayedloc = sprayedloc + sprayValue;
+			sprayedloc += sprayValue;
 		}
+		*/
 
 		rt_printf("sprayValue is %f\n", sprayValue);
 
