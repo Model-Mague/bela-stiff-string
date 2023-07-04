@@ -77,9 +77,14 @@ void Simulation::update(BelaContext* context)
 			auto& parameter = m_parameters.getParameter(parameterName);
 
 			float mappedValue = parameter.getAnalogInput()->getCurrentValueMapped();
-			if (parameterName == ParameterName::L) // Length Handled differently -> 1V/oct 
+
+			if (parameterName == ParameterName::L) // 1 Volt per Octave
 			{
-				mappedValue = 0.5f * powf(2, map(Global::limit(mappedValue, 0.f, 1.33f), 0.5f, 1.33f, 3.f, 0.f)); // <- magic: input limited to 0-3V (which are the number of octaves made available by changing the Length in our range, then mapped to oposite values, then made exponent. It is very messy, sort of a desperate measure tbh.
+				while (mappedValue > 3.f)		   // Three Octaves Available
+				{								   // While loop converts any number over 3
+					mappedValue -= 3.f;			   // Back to the 0-3 range
+				}
+				mappedValue = 4.f * powf(2, -mappedValue);
 			}
 
 			rt_printf("Updating channel %d with value %f\n", parameter.getChannel(), mappedValue);
