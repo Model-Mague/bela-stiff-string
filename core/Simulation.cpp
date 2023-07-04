@@ -49,14 +49,6 @@ void Simulation::update(BelaContext* context)
 	// 1. Handle trigger button (should probably be last)
 	if (m_buttons[Button::Type::TRIGGER].isReleased())
 	{
-		/*sprayValue = ((rand() % 100) / 100.f); // Since rand() only delivers integers, the range 0 - 100 is divided to be 0.00 - 1.00
-		
-		if (sprayValue > 50) // Since rand() only delivers positive numbers, any number > 50 is - 100 -> making the range -0.50 -> 0.50
-		{
-			sprayValue = sprayValue - 100;
-		}
-		*/
-
 		static std::mt19937 gen(0); 
 		static std::uniform_real_distribution<float> dis(-0.5, 0.5);
 
@@ -70,14 +62,6 @@ void Simulation::update(BelaContext* context)
 			else return location; 
 		} (sprayedloc);
 		
-		/*
-		if (sprayedloc > 1.f || sprayedloc < 0.f) // if over 1 or below 0, sprayValue reversed.
-		{
-			sprayValue =  - sprayValue * 2;
-			sprayedloc += sprayValue;
-		}
-		*/
-
 		rt_printf("sprayValue is %f\n", sprayValue);
 
 		auto fnExcitation = m_audioBuffer.containsSilence() ? m_fnRaisedCos : m_fnSampleExcitation;
@@ -229,33 +213,11 @@ void Simulation::writeAudio(BelaContext* context, int frame)
 {
 
 	float output = Global::limit(m_pDynamicStiffString->getOutput(), -5.f, 5.f);
-	/* Audio range increased then mapped back
-	 5x times more headroom (no clipping unless under loooots of extress) 
-	 but will need external compression - will use compressor modules.
-	 This would be the right place to look into compression algorithms.
-	 Practically its own reasearch branch - > We can come back to this next month. */
 	
 	if ((output >= 2.5f) || (output <= - 2.5f))
 	{
-		clippingFlag = true;
-		correctionValue = 1.001f;
-		
-		if ((output >= 3.5f) || (output <= - 3.5f))
-		{
-			correctionValue = 1.01f;
-		}
-		if ((output >= 4.f) || (output <= - 4.5f))
-		{
-			correctionValue = 1.1f;
-		}
-		if ((output >= 4.5f) || (output <= - 4.5f))
-		{
-			correctionValue = 5.f;
-		}
-		if ((output >= 4.9f) || (output <= - 4.9f))
-		{
-			correctionValue = 10.f;
-		}
+		clippingFlag = true;		
+		correctionValue = 1 + (powf(output, 10.f) / powf(10, 6.f)); // Very steep exponential function
 	}
 	
 	output = map(output, -5.f, 5.f, -1.f, 1.f);
