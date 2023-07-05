@@ -80,7 +80,7 @@ void Simulation::update(BelaContext* context)
 
 			if (parameterName == ParameterName::L) // 1 Volt per Octave
 			{
-				while (mappedValue > 3.f)		   // Three Octaves Available
+				while (mappedValue > 3.f)		   // Three Octaves Available (Length 4m to 0.5m)
 				{								   // While loop converts any number over 3
 					mappedValue -= 3.f;			   // Back to the 0-3 range
 				}
