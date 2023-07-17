@@ -39,15 +39,31 @@ void AnalogInput::read(BelaContext* context, const int frame)
 float AnalogInput::getCurrentValueMapped() const
 {
 	return mapValue(m_currentValue);
-} 
+}
+
+float AnalogInput::getCurrentValueinVolts() const
+{
+	return maptoVolts(m_currentValue);
+}
+
+// Maps (the *resistor tolerance calibrated* digitalized 0-1) to the parameter's range within the DSS engine.
 
 float AnalogInput::mapValue(const float value) const
 {
 	return map(Global::limit(value, sLowerLimitValue[m_channel], sUpperLimitValue[m_channel]), sLowerLimitValue[m_channel], sUpperLimitValue[m_channel], m_valueRange.first, m_valueRange.second);
 }
 
+// Unmaps to the 0-1 digitalized Analog Input Range *resistor tolerance calibrated
+
 float AnalogInput::unmapValue(const float value) const
 {
 	return map(value, m_valueRange.first, m_valueRange.second, sLowerLimitValue[m_channel], sUpperLimitValue[m_channel]);
 
+}
+
+// Maps (the digitalized 0-1) to the real analog value in volts 0-10V * resistor tolerance calibrated
+
+float AnalogInput::maptoVolts(const float value) const
+{
+	return map(Global::limit(value, sLowerLimitValue[m_channel], sUpperLimitValue[m_channel]), sLowerLimitValue[m_channel], sUpperLimitValue[m_channel], 0, 10);;
 }

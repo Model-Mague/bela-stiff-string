@@ -18,8 +18,10 @@ public:
 
 	float getCurrentValue() const { return m_currentValue; }
 	float getCurrentValueMapped() const;
+	float getCurrentValueinVolts() const;
 
 	float mapValue(const float value) const;
+	float maptoVolts(const float value) const;
 	float unmapValue(const float value) const;
 
 	bool hasChanged() { return m_hasChanged; }

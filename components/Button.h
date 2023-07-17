@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 class Button {
 public:
 	enum class State : int {

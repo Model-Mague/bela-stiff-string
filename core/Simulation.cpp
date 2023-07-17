@@ -64,7 +64,7 @@ void Simulation::update(BelaContext* context)
 		
 		rt_printf("sprayValue is %f\n", sprayValue);
 
-		auto fnExcitation = m_audioBuffer.containsSilence() ? m_fnRaisedCos : m_fnSampleExcitation;
+		auto fnExcitation = /*m_audioBuffer.containsSilence() ? */m_fnRaisedCos /*: m_fnSampleExcitation */;
 		m_pDynamicStiffString->excite(m_parameters.getParameter(ParameterName::loc).getValue(), fnExcitation);
 	}
 
@@ -76,16 +76,22 @@ void Simulation::update(BelaContext* context)
 		{
 			auto& parameter = m_parameters.getParameter(parameterName);
 
-			float mappedValue = parameter.getAnalogInput()->getCurrentValueMapped();
+			float mappedValue;
 
 			if (parameterName == ParameterName::L) // 1 Volt per Octave
 			{
-				while (mappedValue > 3.f)		   // Three Octaves Available (Length 4m to 0.5m)
+				float lValue_inVolts = parameter.getAnalogInput()->getCurrentValueinVolts();
+
+				while (lValue_inVolts > 3.f)		   // Three Octaves Available (Length 4m to 0.5m)
 				{								   // While loop converts any number over 3
-					mappedValue -= 3.f;			   // Back to the 0-3 range
+					lValue_inVolts -= 3.f;			   // Back to the 0-3 range
 				}
-				mappedValue = 4.f * powf(2, -mappedValue);
+				mappedValue = 4.f * powf(2, -lValue_inVolts);
 			}
+
+			else
+				mappedValue = parameter.getAnalogInput()->getCurrentValueMapped();
+
 
 			rt_printf("Updating channel %d with value %f\n", parameter.getChannel(), mappedValue);
 	
