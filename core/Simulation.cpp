@@ -49,23 +49,17 @@ void Simulation::update(BelaContext* context)
 	// 1. Handle trigger button (should probably be last)
 	if (m_buttons[Button::Type::TRIGGER].isReleased())
 	{
-		static std::mt19937 gen(0);
-		static std::uniform_real_distribution<float> dis(-0.5, 0.5);
+		auto& loc_param = m_parameters.getParameter(ParameterName::loc);
+		float loc = loc_param.getValue();
 
-		sprayValue = dis(gen) * sprayAmount;
-		sprayedloc += sprayValue;
-
-		sprayedloc = [](float location)
-		{
-			if (location < 0) return -location;
-			else if (location > 1) return 1 - (location - 1);
-			else return location;
-		} (sprayedloc);
+		sprayValue = Global::f_random(-0.5, 0.5);
+		sprayedloc = sprayValue + loc;
+		sprayedloc = (sprayedloc < 0) ? - sprayedloc : (sprayedloc > 1) ? (1 - (sprayedloc - 1)) : sprayedloc;
 
 		//rt_printf("sprayValue is %f\n", sprayValue);
 
 		auto fnExcitation = /*m_audioBuffer.containsSilence() ? */m_fnRaisedCos /*: m_fnSampleExcitation */;
-		m_pDynamicStiffString->excite(m_parameters.getParameter(ParameterName::loc).getValue(), fnExcitation);
+		m_pDynamicStiffString->excite(sprayedloc, fnExcitation);
 	}
 
 	// 2. Process parameter changes
