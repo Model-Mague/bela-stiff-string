@@ -21,14 +21,6 @@ void AnalogInput::read(BelaContext* context, const int frame)
 	{
 		m_hasChanged = true;
 		m_currentValue = read;
-		/* <-- I planned to update the values as I went but I have realized exactitude does not pay off.
-		if(read > sUpperLimitValue[m_channel])
-			sUpperLimitValue[m_channel] = read;
-			//rt_printf("updated channel %d upper limit with value %f\n" , m_channel, sUpperLimitValue[m_channel]);
-		if(read < sLowerLimitValue[m_channel])
-			sLowerLimitValue[m_channel] = read;
-			//rt_printf("updated channel %d lower limit with value %f\n" , m_channel, sLowerLimitValue[m_channel]);
-		*/	
 	}
 	else
 	{
@@ -41,8 +33,7 @@ void AnalogInput::read(BelaContext* context, const int frame)
 			m_maxValue = read;
 		if (read < m_minValue)
 			m_minValue = read;
-	}
-	
+	}	
 }
 
 float AnalogInput::getCurrentValueMapped() const
