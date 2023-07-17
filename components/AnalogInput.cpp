@@ -65,5 +65,5 @@ float AnalogInput::unmapValue(const float value) const
 
 float AnalogInput::maptoVolts(const float value) const
 {
-	return map(Global::limit(value, sLowerLimitValue[m_channel], sUpperLimitValue[m_channel]), sLowerLimitValue[m_channel], sUpperLimitValue[m_channel], 0, 10);;
+	return Global::limit(value, sLowerLimitValue[m_channel], sUpperLimitValue[m_channel]) * 10.f;
 }
