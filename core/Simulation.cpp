@@ -49,17 +49,18 @@ void Simulation::update(BelaContext* context)
 	// 1. Handle trigger button (should probably be last)
 	if (m_buttons[Button::Type::TRIGGER].isReleased())
 	{
-		auto& loc_param = m_parameters.getParameter(ParameterName::loc);
-		float loc = loc_param.getValue();
-
-		sprayValue = Global::f_random(-0.5, 0.5);
-		sprayedloc = sprayValue + loc;
+		sprayValue = Global::f_random(-0.5, 0.5) * sprayAmount;
+		sprayedloc = nonsprayloc + sprayValue;
 		sprayedloc = (sprayedloc < 0) ? - sprayedloc : (sprayedloc > 1) ? (1 - (sprayedloc - 1)) : sprayedloc;
 
-		//rt_printf("sprayValue is %f\n", sprayValue);
+		rt_printf("sprayValue is %f\n", sprayValue);
 
 		auto fnExcitation = /*m_audioBuffer.containsSilence() ? */m_fnRaisedCos /*: m_fnSampleExcitation */;
-		m_pDynamicStiffString->excite(sprayedloc, fnExcitation);
+
+		m_parameters.getParameter(ParameterName::loc).setValue(sprayedloc);
+
+		m_screen.setBrightness(m_parameters.getParameter(ParameterName::loc).getChannel(), sprayedloc);
+		m_pDynamicStiffString->excite(m_parameters.getParameter(ParameterName::loc).getValue(), fnExcitation);
 	}
 
 	// 2. Process parameter changes
@@ -74,8 +75,8 @@ void Simulation::update(BelaContext* context)
 
 			if (parameterName == ParameterName::L) // 1 Volt per Octave
 			{
-				rt_printf("incoming value of L is %f \n", parameter.getAnalogInput()->getCurrentValue());
-				rt_printf("incoming value of L in volts is %f \n", parameter.getAnalogInput()->getCurrentValueinVolts());
+				//rt_printf("incoming value of L is %f \n", parameter.getAnalogInput()->getCurrentValue());
+				//rt_printf("incoming value of L in volts is %f \n", parameter.getAnalogInput()->getCurrentValueinVolts());
 
 				float lValue_inVolts = parameter.getAnalogInput()->getCurrentValueinVolts();
 
@@ -185,14 +186,14 @@ void Simulation::readInputs(BelaContext* context, int frame)
 				if (m_buttons[Button::Type::SPRAY].isPressed())
 				{
 					sprayAmount = analogIn->getCurrentValueMapped();
-					//rt_printf("Spray Amount is %f\n", sprayAmount);
+					m_screen.setBrightness(m_parameters.getParameter(ParameterName::loc).getChannel(), sprayAmount);
+					rt_printf("Spray Amount is %f\n", sprayAmount);
 				}
 
-				sprayedloc = analogIn->getCurrentValueMapped() + sprayValue;
-
-				m_parameters.getParameter(ParameterName::loc).setValue(sprayedloc);
-				m_screen.setBrightness(parameter.getChannel(), analogIn->getCurrentValue()); // needs mapped
+				nonsprayloc = analogIn->getCurrentValueMapped();				
+				m_screen.setBrightness(parameter.getChannel(), nonsprayloc);
 			}
+
 			else if (analogIn->hasChanged())
 			{
 				// Register channel as one that needs its value read and updated

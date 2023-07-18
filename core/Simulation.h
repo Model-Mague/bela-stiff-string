@@ -33,7 +33,8 @@ public:
 	const float* getPhase() { return m_phase; }
 	const int getAnalogInputCount() { return sAnalogInputCount; }
 	
-	//SPRAY VALUES
+	//LOC & SPRAY VALUES
+	float nonsprayloc; // pot 5 when button not pressed
 	float sprayAmount; // pot 5 when button is pressed
 	float sprayValue;  // randomised -0.5 -> 0.5 * sprayAmount
 	float sprayedloc;  // loc position + sprayValue (sort of)
