@@ -51,7 +51,7 @@ void Simulation::update(BelaContext* context)
 	{
 		sprayValue = Global::f_random(-1, 1) * sprayAmount;
 		sprayedloc = nonsprayloc + sprayValue;
-		sprayedloc = (sprayedloc < 0) ? - sprayedloc : (sprayedloc > 1) ? (1 - (sprayedloc - 1)) : sprayedloc;
+		sprayedloc = (sprayedloc < 0) ? -sprayedloc : (sprayedloc > 1) ? (1 - (sprayedloc - 1)) : sprayedloc;
 
 		//rt_printf("sprayValue is %f\n", sprayValue);
 		//rt_printf("sprayedloc is %f\n", sprayedloc);
@@ -107,7 +107,7 @@ void Simulation::update(BelaContext* context)
 		{
 			// sigma0
 			auto& sigma0 = m_parameters.getParameter(ParameterName::sigma0);
-			float updatedValue = sigma0.getValue() * correctionValue;
+			float updatedValue = std::min(sigma0.getValue() * correctionValue, 2.f);
 			sigma0.setValue(updatedValue);
 			m_pDynamicStiffString->refreshParameter(sigma0.getId(), updatedValue);
 			//rt_printf("Updating sigma0 with value %f\n", updatedValue);
@@ -117,7 +117,7 @@ void Simulation::update(BelaContext* context)
 
 			// sigma1
 			auto& sigma1 = m_parameters.getParameter(ParameterName::sigma1);
-			updatedValue = sigma1.getValue() * correctionValue;
+			updatedValue = std::min(sigma1.getValue() * correctionValue, 1.f);
 			sigma1.setValue(updatedValue);
 			m_pDynamicStiffString->refreshParameter(sigma1.getId(), updatedValue);
 			//rt_printf("Updating sigma1 with value %f\n", updatedValue);
@@ -126,6 +126,36 @@ void Simulation::update(BelaContext* context)
 			m_screen.setBrightness(sigma1.getChannel(), updatedValue); // passes the new value to the LEDScreen
 
 			clippingFlag = false;
+			hasCorrectedFlag = true;
+		}
+
+		if (hasCorrectedFlag && stableFlag) //Only After Correction and Once Signal has stabilized
+		{
+			// compares pots with increased updatedValues, then decreases values at speed depending on distance
+
+			auto& sigma0 = m_parameters.getParameter(ParameterName::sigma0);
+			auto& sigma1 = m_parameters.getParameter(ParameterName::sigma1);
+
+			float sigma0pot = sigma0.getAnalogInput()->getCurrentValue(); // min value is 0
+			float sigma1pot = sigma1.getAnalogInput()->getCurrentValue(); // min value is 0.0008f
+
+			float sigma0cor = sigma0.getValue(); // max value is 2
+			float sigma1cor = sigma1.getValue(); // max     value is 1
+
+			float sigma0dif = sigma0pot - sigma0cor; // max value is 2
+			float sigma1dif = sigma1pot - sigma1cor; // max value is 0.9992
+
+			float sigma0coef = sigma0dif * 0.0002;
+			float sigma1coef = sigma1dif * 0.0002;
+
+			sigma0.setValue(sigma0cor + sigma0coef);
+			m_pDynamicStiffString->refreshParameter(sigma0.getId(), sigma0cor - sigma0coef);
+
+			sigma1.setValue(sigma1cor + sigma1coef);
+			m_pDynamicStiffString->refreshParameter(sigma1.getId(), sigma1cor - sigma1coef);
+
+			if(sigma0dif == 0 && sigma1dif == 0)
+			hasCorrectedFlag = false;
 		}
 
 		m_parametersToUpdate.clear();
@@ -193,9 +223,9 @@ void Simulation::readInputs(BelaContext* context, int frame)
 				}
 
 				nonsprayloc = analogIn->getCurrentValueMapped();
-				
+
 				if (m_buttons[Button::Type::SPRAY].isReleased() || analogIn->hasChanged())
-				m_screen.setBrightness(parameter.getChannel(), nonsprayloc);
+					m_screen.setBrightness(parameter.getChannel(), nonsprayloc);
 
 				//rt_printf("nonsprayLoc is %f\n", nonsprayloc);
 			}
@@ -226,18 +256,21 @@ void Simulation::writeOutputs(BelaContext* context, int frame)
 
 void Simulation::writeAudio(BelaContext* context, int frame)
 {
+	float l_Range = 5.f; // loudness range
+	float output = Global::limit(m_pDynamicStiffString->getOutput(), -l_Range, l_Range);
 
-	float output = Global::limit(m_pDynamicStiffString->getOutput(), -5.f, 5.f);
-
-	if ((output >= 4.f) || (output <= -4.f))
+	if ((output >= l_Range) || (output <= -l_Range))
 	{
 		float positive_output = output >= 0 ? output : -output;
 
 		clippingFlag = true;
-		correctionValue = powf(10, positive_output - 4);
-	}	
+		stableFlag = false;
+		correctionValue = powf(1.1, positive_output - (l_Range - 0.8 * l_Range));
+	}
+	else
+		stableFlag = true;
 
-	output = map(output, -5.f, 5.f, -1.f, 1.f);
+	output = map(output, -l_Range, l_Range, -1.f, 1.f);
 
 	for (unsigned int channel = 0; channel < context->audioOutChannels; channel++)
 	{

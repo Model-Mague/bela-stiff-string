@@ -85,5 +85,7 @@ private:
 	
 	// Set if we're to actively damp the signal in the next update call
 	bool clippingFlag = false;
+	bool hasCorrectedFlag = false;
+	bool stableFlag = true;
 	float correctionValue; // Damping proportion
 };
