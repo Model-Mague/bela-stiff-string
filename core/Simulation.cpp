@@ -53,8 +53,8 @@ void Simulation::update(BelaContext* context)
 		sprayedloc = nonsprayloc + sprayValue;
 		sprayedloc = (sprayedloc < 0) ? - sprayedloc : (sprayedloc > 1) ? (1 - (sprayedloc - 1)) : sprayedloc;
 
-		rt_printf("sprayValue is %f\n", sprayValue);
-		rt_printf("sprayedloc is %f\n", sprayedloc);
+		//rt_printf("sprayValue is %f\n", sprayValue);
+		//rt_printf("sprayedloc is %f\n", sprayedloc);
 
 		auto fnExcitation = /*m_audioBuffer.containsSilence() ? */m_fnRaisedCos /*: m_fnSampleExcitation */;
 
@@ -92,7 +92,7 @@ void Simulation::update(BelaContext* context)
 				mappedValue = parameter.getAnalogInput()->getCurrentValueMapped();
 
 
-			rt_printf("Updating channel %d with value %f\n", parameter.getChannel(), mappedValue);
+			//rt_printf("Updating channel %d with value %f\n", parameter.getChannel(), mappedValue);
 
 			// Save state and send change to DSS
 			parameter.setValue(mappedValue);
@@ -107,23 +107,23 @@ void Simulation::update(BelaContext* context)
 		{
 			// sigma0
 			auto& sigma0 = m_parameters.getParameter(ParameterName::sigma0);
-			float updatedValue = std::min(sigma0.getValue() * correctionValue, 2.f);
+			float updatedValue = sigma0.getValue() * correctionValue;
 			sigma0.setValue(updatedValue);
 			m_pDynamicStiffString->refreshParameter(sigma0.getId(), updatedValue);
 			//rt_printf("Updating sigma0 with value %f\n", updatedValue);
 
 			// Update screen
-			m_screen.setBrightness(7, sigma0.getAnalogInput()->unmapValue(updatedValue)); // passes the new value to the LEDScreen
+			m_screen.setBrightness(sigma0.getChannel(), updatedValue); // passes the new value to the LEDScreen
 
 			// sigma1
 			auto& sigma1 = m_parameters.getParameter(ParameterName::sigma1);
-			updatedValue = std::min(sigma1.getValue() * correctionValue, 0.01f);
+			updatedValue = sigma1.getValue() * correctionValue;
 			sigma1.setValue(updatedValue);
 			m_pDynamicStiffString->refreshParameter(sigma1.getId(), updatedValue);
 			//rt_printf("Updating sigma1 with value %f\n", updatedValue);
 
 			// Update screen
-			m_screen.setBrightness(8, sigma1.getAnalogInput()->unmapValue(updatedValue)); // passes the new value to the LEDScreen
+			m_screen.setBrightness(sigma1.getChannel(), updatedValue); // passes the new value to the LEDScreen
 
 			clippingFlag = false;
 		}
@@ -189,7 +189,7 @@ void Simulation::readInputs(BelaContext* context, int frame)
 				{
 					sprayAmount = analogIn->getCurrentValueMapped();
 					m_screen.setBrightness(m_parameters.getParameter(ParameterName::loc).getChannel(), sprayAmount);
-					rt_printf("Spray Amount is %f\n", sprayAmount);
+					//rt_printf("Spray Amount is %f\n", sprayAmount);
 				}
 
 				nonsprayloc = analogIn->getCurrentValueMapped();
