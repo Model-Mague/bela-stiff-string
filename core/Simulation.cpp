@@ -229,11 +229,13 @@ void Simulation::writeAudio(BelaContext* context, int frame)
 
 	float output = Global::limit(m_pDynamicStiffString->getOutput(), -5.f, 5.f);
 
-	if ((output >= 2.5f) || (output <= -2.5f))
+	if ((output >= 4.f) || (output <= -4.f))
 	{
+		float positive_output = output >= 0 ? output : -output;
+
 		clippingFlag = true;
-		correctionValue = 1 + (powf(output, 10.f) / powf(10, 6.f)); // Very steep exponential function
-	}
+		correctionValue = powf(10, positive_output - 4);
+	}	
 
 	output = map(output, -5.f, 5.f, -1.f, 1.f);
 
