@@ -49,11 +49,12 @@ void Simulation::update(BelaContext* context)
 	// 1. Handle trigger button (should probably be last)
 	if (m_buttons[Button::Type::TRIGGER].isReleased())
 	{
-		sprayValue = Global::f_random(-0.5, 0.5) * sprayAmount;
+		sprayValue = Global::f_random(-1, 1) * sprayAmount;
 		sprayedloc = nonsprayloc + sprayValue;
 		sprayedloc = (sprayedloc < 0) ? - sprayedloc : (sprayedloc > 1) ? (1 - (sprayedloc - 1)) : sprayedloc;
 
 		rt_printf("sprayValue is %f\n", sprayValue);
+		rt_printf("sprayedloc is %f\n", sprayedloc);
 
 		auto fnExcitation = /*m_audioBuffer.containsSilence() ? */m_fnRaisedCos /*: m_fnSampleExcitation */;
 
@@ -182,6 +183,7 @@ void Simulation::readInputs(BelaContext* context, int frame)
 			// So there is no risk of too frequent updates
 			if (parameter.getName() == ParameterName::loc)
 			{
+
 				// Handle Spray button
 				if (m_buttons[Button::Type::SPRAY].isPressed())
 				{
@@ -190,8 +192,12 @@ void Simulation::readInputs(BelaContext* context, int frame)
 					rt_printf("Spray Amount is %f\n", sprayAmount);
 				}
 
-				nonsprayloc = analogIn->getCurrentValueMapped();				
+				nonsprayloc = analogIn->getCurrentValueMapped();
+				
+				if (m_buttons[Button::Type::SPRAY].isReleased() || analogIn->hasChanged())
 				m_screen.setBrightness(parameter.getChannel(), nonsprayloc);
+
+				//rt_printf("nonsprayLoc is %f\n", nonsprayloc);
 			}
 
 			else if (analogIn->hasChanged())
