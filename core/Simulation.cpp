@@ -47,7 +47,7 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 void Simulation::update(BelaContext* context)
 {
 	// 1. Handle trigger button (should probably be last)
-	if (m_buttons[Button::Type::TRIGGER].isReleased())
+	if (m_buttons[Button::Type::TRIGGER].isPressed())
 	{
 		sprayValue = Global::f_random(-1, 1) * sprayAmount;
 		sprayedloc = nonsprayloc + sprayValue;
@@ -106,7 +106,7 @@ void Simulation::update(BelaContext* context)
 		if (clippingFlag == true)
 		{
 			// sigma0
-			auto& sigma0 = m_parameters.getParameter(ParameterName::sigma0);
+			/* auto& sigma0 = m_parameters.getParameter(ParameterName::sigma0);
 			float updatedValue = std::min(sigma0.getValue() * correctionValue, 2.f);
 			sigma0.setValue(updatedValue);
 			m_pDynamicStiffString->refreshParameter(sigma0.getId(), updatedValue);
@@ -114,10 +114,11 @@ void Simulation::update(BelaContext* context)
 
 			// Update screen
 			m_screen.setBrightness(sigma0.getChannel(), updatedValue); // passes the new value to the LEDScreen
+			*/
 
 			// sigma1
 			auto& sigma1 = m_parameters.getParameter(ParameterName::sigma1);
-			updatedValue = std::min(sigma1.getValue() * correctionValue, 1.f);
+			float updatedValue = std::min(sigma1.getValue() * correctionValue, 1.f);
 			sigma1.setValue(updatedValue);
 			m_pDynamicStiffString->refreshParameter(sigma1.getId(), updatedValue);
 			//rt_printf("Updating sigma1 with value %f\n", updatedValue);
@@ -133,28 +134,27 @@ void Simulation::update(BelaContext* context)
 		{
 			// compares pots with increased updatedValues, then decreases values at speed depending on distance
 
-			auto& sigma0 = m_parameters.getParameter(ParameterName::sigma0);
-			auto& sigma1 = m_parameters.getParameter(ParameterName::sigma1);
-
+			/*auto& sigma0 = m_parameters.getParameter(ParameterName::sigma0);
 			float sigma0pot = sigma0.getAnalogInput()->getCurrentValue(); // min value is 0
-			float sigma1pot = sigma1.getAnalogInput()->getCurrentValue(); // min value is 0.0008f
-
 			float sigma0cor = sigma0.getValue(); // max value is 2
-			float sigma1cor = sigma1.getValue(); // max     value is 1
-
 			float sigma0dif = sigma0pot - sigma0cor; // max value is 2
-			float sigma1dif = sigma1pot - sigma1cor; // max value is 0.9992
-
 			float sigma0coef = sigma0dif * 0.0002;
-			float sigma1coef = sigma1dif * 0.0002;
+			
 
 			sigma0.setValue(sigma0cor + sigma0coef);
 			m_pDynamicStiffString->refreshParameter(sigma0.getId(), sigma0cor - sigma0coef);
+			*/
+
+			auto& sigma1 = m_parameters.getParameter(ParameterName::sigma1);
+			float sigma1pot = sigma1.getAnalogInput()->getCurrentValue(); // min value is 0.0008f
+			float sigma1cor = sigma1.getValue(); // max     value is 1
+			float sigma1dif = sigma1pot - sigma1cor; // max value is 0.9992
+			float sigma1coef = sigma1dif * 0.0002;
 
 			sigma1.setValue(sigma1cor + sigma1coef);
 			m_pDynamicStiffString->refreshParameter(sigma1.getId(), sigma1cor - sigma1coef);
 
-			if(sigma0dif == 0 && sigma1dif == 0)
+			if(/*sigma0dif == 0 && */sigma1dif == 0)
 			hasCorrectedFlag = false;
 		}
 
@@ -215,7 +215,7 @@ void Simulation::readInputs(BelaContext* context, int frame)
 			{
 
 				// Handle Spray button
-				if (m_buttons[Button::Type::SPRAY].isPressed())
+				if (m_buttons[Button::Type::SPRAY].isHeld())
 				{
 					sprayAmount = analogIn->getCurrentValueMapped();
 					m_screen.setBrightness(m_parameters.getParameter(ParameterName::loc).getChannel(), sprayAmount);
@@ -267,6 +267,7 @@ void Simulation::writeAudio(BelaContext* context, int frame)
 		stableFlag = false;
 		correctionValue = powf(1.1, positive_output - (l_Range - 0.8 * l_Range));
 	}
+
 	else
 		stableFlag = true;
 
