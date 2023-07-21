@@ -210,7 +210,7 @@ void Simulation::readInputs(BelaContext* context, int frame)
 	if (!(frame % m_audioFramesPerAnalogFrame))
 	{
 		const int analogFrame = frame / m_audioFramesPerAnalogFrame;
-		for (auto kvp : m_parameters.getParameters()) // Start with channels 1-8; 0 is reserved for trigger
+		for (auto& kvp: m_parameters.getParameters()) // Start with channels 1-8; 0 is reserved for trigger
 		{
 			auto& parameter = kvp.second;
 			auto analogIn = kvp.second.getAnalogInput();
