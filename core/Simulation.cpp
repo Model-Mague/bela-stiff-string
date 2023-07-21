@@ -64,7 +64,7 @@ void Simulation::update(BelaContext* context)
 		
 		rt_printf("sprayValue is %f\n", sprayValue);
 
-		auto fnExcitation = m_audioBuffer.containsSilence() ? m_fnRaisedCos : m_fnSampleExcitation;
+		const auto& fnExcitation = m_audioBuffer.containsSilence() ? m_fnRaisedCos : m_fnSampleExcitation;
 		m_pDynamicStiffString->excite(m_parameters.getParameter(ParameterName::loc).getValue(), fnExcitation);
 	}
 
@@ -168,7 +168,7 @@ void Simulation::readInputs(BelaContext* context, int frame)
 	if (!(frame % m_audioFramesPerAnalogFrame))
 	{
 		const int analogFrame = frame / m_audioFramesPerAnalogFrame;
-		for (auto kvp: m_parameters.getParameters()) // Start with channels 1-8; 0 is reserved for trigger
+		for (auto& kvp: m_parameters.getParameters()) // Start with channels 1-8; 0 is reserved for trigger
 		{
 			auto& parameter = kvp.second;
 			auto analogIn = kvp.second.getAnalogInput();
