@@ -71,6 +71,8 @@ void Simulation::update(BelaContext* context)
 		m_pDynamicStiffString->excite(m_parameters.getParameter(ParameterName::loc).getValue(), fnExcitation);
 	}
 
+
+
 	// 2. Process parameter changes
 	if (m_updateFrameCounter == 0)
 	{
@@ -83,16 +85,14 @@ void Simulation::update(BelaContext* context)
 
 			if (parameterName == ParameterName::L) // 1 Volt per Octave
 			{
-				//rt_printf("incoming value of L is %f \n", parameter.getAnalogInput()->getCurrentValue());
-				//rt_printf("incoming value of L in volts is %f \n", parameter.getAnalogInput()->getCurrentValueinVolts());
-
 				float lValue_inVolts = parameter.getAnalogInput()->getCurrentValueinVolts();
 
-				while (lValue_inVolts > 3.f)		   // Three Octaves Available (Length 4m to 0.5m)
-				{								   // While loop converts any number over 3
-					lValue_inVolts -= 3.f;			   // Back to the 0-3 range
+				while (lValue_inVolts > 4.f)		   // Four Octaves Available (Length 2m to 0.125m)
+				{								       // While loop converts any number over 4
+					lValue_inVolts -= 4.f;			   // Back to the 0-4 range
 				}
-				mappedValue = 4.f * powf(2, -lValue_inVolts);
+
+				mappedValue = 2.f * powf(2, -lValue_inVolts);
 			}
 
 			else
@@ -216,6 +216,13 @@ void Simulation::readInputs(BelaContext* context, int frame)
 			auto analogIn = kvp.second.getAnalogInput();
 
 			analogIn->read(context, analogFrame);
+
+			// We will always update L (length). as this param needs to be as accurate as possible
+			// since it affects pitch.
+
+			if (parameter.getName() == ParameterName::L)
+				m_parametersToUpdate.insert(parameter.getName());
+
 			// We will always update channel 7 (excitation loc) as this param is only effective during excitation
 			// So there is no risk of too frequent updates
 			if (parameter.getName() == ParameterName::loc)

@@ -33,7 +33,7 @@ void AnalogInput::read(BelaContext* context, const int frame)
 			m_maxValue = read;
 		if (read < m_minValue)
 			m_minValue = read;
-	}	
+	}
 }
 
 float AnalogInput::getCurrentValueMapped() const
@@ -61,9 +61,26 @@ float AnalogInput::unmapValue(const float value) const
 
 }
 
-// Maps (the digitalized 0-1) to the real analog value in volts 0-10V * resistor tolerance calibrated
+// Reads normalized Value from analogRead and converts it to the 0-10V
 
 float AnalogInput::maptoVolts(const float value) const
 {
-	return Global::limit(value, sLowerLimitValue[m_channel], sUpperLimitValue[m_channel]) * 10.f;
+	float normalizedIn = value;
+	float calibratedIn = map(Global::limit(normalizedIn, sLowerLimitValue[m_channel], sUpperLimitValue[m_channel]), sLowerLimitValue[m_channel], sUpperLimitValue[m_channel], 0.f, 4.f / 4.096f);
+
+	// Resistor divider with a nominal ratio of 100k/(150k+100k) = 0.4
+	// -> 0-10V become * 0.4; ex. 10V would become 4V
+	// 
+	// ADC input converts values from 0:4.096V to 0-1
+	// ex. 4V would become 0.97 at normalised range (which is at the same time the max. value)
+	//
+	// Normalisation -> (realIn * 0.4) / 4.096 = normIn;
+	// 
+	// Hence, this function should aim to reverse this normalisation.
+	//
+	// The pots are attenuveters meaning they should measure the max value (0.97) when at the maximum
+	// for CV ins to be precised. Hence, the function should be mapped.
+
+	float realIn = (4.096 * (calibratedIn)) / 0.4;
+	return realIn;
 }
