@@ -110,7 +110,7 @@ void Simulation::update(BelaContext* context)
 			m_screen.setBrightness(parameter.getChannel(), parameter.getAnalogInput()->unmapValue(mappedValue)); // Passes the parameter's value to the correct channel
 		}
 
-		if (clippingFlag == true)
+		/*if (clippingFlag == true)
 		{
 			// sigma0
 			/* auto& sigma0 = m_parameters.getParameter(ParameterName::sigma0);
@@ -121,7 +121,7 @@ void Simulation::update(BelaContext* context)
 
 			// Update screen
 			m_screen.setBrightness(sigma0.getChannel(), updatedValue); // passes the new value to the LEDScreen
-			*/
+
 
 			// sigma1
 			auto& sigma1 = m_parameters.getParameter(ParameterName::sigma1);
@@ -146,11 +146,11 @@ void Simulation::update(BelaContext* context)
 			float sigma0cor = sigma0.getValue(); // max value is 2
 			float sigma0dif = sigma0pot - sigma0cor; // max value is 2
 			float sigma0coef = sigma0dif * 0.0002;
-			
+
 
 			sigma0.setValue(sigma0cor + sigma0coef);
 			m_pDynamicStiffString->refreshParameter(sigma0.getId(), sigma0cor - sigma0coef);
-			*/
+
 
 			auto& sigma1 = m_parameters.getParameter(ParameterName::sigma1);
 			float sigma1pot = sigma1.getAnalogInput()->getCurrentValue(); // min value is 0.0008f
@@ -161,10 +161,10 @@ void Simulation::update(BelaContext* context)
 			sigma1.setValue(sigma1cor + sigma1coef);
 			m_pDynamicStiffString->refreshParameter(sigma1.getId(), sigma1cor - sigma1coef);
 
-			if(/*sigma0dif == 0 && */sigma1dif == 0)
+			if(/*sigma0dif == 0 && sigma1dif == 0)
 			hasCorrectedFlag = false;
 		}
-
+		*/
 		m_parametersToUpdate.clear();
 		m_updateFrameCounter = sDSSUpdateRate;
 	}
@@ -210,7 +210,7 @@ void Simulation::readInputs(BelaContext* context, int frame)
 	if (!(frame % m_audioFramesPerAnalogFrame))
 	{
 		const int analogFrame = frame / m_audioFramesPerAnalogFrame;
-		for (auto& kvp: m_parameters.getParameters()) // Start with channels 1-8; 0 is reserved for trigger
+		for (auto& kvp : m_parameters.getParameters()) // Start with channels 1-8; 0 is reserved for trigger
 		{
 			auto& parameter = kvp.second;
 			auto analogIn = kvp.second.getAnalogInput();
@@ -273,7 +273,7 @@ void Simulation::writeAudio(BelaContext* context, int frame)
 	float l_Range = 5.f; // loudness range
 	float output = Global::limit(m_pDynamicStiffString->getOutput(), -l_Range, l_Range);
 
-	if ((output >= l_Range) || (output <= -l_Range))
+	/*if ((output >= l_Range) || (output <= -l_Range))
 	{
 		float positive_output = output >= 0 ? output : -output;
 
@@ -284,6 +284,7 @@ void Simulation::writeAudio(BelaContext* context, int frame)
 
 	else
 		stableFlag = true;
+	*/
 
 	output = map(output, -l_Range, l_Range, -1.f, 1.f);
 
