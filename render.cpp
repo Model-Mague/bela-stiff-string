@@ -47,6 +47,7 @@ bool setup(BelaContext* context, void* userData)
 	scope.setup(Simulation::sAnalogInputCount, context->audioSampleRate);
 
 	pSimulation = std::make_unique<Simulation>(context);
+	pSimulation->Compressor.setSampleRate(context->audioSampleRate);
 
 	return true;
 }

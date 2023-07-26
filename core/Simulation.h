@@ -19,6 +19,8 @@
 #include <set>
 #include <vector>
 
+#include "Compressor/SimpleComp.h"
+
 class Simulation {
 public:
 	static constexpr int sAnalogInputCount = 8;
@@ -32,6 +34,8 @@ public:
 	const float* getLfo() { return m_lfo; }
 	const float* getPhase() { return m_phase; }
 	const int getAnalogInputCount() { return sAnalogInputCount; }
+
+	chunkware_simple::SimpleComp Compressor;
 	
 	//LOC & SPRAY VALUES
 	float nonsprayloc; // pot 5 when button not pressed

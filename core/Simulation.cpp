@@ -9,6 +9,7 @@
 #include <random>
 
 
+
 Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1f), m_screen(context), m_audioBuffer(10)
 {
 	m_inverseSampleRate = 1.0f / context->audioSampleRate;
@@ -271,7 +272,9 @@ void Simulation::writeOutputs(BelaContext* context, int frame)
 void Simulation::writeAudio(BelaContext* context, int frame)
 {
 	float l_Range = 5.f; // loudness range
-	float output = Global::limit(m_pDynamicStiffString->getOutput(), -l_Range, l_Range);
+	double output = Global::limit(m_pDynamicStiffString->getOutput(), -l_Range, l_Range);
+
+	Compressor.process(output, output);
 
 	/*if ((output >= l_Range) || (output <= -l_Range))
 	{
