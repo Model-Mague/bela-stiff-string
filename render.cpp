@@ -47,7 +47,13 @@ bool setup(BelaContext* context, void* userData)
 	scope.setup(Simulation::sAnalogInputCount, context->audioSampleRate);
 
 	pSimulation = std::make_unique<Simulation>(context);
+
+	//Initialize Compressor parameters.
 	pSimulation->Compressor.setSampleRate(context->audioSampleRate);
+	pSimulation->Compressor.setThresh(60);
+	pSimulation->Compressor.setRatio(1);
+	pSimulation->Compressor.setRelease(100);
+	pSimulation->Compressor.setAttack(100);
 
 	return true;
 }

@@ -288,7 +288,7 @@ void Simulation::writeAudio(BelaContext* context, int frame)
 	else
 		stableFlag = true;
 	*/
-
+	
 	output = map(output, -l_Range, l_Range, -1.f, 1.f);
 
 	for (unsigned int channel = 0; channel < context->audioOutChannels; channel++)
