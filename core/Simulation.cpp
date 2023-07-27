@@ -206,7 +206,7 @@ std::string Simulation::getCalibrationResults()
 void Simulation::readInputs(BelaContext* context, int frame)
 {
 	// First, read in a frame of audio from the input
-	m_audioBuffer.put(audioRead(context, frame, 0));
+	m_audioBuffer.put(map(audioRead(context, frame, 0), -1.f, 1.f, 0.f, 0.5f));
 
 	if (!(frame % m_audioFramesPerAnalogFrame))
 	{
