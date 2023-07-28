@@ -271,14 +271,14 @@ void Simulation::writeOutputs(BelaContext* context, int frame)
 
 void Simulation::writeAudio(BelaContext* context, int frame)
 {
-	float l_Range = 1.f; // loudness range
+	float l_Range = 10.f; // loudness range
 	double output = Global::limit(m_pDynamicStiffString->getOutput(), -l_Range, l_Range);
 
-	no_compression_output = output;
+	before_compression.push_back(std::abs(output));
 
 	Compressor.process(output, output);
 
-	compressed_output = output;	
+	after_compression.push_back(std::abs(output));
 
 	/*if ((output >= l_Range) || (output <= -l_Range))
 	{
@@ -298,5 +298,17 @@ void Simulation::writeAudio(BelaContext* context, int frame)
 	for (unsigned int channel = 0; channel < context->audioOutChannels; channel++)
 	{
 		audioWrite(context, frame, channel, output);
+	}
+
+	if (before_compression.size() == context->audioFrames)
+	{
+		result_before = std::max_element(before_compression.begin(), before_compression.end());
+		rt_printf("b: \f", *result_before);
+
+		result_after = std::max_element(after_compression.begin(), after_compression.end());
+		rt_printf("a: \f", *result_after);
+
+		before_compression.clear();
+		after_compression.clear();	
 	}
 }

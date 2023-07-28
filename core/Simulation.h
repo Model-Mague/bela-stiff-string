@@ -48,11 +48,13 @@ public:
 
 	std::string getCalibrationResults();
 
-	//Diagnostics Variables for Measuring inputs and outputs before and after compressor
+	//Diagnostics vectors for Measuring outputs before and after compressor
 
-	double no_compression_output;
-	double compressed_output;
+	std::vector<double> before_compression;
+	std::vector<double> after_compression;
 
+	std::vector<double>::iterator result_before;
+	std::vector<double>::iterator result_after;
 
 private:
 	// Screen
