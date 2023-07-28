@@ -274,11 +274,11 @@ void Simulation::writeAudio(BelaContext* context, int frame)
 	float l_Range = 10.f; // loudness range
 	double output = Global::limit(m_pDynamicStiffString->getOutput(), -l_Range, l_Range);
 
-	before_compression.push_back(std::abs(output));
+	temp_before_compression.push_back(std::abs(output));
 
 	Compressor.process(output, output);
 
-	after_compression.push_back(std::abs(output));
+	temp_after_compression.push_back(std::abs(output));
 
 	/*if ((output >= l_Range) || (output <= -l_Range))
 	{
@@ -300,15 +300,18 @@ void Simulation::writeAudio(BelaContext* context, int frame)
 		audioWrite(context, frame, channel, output);
 	}
 
-	if (before_compression.size() == context->audioFrames)
+	if (temp_before_compression.size() == context->audioFrames)
 	{
-		result_before = std::max_element(before_compression.begin(), before_compression.end());
-		rt_printf("b: \f", *result_before);
+		iter_before = std::max_element(temp_before_compression.begin(), temp_before_compression.end());
+		max_value_before = *iter_before;
 
-		result_after = std::max_element(after_compression.begin(), after_compression.end());
-		rt_printf("a: \f", *result_after);
+		iter_after = std::max_element(temp_after_compression.begin(), temp_after_compression.end());
+		max_value_after = *iter_after;
+		
+		temp_before_compression.clear();
+		temp_after_compression.clear();
 
-		before_compression.clear();
-		after_compression.clear();	
+		before_vector.push_back(max_value_before);
+		after_vector.push_back(max_value_after);
 	}
 }

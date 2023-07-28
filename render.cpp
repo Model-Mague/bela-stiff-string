@@ -81,7 +81,15 @@ void render(BelaContext* context, void* userData)
 
 void cleanup(BelaContext* context, void* userData)
 {
-	std::cout << pSimulation->getCalibrationResults();
+	//std::cout << pSimulation->getCalibrationResults();
+
+	for (size_t v_elem; v_elem <= pSimulation->before_vector.size(); v_elem++)
+	{
+		std::cout << pSimulation->before_vector[v_elem] << " vs " << pSimulation->after_vector[v_elem] << "\n";
+	}
+
+	pSimulation->before_vector.clear();
+	pSimulation->after_vector.clear();
 }
 
 #ifdef DESKTOP_BUILD

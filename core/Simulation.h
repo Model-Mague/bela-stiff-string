@@ -50,11 +50,17 @@ public:
 
 	//Diagnostics vectors for Measuring outputs before and after compressor
 
-	std::vector<double> before_compression;
-	std::vector<double> after_compression;
+	std::vector<double> temp_before_compression;
+	std::vector<double> temp_after_compression;
 
-	std::vector<double>::iterator result_before;
-	std::vector<double>::iterator result_after;
+	std::vector<double>::iterator iter_before;
+	std::vector<double>::iterator iter_after;
+
+	double max_value_before;
+	double max_value_after;
+
+	std::vector<double> before_vector;
+	std::vector<double> after_vector;
 
 private:
 	// Screen
