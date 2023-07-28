@@ -19,6 +19,8 @@
 #include <set>
 #include <vector>
 
+#include "Compressor/SimpleComp.h"
+
 class Simulation {
 public:
 	static constexpr int sAnalogInputCount = 8;
@@ -32,17 +34,33 @@ public:
 	const float* getLfo() { return m_lfo; }
 	const float* getPhase() { return m_phase; }
 	const int getAnalogInputCount() { return sAnalogInputCount; }
-	
+
+	chunkware_simple::SimpleComp Compressor;
+
 	//LOC & SPRAY VALUES
 	float nonsprayloc; // pot 5 when button not pressed
 	float sprayAmount; // pot 5 when button is pressed
 	float sprayValue;  // randomised -0.5 -> 0.5 * sprayAmount
 	float sprayedloc;  // loc position + sprayValue (sort of)
-	
-	
+
+
 	void update(BelaContext* context); // Runs every audio frame
 
 	std::string getCalibrationResults();
+
+	//Diagnostics vectors for Measuring outputs before and after compressor
+
+	std::vector<double> temp_before_compression;
+	std::vector<double> temp_after_compression;
+
+	std::vector<double>::iterator iter_before;
+	std::vector<double>::iterator iter_after;
+
+	double max_value_before;
+	double max_value_after;
+
+	std::vector<double> before_vector;
+	std::vector<double> after_vector;
 
 private:
 	// Screen
@@ -82,10 +100,14 @@ private:
 
 	// Counter for ensuring no-more-than-every-20-frames update frequency
 	short m_updateFrameCounter = 0;
-	
+
 	// Set if we're to actively damp the signal in the next update call
 	bool clippingFlag = false;
 	bool hasCorrectedFlag = false;
 	bool stableFlag = true;
 	float correctionValue; // Damping proportion
+
+
+
+
 };

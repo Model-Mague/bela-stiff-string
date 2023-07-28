@@ -9,6 +9,7 @@
 #include <random>
 
 
+
 Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1f), m_screen(context), m_audioBuffer(10)
 {
 	m_inverseSampleRate = 1.0f / context->audioSampleRate;
@@ -205,7 +206,7 @@ std::string Simulation::getCalibrationResults()
 void Simulation::readInputs(BelaContext* context, int frame)
 {
 	// First, read in a frame of audio from the input
-	m_audioBuffer.put(audioRead(context, frame, 0));
+	m_audioBuffer.put(map(audioRead(context, frame, 0), -1.f, 1.f, -0.5f, 0.5f));
 
 	if (!(frame % m_audioFramesPerAnalogFrame))
 	{
@@ -270,8 +271,14 @@ void Simulation::writeOutputs(BelaContext* context, int frame)
 
 void Simulation::writeAudio(BelaContext* context, int frame)
 {
-	float l_Range = 5.f; // loudness range
-	float output = Global::limit(m_pDynamicStiffString->getOutput(), -l_Range, l_Range);
+	//float l_Range = 10.f; // loudness range
+	double output = /*Global::limit(*/m_pDynamicStiffString->getOutput()/*, -l_Range, l_Range)*/;
+
+	//temp_before_compression.push_back(std::abs(output));
+
+	Compressor.process(output, output);
+
+	//temp_after_compression.push_back(std::abs(output));
 
 	/*if ((output >= l_Range) || (output <= -l_Range))
 	{
@@ -286,10 +293,26 @@ void Simulation::writeAudio(BelaContext* context, int frame)
 		stableFlag = true;
 	*/
 
-	output = map(output, -l_Range, l_Range, -1.f, 1.f);
+	//output = map(output, -l_Range, l_Range, -1.f, 1.f);
 
 	for (unsigned int channel = 0; channel < context->audioOutChannels; channel++)
 	{
 		audioWrite(context, frame, channel, output);
 	}
+
+	/*if (temp_before_compression.size() == context->audioFrames)
+	{
+		iter_before = std::max_element(temp_before_compression.begin(), temp_before_compression.end());
+		max_value_before = *iter_before;
+
+		iter_after = std::max_element(temp_after_compression.begin(), temp_after_compression.end());
+		max_value_after = *iter_after;
+
+		temp_before_compression.clear();
+		temp_after_compression.clear();
+
+		before_vector.push_back(max_value_before);
+		after_vector.push_back(max_value_after);
+	}
+	*/
 }
