@@ -36,14 +36,14 @@ public:
 	const int getAnalogInputCount() { return sAnalogInputCount; }
 
 	chunkware_simple::SimpleComp Compressor;
-	
+
 	//LOC & SPRAY VALUES
 	float nonsprayloc; // pot 5 when button not pressed
 	float sprayAmount; // pot 5 when button is pressed
 	float sprayValue;  // randomised -0.5 -> 0.5 * sprayAmount
 	float sprayedloc;  // loc position + sprayValue (sort of)
-	
-	
+
+
 	void update(BelaContext* context); // Runs every audio frame
 
 	std::string getCalibrationResults();
@@ -100,7 +100,7 @@ private:
 
 	// Counter for ensuring no-more-than-every-20-frames update frequency
 	short m_updateFrameCounter = 0;
-	
+
 	// Set if we're to actively damp the signal in the next update call
 	bool clippingFlag = false;
 	bool hasCorrectedFlag = false;

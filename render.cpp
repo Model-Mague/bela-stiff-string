@@ -50,10 +50,10 @@ bool setup(BelaContext* context, void* userData)
 
 	//Initialize Compressor parameters.
 	pSimulation->Compressor.setSampleRate(context->audioSampleRate);
-	pSimulation->Compressor.setThresh(60);
-	pSimulation->Compressor.setRatio(1);
+	pSimulation->Compressor.setThresh(-12);
+	pSimulation->Compressor.setRatio(0.5);
 	pSimulation->Compressor.setRelease(100);
-	pSimulation->Compressor.setAttack(100);
+	pSimulation->Compressor.setAttack(10);
 
 	return true;
 }
@@ -71,8 +71,9 @@ void render(BelaContext* context, void* userData)
 		// 2. Update calculations if needed
 		pSimulation->update(context);
 
-		// 3. Write outputs
+		/*// 3. Write outputs
 		pSimulation->writeOutputs(context, n);
+		*/
 
 		// 4. Write out audio
 		pSimulation->writeAudio(context, n);
@@ -83,13 +84,14 @@ void cleanup(BelaContext* context, void* userData)
 {
 	//std::cout << pSimulation->getCalibrationResults();
 
-	for (size_t v_elem; v_elem <= pSimulation->before_vector.size(); v_elem++)
+	/*for (size_t v_elem; v_elem <= pSimulation->before_vector.size(); v_elem++)
 	{
 		std::cout << pSimulation->before_vector[v_elem] << " vs " << pSimulation->after_vector[v_elem] << "\n";
 	}
 
 	pSimulation->before_vector.clear();
 	pSimulation->after_vector.clear();
+	*/
 }
 
 #ifdef DESKTOP_BUILD
