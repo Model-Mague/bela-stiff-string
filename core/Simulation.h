@@ -48,6 +48,12 @@ public:
 
 	std::string getCalibrationResults();
 
+	//Diagnostics Variables for Measuring inputs and outputs before and after compressor
+
+	double no_compression_output;
+	double compressed_output;
+
+
 private:
 	// Screen
 	LEDScreen m_screen;
@@ -92,4 +98,8 @@ private:
 	bool hasCorrectedFlag = false;
 	bool stableFlag = true;
 	float correctionValue; // Damping proportion
+
+
+
+
 };

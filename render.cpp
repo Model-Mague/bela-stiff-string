@@ -76,6 +76,8 @@ void render(BelaContext* context, void* userData)
 
 		// 4. Write out audio
 		pSimulation->writeAudio(context, n);
+
+		scope.log(audioRead(context, n, 0), map(audioRead(context, n, 0), -1.f, 1.f, -0.5f, 0.5f), pSimulation->no_compression_output, pSimulation->compressed_output);
 	}
 }
 

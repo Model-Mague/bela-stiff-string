@@ -206,7 +206,7 @@ std::string Simulation::getCalibrationResults()
 void Simulation::readInputs(BelaContext* context, int frame)
 {
 	// First, read in a frame of audio from the input
-	m_audioBuffer.put(map(audioRead(context, frame, 0), -1.f, 1.f, 0.f, 0.5f));
+	m_audioBuffer.put(map(audioRead(context, frame, 0), -1.f, 1.f, -0.5f, 0.5f));
 
 	if (!(frame % m_audioFramesPerAnalogFrame))
 	{
@@ -271,10 +271,14 @@ void Simulation::writeOutputs(BelaContext* context, int frame)
 
 void Simulation::writeAudio(BelaContext* context, int frame)
 {
-	float l_Range = 5.f; // loudness range
+	float l_Range = 1.f; // loudness range
 	double output = Global::limit(m_pDynamicStiffString->getOutput(), -l_Range, l_Range);
 
+	no_compression_output = output;
+
 	Compressor.process(output, output);
+
+	compressed_output = output;	
 
 	/*if ((output >= l_Range) || (output <= -l_Range))
 	{
