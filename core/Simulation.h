@@ -18,6 +18,7 @@
 #include <memory>
 #include <set>
 #include <vector>
+#include <fstream>
 
 #include "Compressor/SimpleComp.h"
 
@@ -48,19 +49,27 @@ public:
 
 	std::string getCalibrationResults();
 
-	//Diagnostics vectors for Measuring outputs before and after compressor
+	//Diagnostics function to measure highest value before compression
 
-	std::vector<double> temp_before_compression;
-	std::vector<double> temp_after_compression;
+	double maxValue = 0;
 
-	std::vector<double>::iterator iter_before;
-	std::vector<double>::iterator iter_after;
+	void maxVal(double value)
+	{
+		if (value > maxValue)
+		{
+			maxValue = value;
 
-	double max_value_before;
-	double max_value_after;
+			if (maxValues.is_open()) 
+			{
+				maxValues << maxValue << "\n";
+			}
+			else 
+			std::cout << "Failed to open maxValues.txt" << std::endl;
+		}
+	}
 
-	std::vector<double> before_vector;
-	std::vector<double> after_vector;
+	std::fstream maxValues;
+
 
 private:
 	// Screen
@@ -106,8 +115,5 @@ private:
 	bool hasCorrectedFlag = false;
 	bool stableFlag = true;
 	float correctionValue; // Damping proportion
-
-
-
 
 };

@@ -18,7 +18,7 @@ Parameters::Parameters()
 	fnCreateParameter(ParameterName::T, 300.0f, { 75.f, 600.0f });
 	fnCreateParameter(ParameterName::E, 2e11, { 1e9, 4e13 });
 	fnCreateParameter(ParameterName::sigma0, 1.0f, { 0.f, 2.f, });
-	fnCreateParameter(ParameterName::sigma1, 1.f, { 0.0008f, 1.f });
+	fnCreateParameter(ParameterName::sigma1, 1.f, { 0.0008f, 0.5f });
 	fnCreateParameter(ParameterName::loc, -1.f, { 0.f, 1.f });
 }
 
