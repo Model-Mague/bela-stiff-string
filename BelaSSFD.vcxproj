@@ -132,6 +132,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="components\AnalogInput.cpp" />
+    <ClCompile Include="Compressor\SimpleComp.cpp" />
+    <ClCompile Include="Compressor\SimpleEnvelope.cpp" />
+    <ClCompile Include="Compressor\SimpleGate.cpp" />
+    <ClCompile Include="Compressor\SimpleLimit.cpp" />
     <ClCompile Include="core\AudioBuffer.cpp" />
     <ClCompile Include="components\Button.cpp" />
     <ClCompile Include="DynamicStiffString\DynamicStiffString.cpp" />
@@ -141,6 +145,12 @@
     <ClCompile Include="core\Simulation.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Compressor\SimpleComp.h" />
+    <ClInclude Include="Compressor\SimpleEnvelope.h" />
+    <ClInclude Include="Compressor\SimpleGain.h" />
+    <ClInclude Include="Compressor\SimpleGate.h" />
+    <ClInclude Include="Compressor\SimpleHeader.h" />
+    <ClInclude Include="Compressor\SimpleLimit.h" />
     <ClInclude Include="core\AudioBuffer.h" />
     <ClInclude Include="BelaMock.h" />
     <ClInclude Include="components\Button.h" />
@@ -150,6 +160,11 @@
     <ClInclude Include="components\LEDScreen.h" />
     <ClInclude Include="core\Parameters.h" />
     <ClInclude Include="core\Simulation.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Compressor\SimpleCompProcess.inl" />
+    <None Include="Compressor\SimpleGateProcess.inl" />
+    <None Include="Compressor\SimpleLimitProcess.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -2,7 +2,7 @@
 #include <cmath>
 
 AudioBuffer::AudioBuffer(const int size)
-	: m_head(0), m_silenceCounter(0)
+	: m_head(0), m_silenceCounter(0), m_threshold(0.1)
 {
 	m_buffer.resize(size, 0.f);
 }
@@ -11,7 +11,7 @@ void AudioBuffer::put(float value)
 {
 	const auto size = m_buffer.size();
 	m_buffer[m_head++ % size] = value;
-	if (value != 0.f)
+	if (value > m_threshold)
 	{
 		m_silenceCounter = static_cast<int>(size);
 	}

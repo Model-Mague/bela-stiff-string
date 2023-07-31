@@ -13,5 +13,6 @@ public:
 private:
 	unsigned int m_head;
 	int m_silenceCounter;
+	float m_threshold;
 	std::vector<float> m_buffer;
 };

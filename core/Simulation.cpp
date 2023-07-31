@@ -9,6 +9,7 @@
 #include <random>
 
 
+
 Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1f), m_screen(context), m_audioBuffer(10)
 {
 	m_inverseSampleRate = 1.0f / context->audioSampleRate;
@@ -28,7 +29,7 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 
 	m_pDynamicStiffString = std::make_unique<DynamicStiffString>(m_parameters.getDSSParameters(), m_inverseSampleRate);
 
-	for (auto& parameter: m_parameters.getParameters())
+	for (auto& parameter : m_parameters.getParameters())
 	{
 		const auto name = parameter.second.getName();
 		if (name != ParameterName::loc) m_parametersToUpdate.insert(name); // Force update to read initial values
@@ -47,82 +48,124 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 void Simulation::update(BelaContext* context)
 {
 	// 1. Handle trigger button (should probably be last)
-	if (m_buttons[Button::Type::TRIGGER].isReleased())
+	if (m_buttons[Button::Type::TRIGGER].isPressed())
 	{
-		static std::mt19937 gen(0); 
-		static std::uniform_real_distribution<float> dis(-0.5, 0.5);
+		sprayValue = Global::f_random(-1, 1) * sprayAmount;
+		sprayedloc = nonsprayloc + sprayValue;
+		sprayedloc = (sprayedloc < 0) ? -sprayedloc : (sprayedloc > 1) ? (1 - (sprayedloc - 1)) : sprayedloc;
 
-		sprayValue = dis(gen) * sprayAmount;
-		sprayedloc += sprayValue;
+		//rt_printf("sprayValue is %f\n", sprayValue);
+		//rt_printf("sprayedloc is %f\n", sprayedloc);
 
-		sprayedloc = [](float location) 
-		{ 
-			if (location < 0) return -location;
-			else if (location > 1) return 1 - (location - 1);
-			else return location; 
-		} (sprayedloc);
-		
-		rt_printf("sprayValue is %f\n", sprayValue);
+		auto fnExcitation = m_fnRaisedCos;
 
-		const auto& fnExcitation = m_audioBuffer.containsSilence() ? m_fnRaisedCos : m_fnSampleExcitation;
+		m_parameters.getParameter(ParameterName::loc).setValue(sprayedloc);
+
+		m_screen.setBrightness(m_parameters.getParameter(ParameterName::loc).getChannel(), sprayedloc);
 		m_pDynamicStiffString->excite(m_parameters.getParameter(ParameterName::loc).getValue(), fnExcitation);
 	}
+
+	// 2. Handle Audio Excitation (Audio Excitation should be triggered unrelated to Trigger Button)
+	if (!m_audioBuffer.containsSilence())
+	{
+		auto fnExcitation = m_fnSampleExcitation;
+		m_pDynamicStiffString->excite(m_parameters.getParameter(ParameterName::loc).getValue(), fnExcitation);
+	}
+
+
 
 	// 2. Process parameter changes
 	if (m_updateFrameCounter == 0)
 	{
 		// Process update queue
-		for (const auto parameterName: m_parametersToUpdate)
+		for (const auto parameterName : m_parametersToUpdate)
 		{
 			auto& parameter = m_parameters.getParameter(parameterName);
 
-			float mappedValue = parameter.getAnalogInput()->getCurrentValueMapped();
+			float mappedValue;
 
 			if (parameterName == ParameterName::L) // 1 Volt per Octave
 			{
-				while (mappedValue > 3.f)		   // Three Octaves Available (Length 4m to 0.5m)
-				{								   // While loop converts any number over 3
-					mappedValue -= 3.f;			   // Back to the 0-3 range
+				float lValue_inVolts = parameter.getAnalogInput()->getCurrentValueinVolts();
+
+				while (lValue_inVolts > 4.f)		   // Four Octaves Available (Length 2m to 0.125m)
+				{								       // While loop converts any number over 4
+					lValue_inVolts -= 4.f;			   // Back to the 0-4 range
 				}
-				mappedValue = 4.f * powf(2, -mappedValue);
+
+				mappedValue = 2.f * powf(2, -lValue_inVolts);
 			}
 
-			rt_printf("Updating channel %d with value %f\n", parameter.getChannel(), mappedValue);
-	
+			else
+				mappedValue = parameter.getAnalogInput()->getCurrentValueMapped();
+
+
+			//rt_printf("Updating channel %d with value %f\n", parameter.getChannel(), mappedValue);
+
 			// Save state and send change to DSS
 			parameter.setValue(mappedValue);
 			m_pDynamicStiffString->refreshParameter(parameter.getId(), mappedValue);
-			
+
 			// Update screen
-			rt_printf("sending channel %d to the LEDScreen with value %f\n", parameter.getChannel(), mappedValue);
+			//rt_printf("sending channel %d to the LEDScreen with value %f\n", parameter.getChannel(), mappedValue);
 			m_screen.setBrightness(parameter.getChannel(), parameter.getAnalogInput()->unmapValue(mappedValue)); // Passes the parameter's value to the correct channel
 		}
-		
-		if (clippingFlag == true)
+
+		/*if (clippingFlag == true)
 		{
 			// sigma0
-			auto& sigma0 = m_parameters.getParameter(ParameterName::sigma0);
+			/* auto& sigma0 = m_parameters.getParameter(ParameterName::sigma0);
 			float updatedValue = std::min(sigma0.getValue() * correctionValue, 2.f);
 			sigma0.setValue(updatedValue);
 			m_pDynamicStiffString->refreshParameter(sigma0.getId(), updatedValue);
-			rt_printf("Updating sigma0 with value %f\n", updatedValue);
+			//rt_printf("Updating sigma0 with value %f\n", updatedValue);
 
 			// Update screen
-			m_screen.setBrightness(7, sigma0.getAnalogInput()->unmapValue(updatedValue)); // passes the new value to the LEDScreen
+			m_screen.setBrightness(sigma0.getChannel(), updatedValue); // passes the new value to the LEDScreen
+
 
 			// sigma1
 			auto& sigma1 = m_parameters.getParameter(ParameterName::sigma1);
-			updatedValue = std::min(sigma1.getValue() * correctionValue, 0.01f);
+			float updatedValue = std::min(sigma1.getValue() * correctionValue, 1.f);
 			sigma1.setValue(updatedValue);
 			m_pDynamicStiffString->refreshParameter(sigma1.getId(), updatedValue);
-			rt_printf("Updating sigma1 with value %f\n", updatedValue);
+			//rt_printf("Updating sigma1 with value %f\n", updatedValue);
 
 			// Update screen
-			m_screen.setBrightness(8, sigma1.getAnalogInput()->unmapValue(updatedValue)); // passes the new value to the LEDScreen
-			
-			clippingFlag = false;	
+			m_screen.setBrightness(sigma1.getChannel(), updatedValue); // passes the new value to the LEDScreen
+
+			clippingFlag = false;
+			hasCorrectedFlag = true;
 		}
-		
+
+		if (hasCorrectedFlag && stableFlag) //Only After Correction and Once Signal has stabilized
+		{
+			// compares pots with increased updatedValues, then decreases values at speed depending on distance
+
+			/*auto& sigma0 = m_parameters.getParameter(ParameterName::sigma0);
+			float sigma0pot = sigma0.getAnalogInput()->getCurrentValue(); // min value is 0
+			float sigma0cor = sigma0.getValue(); // max value is 2
+			float sigma0dif = sigma0pot - sigma0cor; // max value is 2
+			float sigma0coef = sigma0dif * 0.0002;
+
+
+			sigma0.setValue(sigma0cor + sigma0coef);
+			m_pDynamicStiffString->refreshParameter(sigma0.getId(), sigma0cor - sigma0coef);
+
+
+			auto& sigma1 = m_parameters.getParameter(ParameterName::sigma1);
+			float sigma1pot = sigma1.getAnalogInput()->getCurrentValue(); // min value is 0.0008f
+			float sigma1cor = sigma1.getValue(); // max     value is 1
+			float sigma1dif = sigma1pot - sigma1cor; // max value is 0.9992
+			float sigma1coef = sigma1dif * 0.0002;
+
+			sigma1.setValue(sigma1cor + sigma1coef);
+			m_pDynamicStiffString->refreshParameter(sigma1.getId(), sigma1cor - sigma1coef);
+
+			if(/*sigma0dif == 0 && sigma1dif == 0)
+			hasCorrectedFlag = false;
+		}
+		*/
 		m_parametersToUpdate.clear();
 		m_updateFrameCounter = sDSSUpdateRate;
 	}
@@ -151,7 +194,7 @@ void Simulation::update(BelaContext* context)
 std::string Simulation::getCalibrationResults()
 {
 	std::stringstream ss;
-	for (auto& parameter: m_parameters.getParameters())
+	for (auto& parameter : m_parameters.getParameters())
 	{
 		float minValue, maxValue;
 		std::tie(minValue, maxValue) = parameter.second.getRange();
@@ -163,33 +206,45 @@ std::string Simulation::getCalibrationResults()
 void Simulation::readInputs(BelaContext* context, int frame)
 {
 	// First, read in a frame of audio from the input
-	m_audioBuffer.put(audioRead(context, frame, 0));
+	m_audioBuffer.put(map(audioRead(context, frame, 0), -1.f, 1.f, -0.5f, 0.5f));
 
 	if (!(frame % m_audioFramesPerAnalogFrame))
 	{
 		const int analogFrame = frame / m_audioFramesPerAnalogFrame;
-		for (auto& kvp: m_parameters.getParameters()) // Start with channels 1-8; 0 is reserved for trigger
+		for (auto& kvp : m_parameters.getParameters()) // Start with channels 1-8; 0 is reserved for trigger
 		{
 			auto& parameter = kvp.second;
 			auto analogIn = kvp.second.getAnalogInput();
 
 			analogIn->read(context, analogFrame);
+
+			// We will always update L (length). as this param needs to be as accurate as possible
+			// since it affects pitch.
+
+			if (parameter.getName() == ParameterName::L)
+				m_parametersToUpdate.insert(parameter.getName());
+
 			// We will always update channel 7 (excitation loc) as this param is only effective during excitation
 			// So there is no risk of too frequent updates
 			if (parameter.getName() == ParameterName::loc)
 			{
+
 				// Handle Spray button
-				if (m_buttons[Button::Type::SPRAY].isPressed())
+				if (m_buttons[Button::Type::SPRAY].isHeld())
 				{
 					sprayAmount = analogIn->getCurrentValueMapped();
-					rt_printf("Spray Amount is %f\n", sprayAmount);
+					m_screen.setBrightness(m_parameters.getParameter(ParameterName::loc).getChannel(), sprayAmount);
+					//rt_printf("Spray Amount is %f\n", sprayAmount);
 				}
-				
-				sprayedloc = analogIn->getCurrentValueMapped() + sprayValue;
-				
-				m_parameters.getParameter(ParameterName::loc).setValue(sprayedloc);
-				m_screen.setBrightness(parameter.getChannel(), analogIn->getCurrentValue()); // needs mapped
+
+				nonsprayloc = analogIn->getCurrentValueMapped();
+
+				if (m_buttons[Button::Type::SPRAY].isReleased() || analogIn->hasChanged())
+					m_screen.setBrightness(parameter.getChannel(), nonsprayloc);
+
+				//rt_printf("nonsprayLoc is %f\n", nonsprayloc);
 			}
+
 			else if (analogIn->hasChanged())
 			{
 				// Register channel as one that needs its value read and updated
@@ -216,19 +271,48 @@ void Simulation::writeOutputs(BelaContext* context, int frame)
 
 void Simulation::writeAudio(BelaContext* context, int frame)
 {
+	//float l_Range = 10.f; // loudness range
+	double output = /*Global::limit(*/m_pDynamicStiffString->getOutput()/*, -l_Range, l_Range)*/;
 
-	float output = Global::limit(m_pDynamicStiffString->getOutput(), -5.f, 5.f);
-	
-	if ((output >= 2.5f) || (output <= - 2.5f))
+	//temp_before_compression.push_back(std::abs(output));
+
+	Compressor.process(output, output);
+
+	//temp_after_compression.push_back(std::abs(output));
+
+	/*if ((output >= l_Range) || (output <= -l_Range))
 	{
-		clippingFlag = true;		
-		correctionValue = 1 + (powf(output, 10.f) / powf(10, 6.f)); // Very steep exponential function
+		float positive_output = output >= 0 ? output : -output;
+
+		clippingFlag = true;
+		stableFlag = false;
+		correctionValue = powf(1.1, positive_output - (l_Range - 0.8 * l_Range));
 	}
-	
-	output = map(output, -5.f, 5.f, -1.f, 1.f);
-	
+
+	else
+		stableFlag = true;
+	*/
+
+	//output = map(output, -l_Range, l_Range, -1.f, 1.f);
+
 	for (unsigned int channel = 0; channel < context->audioOutChannels; channel++)
 	{
 		audioWrite(context, frame, channel, output);
 	}
+
+	/*if (temp_before_compression.size() == context->audioFrames)
+	{
+		iter_before = std::max_element(temp_before_compression.begin(), temp_before_compression.end());
+		max_value_before = *iter_before;
+
+		iter_after = std::max_element(temp_after_compression.begin(), temp_after_compression.end());
+		max_value_after = *iter_after;
+
+		temp_before_compression.clear();
+		temp_after_compression.clear();
+
+		before_vector.push_back(max_value_before);
+		after_vector.push_back(max_value_after);
+	}
+	*/
 }

@@ -10,6 +10,9 @@
 
 #pragma once
 //#define RECORD
+
+#include <random>
+
 namespace Global {
 #ifdef RECORD
     static int samplesToRecord = 500;
@@ -33,5 +36,10 @@ namespace Global {
             return val;
         }
         return val;
+    }
+
+    static float f_random(float min, float max)
+    {
+        return min + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (max - min)));
     }
 }

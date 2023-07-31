@@ -12,19 +12,13 @@ Parameters::Parameters()
 	};
 
 	// Setup internal state, cloning the DSS values
-	fnCreateParameter(ParameterName::L, 1.0f, {0.5f, 4.0f});
-	fnCreateParameter(ParameterName::rho, 7850.0f, { 15700.0f, 1962.5f}); // intentionally reversed range
-	fnCreateParameter(ParameterName::r, 0.0005f, { 0.0005f, 0.001f }); // intentionally reversed range
-	fnCreateParameter(ParameterName::T, 300.0f, { 150.f, 1200.0f });
-	
-	// This strange limit on the left hand dodges block-dropping without being perceptible
-	fnCreateParameter(ParameterName::E, 200000000000.f, { 5000000000.f, 400000000000.f });
-
-	// Quadriplied Right side range
-	fnCreateParameter(ParameterName::sigma0, 1.0f, { 0.f, 8.f, });
-
-	// For that clean P I Z Z I C A T O 
-	fnCreateParameter(ParameterName::sigma1, 0.005f, { 0.0002f, 0.04f });
+	fnCreateParameter(ParameterName::L, 1.0f, { 0.125f, 2.0f });
+	fnCreateParameter(ParameterName::rho, 7850.0f, { 15700.0f, 3925.f }); // intentionally reversed range
+	fnCreateParameter(ParameterName::r, 0.0005f, { 0.001f, 0.00025f }); // intentionally reversed range
+	fnCreateParameter(ParameterName::T, 300.0f, { 75.f, 600.0f });
+	fnCreateParameter(ParameterName::E, 2e11, { 1e9, 4e13 });
+	fnCreateParameter(ParameterName::sigma0, 1.0f, { 0.f, 2.f, });
+	fnCreateParameter(ParameterName::sigma1, 1.f, { 0.0008f, 1.f });
 	fnCreateParameter(ParameterName::loc, -1.f, { 0.f, 1.f });
 }
 
@@ -48,7 +42,7 @@ Parameter::Parameter(const ParameterName name, const float value, const std::pai
 	// Order of params in DynamicDSS: L, rho, r, T, E, sigma0, sigma1
 	// Do not change this
 	const std::vector<ParameterName> originalParameterOrder = {
-		ParameterName::L, 
+		ParameterName::L,
 		ParameterName::rho,
 		ParameterName::r,
 		ParameterName::T,

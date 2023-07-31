@@ -57,6 +57,18 @@
     <ClCompile Include="core\Simulation.cpp">
       <Filter>Source Files\core</Filter>
     </ClCompile>
+    <ClCompile Include="Compressor\SimpleComp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Compressor\SimpleEnvelope.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Compressor\SimpleGate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Compressor\SimpleLimit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BelaMock.h">
@@ -86,5 +98,34 @@
     <ClInclude Include="DynamicStiffString\Global.h">
       <Filter>Header Files\dss</Filter>
     </ClInclude>
+    <ClInclude Include="Compressor\SimpleComp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Compressor\SimpleEnvelope.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Compressor\SimpleGain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Compressor\SimpleGate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Compressor\SimpleHeader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Compressor\SimpleLimit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Compressor\SimpleCompProcess.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="Compressor\SimpleGateProcess.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="Compressor\SimpleLimitProcess.inl">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
