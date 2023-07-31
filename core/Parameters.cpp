@@ -16,7 +16,7 @@ Parameters::Parameters()
 	fnCreateParameter(ParameterName::rho, 7850.0f, { 15700.0f, 3925.f }); // intentionally reversed range
 	fnCreateParameter(ParameterName::r, 0.0005f, { 0.001f, 0.00025f }); // intentionally reversed range
 	fnCreateParameter(ParameterName::T, 300.0f, { 75.f, 600.0f });
-	fnCreateParameter(ParameterName::E, 2e11, { 1e9, 4e13 });
+	fnCreateParameter(ParameterName::E, 2e11, { 2e11, 4e13 });
 	fnCreateParameter(ParameterName::sigma0, 1.0f, { 0.f, 2.f, });
 	fnCreateParameter(ParameterName::sigma1, 1.f, { 0.0008f, 0.5f });
 	fnCreateParameter(ParameterName::loc, -1.f, { 0.f, 1.f });
