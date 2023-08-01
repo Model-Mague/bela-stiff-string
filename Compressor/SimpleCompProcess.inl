@@ -36,7 +36,7 @@
 namespace chunkware_simple
 {
 	//-------------------------------------------------------------
-	INLINE void SimpleComp::process( double &in1, double &in2 )
+	INLINE void SimpleComp::process(double &in1, double &in2 )
 	{
 		// create sidechain
 

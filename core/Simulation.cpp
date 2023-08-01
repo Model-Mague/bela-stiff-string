@@ -10,6 +10,7 @@
 
 
 
+
 Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1f), m_screen(context), m_audioBuffer(10)
 {
 	m_inverseSampleRate = 1.0f / context->audioSampleRate;
@@ -54,9 +55,6 @@ void Simulation::update(BelaContext* context)
 		sprayedloc = nonsprayloc + sprayValue;
 		sprayedloc = (sprayedloc < 0) ? -sprayedloc : (sprayedloc > 1) ? (1 - (sprayedloc - 1)) : sprayedloc;
 
-		//rt_printf("sprayValue is %f\n", sprayValue);
-		//rt_printf("sprayedloc is %f\n", sprayedloc);
-
 		auto fnExcitation = m_fnRaisedCos;
 
 		m_parameters.getParameter(ParameterName::loc).setValue(sprayedloc);
@@ -88,9 +86,9 @@ void Simulation::update(BelaContext* context)
 			{
 				float lValue_inVolts = parameter.getAnalogInput()->getCurrentValueinVolts();
 
-				while (lValue_inVolts > 4.f)		   // Four Octaves Available (Length 2m to 0.125m)
-				{								       // While loop converts any number over 4
-					lValue_inVolts -= 4.f;			   // Back to the 0-4 range
+				while (lValue_inVolts > 3.f)		   // Length from 2m to 0.5m - 3 Octaves
+				{								       // While loop converts any number over 3
+					lValue_inVolts -= 3.f;			   // Back to the 0-3 range (but not including our first 3)
 				}
 
 				mappedValue = 2.f * powf(2, -lValue_inVolts);
@@ -99,8 +97,6 @@ void Simulation::update(BelaContext* context)
 			else
 				mappedValue = parameter.getAnalogInput()->getCurrentValueMapped();
 
-
-			//rt_printf("Updating channel %d with value %f\n", parameter.getChannel(), mappedValue);
 
 			// Save state and send change to DSS
 			parameter.setValue(mappedValue);
@@ -111,47 +107,9 @@ void Simulation::update(BelaContext* context)
 			m_screen.setBrightness(parameter.getChannel(), parameter.getAnalogInput()->unmapValue(mappedValue)); // Passes the parameter's value to the correct channel
 		}
 
-		/*if (clippingFlag == true)
-		{
-			// sigma0
-			/* auto& sigma0 = m_parameters.getParameter(ParameterName::sigma0);
-			float updatedValue = std::min(sigma0.getValue() * correctionValue, 2.f);
-			sigma0.setValue(updatedValue);
-			m_pDynamicStiffString->refreshParameter(sigma0.getId(), updatedValue);
-			//rt_printf("Updating sigma0 with value %f\n", updatedValue);
-
-			// Update screen
-			m_screen.setBrightness(sigma0.getChannel(), updatedValue); // passes the new value to the LEDScreen
-
-
-			// sigma1
-			auto& sigma1 = m_parameters.getParameter(ParameterName::sigma1);
-			float updatedValue = std::min(sigma1.getValue() * correctionValue, 1.f);
-			sigma1.setValue(updatedValue);
-			m_pDynamicStiffString->refreshParameter(sigma1.getId(), updatedValue);
-			//rt_printf("Updating sigma1 with value %f\n", updatedValue);
-
-			// Update screen
-			m_screen.setBrightness(sigma1.getChannel(), updatedValue); // passes the new value to the LEDScreen
-
-			clippingFlag = false;
-			hasCorrectedFlag = true;
-		}
-
-		if (hasCorrectedFlag && stableFlag) //Only After Correction and Once Signal has stabilized
+		if (hasCorrectedFlag) //Only After Correction and Once Signal has stabilized
 		{
 			// compares pots with increased updatedValues, then decreases values at speed depending on distance
-
-			/*auto& sigma0 = m_parameters.getParameter(ParameterName::sigma0);
-			float sigma0pot = sigma0.getAnalogInput()->getCurrentValue(); // min value is 0
-			float sigma0cor = sigma0.getValue(); // max value is 2
-			float sigma0dif = sigma0pot - sigma0cor; // max value is 2
-			float sigma0coef = sigma0dif * 0.0002;
-
-
-			sigma0.setValue(sigma0cor + sigma0coef);
-			m_pDynamicStiffString->refreshParameter(sigma0.getId(), sigma0cor - sigma0coef);
-
 
 			auto& sigma1 = m_parameters.getParameter(ParameterName::sigma1);
 			float sigma1pot = sigma1.getAnalogInput()->getCurrentValue(); // min value is 0.0008f
@@ -162,10 +120,10 @@ void Simulation::update(BelaContext* context)
 			sigma1.setValue(sigma1cor + sigma1coef);
 			m_pDynamicStiffString->refreshParameter(sigma1.getId(), sigma1cor - sigma1coef);
 
-			if(/*sigma0dif == 0 && sigma1dif == 0)
-			hasCorrectedFlag = false;
+			if (sigma1dif == 0)
+				hasCorrectedFlag = false;
 		}
-		*/
+
 		m_parametersToUpdate.clear();
 		m_updateFrameCounter = sDSSUpdateRate;
 	}
@@ -271,48 +229,22 @@ void Simulation::writeOutputs(BelaContext* context, int frame)
 
 void Simulation::writeAudio(BelaContext* context, int frame)
 {
-	//float l_Range = 10.f; // loudness range
-	double output = /*Global::limit(*/m_pDynamicStiffString->getOutput()/*, -l_Range, l_Range)*/;
 
-	//temp_before_compression.push_back(std::abs(output));
+	double output = m_pDynamicStiffString->getOutput();
 
-	Compressor.process(output, output);
-
-	//temp_after_compression.push_back(std::abs(output));
-
-	/*if ((output >= l_Range) || (output <= -l_Range))
+	if (output >= 10000000.f)
 	{
-		float positive_output = output >= 0 ? output : -output;
-
-		clippingFlag = true;
-		stableFlag = false;
-		correctionValue = powf(1.1, positive_output - (l_Range - 0.8 * l_Range));
+		auto& sigma1 = m_parameters.getParameter(ParameterName::sigma1);
+		sigma1.setValue(1.f);
+		m_pDynamicStiffString->refreshParameter(sigma1.getId(), 1.f);
+		m_screen.setBrightness(sigma1.getChannel(), 1.f);
+		hasCorrectedFlag = true;
 	}
 
-	else
-		stableFlag = true;
-	*/
-
-	//output = map(output, -l_Range, l_Range, -1.f, 1.f);
+	Compressor.process(output, output);
 
 	for (unsigned int channel = 0; channel < context->audioOutChannels; channel++)
 	{
 		audioWrite(context, frame, channel, output);
 	}
-
-	/*if (temp_before_compression.size() == context->audioFrames)
-	{
-		iter_before = std::max_element(temp_before_compression.begin(), temp_before_compression.end());
-		max_value_before = *iter_before;
-
-		iter_after = std::max_element(temp_after_compression.begin(), temp_after_compression.end());
-		max_value_after = *iter_after;
-
-		temp_before_compression.clear();
-		temp_after_compression.clear();
-
-		before_vector.push_back(max_value_before);
-		after_vector.push_back(max_value_after);
-	}
-	*/
 }
