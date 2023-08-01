@@ -43,8 +43,14 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 	m_fnSampleExcitation = [this](int index, int size) {
 		return m_audioBuffer.get(index);
 	};
-}
 
+	// Setup Compressor Values
+	Compressor.setSampleRate(context->audioSampleRate);
+	Compressor.setThresh(-12);
+	Compressor.setRatio(0.5);
+	Compressor.setRelease(100);
+	Compressor.setAttack(10);
+}
 
 void Simulation::update(BelaContext* context)
 {

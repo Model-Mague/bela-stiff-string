@@ -12,13 +12,10 @@ The first for loop cycles through 'audioFrames', the second through 'audioChanne
 Dynamic Stiff String implementation based on DAFx 2022 paper submission https://dafx2020.mdw.ac.at/proceedings/papers/DAFx20in22_paper_11.pdf
 "Real-Time Implementation of the Dynamic Stiff String using Finite-Difference Time-Domain Methods and the Dynamic Grid" by Silvin Willemsen and Stefania Serafin.
 
-@TODO list:
-1. Triggers to work (digital output)
-2. Recalculate parameters based on analog reads from channels 0-7
-3. Digital write to screen of currently-adjusted input; brighter light if input closer to max
-4. Potentially all params might need to get locked after a button is pressed // possibly multiple modes based on button
-
-
+This Branch´s purpose is to include behaviours into their respective parameters
+	- 1V/Oct Behaviour within Pitch Section
+	- Sigma Correction within Sigma1
+	- Spray within loc
 */
 #define _USE_MATH_DEFINES
 
@@ -48,12 +45,6 @@ bool setup(BelaContext* context, void* userData)
 
 	pSimulation = std::make_unique<Simulation>(context);
 
-	//Initialize Compressor parameters.
-	pSimulation->Compressor.setSampleRate(context->audioSampleRate);
-	pSimulation->Compressor.setThresh(-12);
-	pSimulation->Compressor.setRatio(0.5);
-	pSimulation->Compressor.setRelease(100);
-	pSimulation->Compressor.setAttack(10);
 	return true;
 }
 
