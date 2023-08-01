@@ -24,7 +24,10 @@ enum class ParameterName : uint8_t {
 
 class Parameter {
 public:
-	Parameter(const ParameterName name, const float value, const std::pair<float, float>& range);
+	Parameter(const ParameterName name, 
+			  const float value, 
+			  const std::pair<float, float>& range, 
+			  const std::pair<std::string, float>& behaviour); // To-do: Correct this on Parameters.cpp
 
 	float getValue() const { return m_value; }
 	void setValue(const float value) { m_value = value; }
@@ -34,6 +37,8 @@ public:
 	int getId() const { return m_id; }
 	std::shared_ptr<AnalogInput> getAnalogInput() { return m_analogInput; }
 	int getChannel() const { return static_cast<int>(m_name); }
+
+	enum m_behaviour { Null, VoltperOctave, Correction, Spray };
 
 private:
 	ParameterName m_name;
