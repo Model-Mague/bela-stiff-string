@@ -19,7 +19,6 @@
 #include <set>
 #include <vector>
 #include <fstream>
-
 #include "Compressor/SimpleComp.h"
 
 class Simulation {
@@ -48,28 +47,6 @@ public:
 	void update(BelaContext* context); // Runs every audio frame
 
 	std::string getCalibrationResults();
-
-	//Diagnostics function to measure highest value before compression
-
-	double maxValue = 0;
-
-	void maxVal(double value)
-	{
-		if (value > maxValue)
-		{
-			maxValue = value;
-
-			if (maxValues.is_open()) 
-			{
-				maxValues << maxValue << "\n";
-			}
-			else 
-			std::cout << "Failed to open maxValues.txt" << std::endl;
-		}
-	}
-
-	std::fstream maxValues;
-
 
 private:
 	// Screen
@@ -114,6 +91,4 @@ private:
 	bool clippingFlag = false;
 	bool hasCorrectedFlag = false;
 	bool stableFlag = true;
-	float correctionValue; // Damping proportion
-
 };

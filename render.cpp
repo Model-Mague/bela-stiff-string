@@ -54,9 +54,6 @@ bool setup(BelaContext* context, void* userData)
 	pSimulation->Compressor.setRatio(0.5);
 	pSimulation->Compressor.setRelease(100);
 	pSimulation->Compressor.setAttack(10);
-
-	pSimulation->maxValues.open("maxValues", std::ios::out);
-
 	return true;
 }
 
@@ -84,7 +81,7 @@ void render(BelaContext* context, void* userData)
 
 void cleanup(BelaContext* context, void* userData)
 {
-	//std::cout << pSimulation->getCalibrationResults();
+	std::cout << pSimulation->getCalibrationResults();
 }
 
 #ifdef DESKTOP_BUILD

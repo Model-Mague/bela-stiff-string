@@ -7,7 +7,7 @@
 #include <cstring>
 #include <sstream>
 #include <random>
-#include <limits>
+
 
 
 
@@ -55,9 +55,6 @@ void Simulation::update(BelaContext* context)
 		sprayedloc = nonsprayloc + sprayValue;
 		sprayedloc = (sprayedloc < 0) ? -sprayedloc : (sprayedloc > 1) ? (1 - (sprayedloc - 1)) : sprayedloc;
 
-		//rt_printf("sprayValue is %f\n", sprayValue);
-		//rt_printf("sprayedloc is %f\n", sprayedloc);
-
 		auto fnExcitation = m_fnRaisedCos;
 
 		m_parameters.getParameter(ParameterName::loc).setValue(sprayedloc);
@@ -89,9 +86,9 @@ void Simulation::update(BelaContext* context)
 			{
 				float lValue_inVolts = parameter.getAnalogInput()->getCurrentValueinVolts();
 
-				while (lValue_inVolts > 4.f)		   // Four Octaves Available (Length 2m to 0.125m)
-				{								       // While loop converts any number over 4
-					lValue_inVolts -= 4.f;			   // Back to the 0-4 range
+				while (lValue_inVolts > 3.f)		   // Length from 2m to 0.5m - 3 Octaves
+				{								       // While loop converts any number over 3
+					lValue_inVolts -= 3.f;			   // Back to the 0-3 range (but not including our first 3)
 				}
 
 				mappedValue = 2.f * powf(2, -lValue_inVolts);
@@ -100,8 +97,6 @@ void Simulation::update(BelaContext* context)
 			else
 				mappedValue = parameter.getAnalogInput()->getCurrentValueMapped();
 
-
-			//rt_printf("Updating channel %d with value %f\n", parameter.getChannel(), mappedValue);
 
 			// Save state and send change to DSS
 			parameter.setValue(mappedValue);
@@ -245,9 +240,6 @@ void Simulation::writeAudio(BelaContext* context, int frame)
 		m_screen.setBrightness(sigma1.getChannel(), 1.f);
 		hasCorrectedFlag = true;
 	}
-
-	// Outputs maxValue into a file
-	// maxVal(output);
 
 	Compressor.process(output, output);
 
