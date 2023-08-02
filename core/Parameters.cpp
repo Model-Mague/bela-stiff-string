@@ -12,7 +12,6 @@ Parameters::Parameters()
 	};
 
 	// Setup internal state, cloning the DSS values
-	fnCreateParameter(ParameterName::rho,		7850.0f,{ 15700.0f, 3925.f }, { "Pitch", 0.25f}); // intentionally reversed range
 	fnCreateParameter(ParameterName::L,			1.0f,	{ 0.25f, 2.0f }, { ParameterBehaviour::Pitch, 0.5f}); // reduced to 0.25 (originally 0.12) because of unstable range
 	fnCreateParameter(ParameterName::rho,		7850.0f,{ 15700.0f, 3925.f }, { ParameterBehaviour::Pitch, 0.25f}); // intentionally reversed range
 	fnCreateParameter(ParameterName::r,			0.0005f,{ 0.001f, 0.00025f }, { ParameterBehaviour::Pitch,  0.25f}); // intentionally reversed range
