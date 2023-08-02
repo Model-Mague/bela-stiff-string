@@ -76,8 +76,6 @@ void Simulation::update(BelaContext* context)
 		m_pDynamicStiffString->excite(m_parameters.getParameter(ParameterName::loc).getValue(), fnExcitation);
 	}
 
-
-
 	// 2. Process parameter changes
 	if (m_updateFrameCounter == 0)
 	{
@@ -88,28 +86,16 @@ void Simulation::update(BelaContext* context)
 
 			float mappedValue;
 
-			if (parameterName == ParameterName::L) // 1 Volt per Octave
-			{
-				float lValue_inVolts = parameter.getAnalogInput()->getCurrentValueinVolts();
-
-				while (lValue_inVolts > 3.f)		   // Length from 2m to 0.5m - 3 Octaves
-				{								       // While loop converts any number over 3
-					lValue_inVolts -= 3.f;			   // Back to the 0-3 range (but not including our first 3)
-				}
-
-				mappedValue = 2.f * powf(2, -lValue_inVolts);
-			}
-
+			if (parameter.is1Vmodeactive()) // 1 Volt per Octave
+				mappedValue = parameter.Volt_perOctave();
 			else
 				mappedValue = parameter.getAnalogInput()->getCurrentValueMapped();
-
 
 			// Save state and send change to DSS
 			parameter.setValue(mappedValue);
 			m_pDynamicStiffString->refreshParameter(parameter.getId(), mappedValue);
 
-			// Update screen
-			//rt_printf("sending channel %d to the LEDScreen with value %f\n", parameter.getChannel(), mappedValue);
+			// Update Screen
 			m_screen.setBrightness(parameter.getChannel(), parameter.getAnalogInput()->unmapValue(mappedValue)); // Passes the parameter's value to the correct channel
 		}
 
@@ -182,10 +168,23 @@ void Simulation::readInputs(BelaContext* context, int frame)
 
 			analogIn->read(context, analogFrame);
 
-			// We will always update L (length). as this param needs to be as accurate as possible
-			// since it affects pitch.
+			// When Mode Button is active and a Pitch-Behaviour Param is changed, it is made 1V/Oct
 
-			if (parameter.getName() == ParameterName::L)
+			if (m_buttons[Button::Type::MODE].isHeld() && analogIn->hasChanged() && (parameter.getBehaviour() == "Pitch"))
+			{
+				parameter.activate1VMode();
+
+				for (auto& Other_parameters : m_parameters.getParameters())
+				{
+					// Only one parameter can be made 1V per Octave at the same time
+					if (Other_parameters.second.getName() != parameter.getName())
+						parameter.deactivate1Vmode();
+				}
+			}
+
+			// We will always update the 1V/Octave chosen parameter (pitch requires accuracy)
+
+			if (parameter.is1Vmodeactive())
 				m_parametersToUpdate.insert(parameter.getName());
 
 			// We will always update channel 7 (excitation loc) as this param is only effective during excitation
@@ -208,6 +207,7 @@ void Simulation::readInputs(BelaContext* context, int frame)
 
 				//rt_printf("nonsprayLoc is %f\n", nonsprayloc);
 			}
+
 
 			else if (analogIn->hasChanged())
 			{

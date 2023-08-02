@@ -54,9 +54,10 @@ public:
 	void calcOctaves();
 	float getOctaves() const { return m_octaves;}
 
-	float Volt_perOctave(float volts);
+	float Volt_perOctave();
 
-	bool toggle1Vmode(bool toggle) { m_1Vactive = toggle; }
+	bool activate1VMode() { m_1Vactive = true; }
+	bool deactivate1Vmode() { m_1Vactive = false; }
 	bool is1Vmodeactive() const { return m_1Vactive; }
 
 	ParameterName getName() const { return m_name; }

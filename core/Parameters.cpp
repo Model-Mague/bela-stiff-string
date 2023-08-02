@@ -122,7 +122,7 @@ Parameter::Parameter(const ParameterName name, const float value, const std::pai
 	m_analogInput = std::make_shared<AnalogInput>(channel, range);
 }
 
-float Parameter::Volt_perOctave(float volts)
+float Parameter::Volt_perOctave()
 {
 	float Value_inVolts = getAnalogInput()->getCurrentValueinVolts();
 
