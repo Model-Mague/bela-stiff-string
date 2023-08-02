@@ -25,22 +25,10 @@ enum class ParameterName : uint8_t {
 class Parameter {
 public:
 
-	// Constructor for Pitch Parameters
 	Parameter(const ParameterName name, 
 		const float value, 
 		const std::pair<float, float>& range, 
 		const std::pair<std::string, float>& behaviour);
-
-	// Constructor for Correction and Spray Parameters
-	Parameter(const ParameterName name,
-		const float value,
-		const std::pair<float, float>& range,
-		const std::string);
-
-	// Constructor for non-aditional behaviour Parameters
-	Parameter(const ParameterName name,
-		const float value,
-		const std::pair<float, float>& range);
 
 	float getValue() const { return m_value; }
 	void setValue(const float value) { m_value = value; }
