@@ -30,20 +30,15 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 
 	m_pDynamicStiffString = std::make_unique<DynamicStiffString>(m_parameters.getDSSParameters(), m_inverseSampleRate);
 
-	for (auto& parameter : m_parameters.getParameters())
-	{
-		const auto name = parameter.second.getName();
-		if (name != ParameterName::loc) m_parametersToUpdate.insert(name); // Force update to read initial values
-	}
-
 	for (auto& parameters : m_parameters.getParameters())
 	{
 		auto& parameter = parameters.second;
+		const auto name = parameter.getName();
+		if (name != ParameterName::loc) m_parametersToUpdate.insert(name); // Force update to read initial values
+		if (name == ParameterName::L) parameter.activate1VMode(); // Forces Length to be 1V at boot
 
-		if (parameter.getBehaviour() == ParameterBehaviour::Pitch)
-		{
+		if (parameter.getBehaviour() == ParameterBehaviour::Pitch) // Available Octaves are calculated
 			parameter.calcOctaves();
-		}
 	}
 
 	// Setup excitation functions
