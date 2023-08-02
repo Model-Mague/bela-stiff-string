@@ -74,7 +74,7 @@ private:
 	// Pitch-behaviour Only
 
 	float m_pitchRatio;
-	float m_octaves;
+	int m_octaves;
 	bool m_1Vactive;
 };
 

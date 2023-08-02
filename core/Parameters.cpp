@@ -12,14 +12,14 @@ Parameters::Parameters()
 	};
 
 	// Setup internal state, cloning the DSS values
-	fnCreateParameter(ParameterName::L,			1.0f,	{ 0.25f, 2.0f }, { ParameterBehaviour::Pitch, 0.5f}); // reduced to 0.25 (originally 0.12) because of unstable range
-	fnCreateParameter(ParameterName::rho,		7850.0f,{ 15700.0f, 3925.f }, { ParameterBehaviour::Pitch, 0.25f}); // intentionally reversed range
-	fnCreateParameter(ParameterName::r,			0.0005f,{ 0.001f, 0.00025f }, { ParameterBehaviour::Pitch,  0.25f}); // intentionally reversed range
-	fnCreateParameter(ParameterName::T,			300.0f,	{ 75.f, 600.0f }, { ParameterBehaviour::Pitch, 4.f});
-	fnCreateParameter(ParameterName::E,			2e11,	{ 2e12, 4e13 }, { ParameterBehaviour::None, false}); // range shrunk due to instability
-	fnCreateParameter(ParameterName::sigma0,	1.0f,	{ 0.f, 2.f }, { ParameterBehaviour::None, false});
-	fnCreateParameter(ParameterName::sigma1,	1.f,	{ 0.0008f, 0.5f }, { ParameterBehaviour::Correction, false}); // range reduced on right side, greater numbers are not perceptible
-	fnCreateParameter(ParameterName::loc,		-1.f,	{ 0.f, 1.f }, { ParameterBehaviour::Spray, false });
+	fnCreateParameter(ParameterName::L,			1.0f,	{ 0.25f,	2.0f	},	{ ParameterBehaviour::Pitch, 0.5f}); // reduced to 0.25 (originally 0.12) because of unstable range
+	fnCreateParameter(ParameterName::rho,		7850.0f,{ 15700.0f, 3925.f	},	{ ParameterBehaviour::Pitch, 0.25f}); // intentionally reversed range
+	fnCreateParameter(ParameterName::r,			0.0005f,{ 0.001f,	0.00025f},	{ ParameterBehaviour::Pitch, 0.25f}); // intentionally reversed range
+	fnCreateParameter(ParameterName::T,			300.0f,	{ 75.f,		600.0f	},	{ ParameterBehaviour::Pitch, 0.25f});
+	fnCreateParameter(ParameterName::E,			2e11,	{ 2e12,		4e13	},	{ ParameterBehaviour::None, false}); // range shrunk due to instability
+	fnCreateParameter(ParameterName::sigma0,	1.0f,	{ 0.f,		2.f		},	{ ParameterBehaviour::None, false});
+	fnCreateParameter(ParameterName::sigma1,	1.f,	{ 0.0008f,	0.5f	},	{ ParameterBehaviour::Correction, false}); // range reduced on right side, greater numbers are not perceptible
+	fnCreateParameter(ParameterName::loc,		-1.f,	{ 0.f,		1.f		},	{ ParameterBehaviour::Spray, false });
 }
 
 DynamicStiffString::SimulationParameters Parameters::getDSSParameters() const
@@ -62,21 +62,7 @@ Parameter::Parameter(const ParameterName name, const float value, const std::pai
 	m_analogInput = std::make_shared<AnalogInput>(channel, range);
 }
 
-// Pitch-Behaviour Parameters
-
-float Parameter::Volt_perOctave()
-{
-	float Value_inVolts = getAnalogInput()->getCurrentValueinVolts();
-
-	while (Value_inVolts > getOctaves())
-	{
-		Value_inVolts -= getOctaves();
-	}
-
-	int sign = getRange().first < getRange().second ? 1 : -1;
-
-	return getRange().first * powf(2, sign * Value_inVolts);
-}
+// Pitch-Behaviour Functions
 
 void Parameter::calcOctaves()
 {
@@ -94,3 +80,18 @@ void Parameter::calcOctaves()
 
 	m_octaves = numOctaves;
 }
+
+float Parameter::Volt_perOctave()
+{
+	float Value_inVolts = getAnalogInput()->getCurrentValueinVolts();
+
+	while (Value_inVolts > getOctaves())
+	{
+		Value_inVolts -= getOctaves();
+	}
+
+	int sign = getRange().first < getRange().second ? 1 : -1;
+
+	return getRange().first * powf(2, sign * Value_inVolts);
+}
+
