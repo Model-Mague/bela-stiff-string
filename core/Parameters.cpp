@@ -16,10 +16,10 @@ Parameters::Parameters()
 	fnCreateParameter(ParameterName::rho,		7850.0f,{ 15700.0f, 3925.f }, { "Pitch", 0.25f}); // intentionally reversed range
 	fnCreateParameter(ParameterName::r,			0.0005f,{ 0.001f, 0.00025f }, { "Pitch",  0.25f}); // intentionally reversed range
 	fnCreateParameter(ParameterName::T,			300.0f,	{ 75.f, 600.0f }, { "Pitch", 4.f});
-	fnCreateParameter(ParameterName::E,			2e11,	{ 2e12, 4e13 }, {"Null", 0.f}); // range shrunk due to instability
-	fnCreateParameter(ParameterName::sigma0,	1.0f,	{ 0.f, 2.f }, {"Null", 0.f});
-	fnCreateParameter(ParameterName::sigma1,	1.f,	{ 0.0008f, 0.5f }, {"Correction", 0.f}); // range reduced on right side, greater numbers are not perceptible
-	fnCreateParameter(ParameterName::loc,		-1.f,	{ 0.f, 1.f }, { "Spray", 0.f });
+	fnCreateParameter(ParameterName::E,			2e11,	{ 2e12, 4e13 }, {"Null", false}); // range shrunk due to instability
+	fnCreateParameter(ParameterName::sigma0,	1.0f,	{ 0.f, 2.f }, {"Null", false});
+	fnCreateParameter(ParameterName::sigma1,	1.f,	{ 0.0008f, 0.5f }, {"Correction", false}); // range reduced on right side, greater numbers are not perceptible
+	fnCreateParameter(ParameterName::loc,		-1.f,	{ 0.f, 1.f }, { "Spray", false });
 }
 
 DynamicStiffString::SimulationParameters Parameters::getDSSParameters() const
