@@ -170,7 +170,7 @@ void Simulation::readInputs(BelaContext* context, int frame)
 
 			// When Mode Button is active and a Pitch-Behaviour Param is changed, it is made 1V/Oct
 
-			if (m_buttons[Button::Type::MODE].isHeld() && analogIn->hasChanged() && (parameter.getBehaviour() == "Pitch"))
+			if (m_buttons[Button::Type::MODE].isHeld() && analogIn->hasChanged() && (parameter.getBehaviour() == ParameterBehaviour::Pitch))
 			{
 				parameter.activate1VMode();
 

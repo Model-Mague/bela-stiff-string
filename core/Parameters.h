@@ -22,25 +22,39 @@ enum class ParameterName : uint8_t {
 	sigma1
 };
 
+enum class ParameterBehaviour : uint8_t {
+	None,
+	Pitch,
+	Correction,
+	Spray
+};
+
 class Parameter {
 public:
 
 	Parameter(const ParameterName name, 
 		const float value, 
 		const std::pair<float, float>& range, 
-		const std::pair<std::string, float>& behaviour);
+		const std::pair<ParameterBehaviour, float>& behaviour);
 
 	float getValue() const { return m_value; }
 	void setValue(const float value) { m_value = value; }
+	
+	ParameterName getName() const { return m_name; }
+	ParameterBehaviour getBehaviour() const { return m_behaviour; }
 
-	std::string getBehaviour() const { return m_behaviour; }
-	std::string setBehaviour(const std::string behaviour) { m_behaviour = behaviour; }
+	const std::pair<float, float>& getRange() const { return m_range; }
+	int getId() const { return m_id; }
+	std::shared_ptr<AnalogInput> getAnalogInput() { return m_analogInput; }
+	int getChannel() const { return static_cast<int>(m_name); }
+
+	// Pitch-Behaviour Only
 
 	float getpitchRatio() const { return m_pitchRatio; }
 	void setpitchRatio(const float ratio) { m_pitchRatio = ratio; }
 
 	void calcOctaves();
-	float getOctaves() const { return m_octaves;}
+	float getOctaves() const { return m_octaves; }
 
 	float Volt_perOctave();
 
@@ -48,20 +62,17 @@ public:
 	bool deactivate1Vmode() { m_1Vactive = false; }
 	bool is1Vmodeactive() const { return m_1Vactive; }
 
-	ParameterName getName() const { return m_name; }
-	const std::pair<float, float>& getRange() const { return m_range; }
-	int getId() const { return m_id; }
-	std::shared_ptr<AnalogInput> getAnalogInput() { return m_analogInput; }
-	int getChannel() const { return static_cast<int>(m_name); }
-
 private:
 	ParameterName m_name;
+	ParameterBehaviour m_behaviour;
+
 	float m_value;
 	std::pair<float, float> m_range;
 	int m_id; // ID to match it in DSS parameters
 	std::shared_ptr<AnalogInput> m_analogInput;
 
-	std::string m_behaviour;
+	// Pitch-behaviour Only
+
 	float m_pitchRatio;
 	float m_octaves;
 	bool m_1Vactive;
