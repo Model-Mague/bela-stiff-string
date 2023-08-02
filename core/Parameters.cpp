@@ -20,8 +20,8 @@ Parameters::Parameters()
 	};
 
 	// Setup internal state, cloning the DSS values
-	fnCreateParameter_Pitch(ParameterName::L, 1.0f, { 0.25f, 2.0f }, {"Pitch", 0.5f}); // reduced to 0.25 (originally 0.12) because of unstable range
-	fnCreateParameter_Pitch(ParameterName::rho, 7850.0f, { 15700.0f, 3925.f }, {"Pitch", 0.25f}); // intentionally reversed range
+	fnCreateParameter_Pitch(ParameterName::L, 1.0f, { 0.25f, 2.0f }, { "Pitch", 0.5f}); // reduced to 0.25 (originally 0.12) because of unstable range
+	fnCreateParameter_Pitch(ParameterName::rho, 7850.0f, { 15700.0f, 3925.f }, { "Pitch", 0.25f}); // intentionally reversed range
 	fnCreateParameter_Pitch(ParameterName::r, 0.0005f, { 0.001f, 0.00025f }, { "Pitch",  0.25f}); // intentionally reversed range
 	fnCreateParameter_Pitch(ParameterName::T, 300.0f, { 75.f, 600.0f }, { "Pitch", 4.f});
 	fnCreateParameter(ParameterName::E, 2e11, { 2e12, 4e13 }); // range shrunk due to instability
@@ -120,4 +120,35 @@ Parameter::Parameter(const ParameterName name, const float value, const std::pai
 
 	const int channel = static_cast<int>(name);
 	m_analogInput = std::make_shared<AnalogInput>(channel, range);
+}
+
+float Parameter::Volt_perOctave(float volts)
+{
+	float Value_inVolts = getAnalogInput()->getCurrentValueinVolts();
+
+	while (Value_inVolts > getOctaves())
+	{
+		Value_inVolts -= getOctaves();
+	}
+
+	int sign = getRange().first < getRange().second ? 1 : -1;
+
+	return getRange().first * powf(2, sign * Value_inVolts);
+}
+
+void Parameter::calcOctaves()
+{
+	float greater = (getRange().first > getRange().second ? getRange().first : getRange().second);
+	float smaller = (getRange().first < getRange().second ? getRange().first : getRange().second);
+
+	float factor = greater * getpitchRatio();
+	float numOctaves = 1.f;
+
+	while (factor < smaller)
+	{
+		factor *= getpitchRatio();
+		numOctaves++;
+	}
+
+	m_octaves = numOctaves;
 }

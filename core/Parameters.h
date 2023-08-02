@@ -51,6 +51,14 @@ public:
 	float getpitchRatio() const { return m_pitchRatio; }
 	void setpitchRatio(const float ratio) { m_pitchRatio = ratio; }
 
+	void calcOctaves();
+	float getOctaves() const { return m_octaves;}
+
+	float Volt_perOctave(float volts);
+
+	bool toggle1Vmode(bool toggle) { m_1Vactive = toggle; }
+	bool is1Vmodeactive() const { return m_1Vactive; }
+
 	ParameterName getName() const { return m_name; }
 	const std::pair<float, float>& getRange() const { return m_range; }
 	int getId() const { return m_id; }
@@ -66,6 +74,8 @@ private:
 
 	std::string m_behaviour;
 	float m_pitchRatio;
+	float m_octaves;
+	bool m_1Vactive;
 };
 
 class Parameters {
