@@ -62,6 +62,8 @@ Parameter::Parameter(const ParameterName name, const float value, const std::pai
 	m_analogInput = std::make_shared<AnalogInput>(channel, range);
 }
 
+// Pitch-Behaviour Parameters
+
 float Parameter::Volt_perOctave()
 {
 	float Value_inVolts = getAnalogInput()->getCurrentValueinVolts();

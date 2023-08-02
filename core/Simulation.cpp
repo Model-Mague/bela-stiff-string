@@ -36,6 +36,16 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 		if (name != ParameterName::loc) m_parametersToUpdate.insert(name); // Force update to read initial values
 	}
 
+	for (auto& parameters : m_parameters.getParameters())
+	{
+		auto& parameter = parameters.second;
+
+		if (parameter.getBehaviour() == ParameterBehaviour::Pitch)
+		{
+			parameter.calcOctaves();
+		}
+	}
+
 	// Setup excitation functions
 	m_fnRaisedCos = [](int index, int size) {
 		return 0.5f * (1 - cos(2.0f * static_cast<float>(M_PI) * index / (size - 1.0f)));
