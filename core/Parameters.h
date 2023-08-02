@@ -45,13 +45,17 @@ public:
 	float getValue() const { return m_value; }
 	void setValue(const float value) { m_value = value; }
 
+	std::string getBehaviour() const { return m_behaviour; }
+	std::string setBehaviour(const std::string behaviour) { m_behaviour = behaviour; }
+
+	float getpitchRatio() const { return m_pitchRatio; }
+	void setpitchRatio(const float ratio) { m_pitchRatio = ratio; }
+
 	ParameterName getName() const { return m_name; }
 	const std::pair<float, float>& getRange() const { return m_range; }
 	int getId() const { return m_id; }
 	std::shared_ptr<AnalogInput> getAnalogInput() { return m_analogInput; }
 	int getChannel() const { return static_cast<int>(m_name); }
-
-	enum m_behaviour { Pitch, Correction, Spray };
 
 private:
 	ParameterName m_name;
@@ -59,6 +63,9 @@ private:
 	std::pair<float, float> m_range;
 	int m_id; // ID to match it in DSS parameters
 	std::shared_ptr<AnalogInput> m_analogInput;
+
+	std::string m_behaviour;
+	float m_pitchRatio;
 };
 
 class Parameters {

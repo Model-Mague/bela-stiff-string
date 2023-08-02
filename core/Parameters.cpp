@@ -10,7 +10,6 @@ Parameters::Parameters()
 	auto fnCreateParameter_Pitch = [&](const ParameterName name, const float initValue, const std::pair<float, float>& range, const std::pair<std::string, float>& behaviour) {
 		m_parameters.emplace(std::make_pair(name, Parameter(name, initValue, range, behaviour)));
 	};
-
 	// Convenience function for addding a parameter to map (Correction/Location Parameters).
 	auto fnCreateParameter_Spray_Correction = [&](const ParameterName name, const float initValue, const std::pair<float, float>& range, const std::string& behaviour) {
 		m_parameters.emplace(std::make_pair(name, Parameter(name, initValue, range, behaviour)));
@@ -43,6 +42,58 @@ DynamicStiffString::SimulationParameters Parameters::getDSSParameters() const
 	parameters.sigma0 = m_parameters.find(ParameterName::sigma0)->second.getValue();
 	parameters.sigma1 = m_parameters.find(ParameterName::sigma1)->second.getValue();
 	return parameters;
+}
+
+Parameter::Parameter(const ParameterName name, const float value, const std::pair<float, float>& range,
+	const std::pair<std::string, float>& behaviour) : m_name(name), m_value(value), m_range(range), m_behaviour(behaviour.first), m_pitchRatio(behaviour.second)
+{
+	// Order of params in DynamicDSS: L, rho, r, T, E, sigma0, sigma1
+	// Do not change this
+	const std::vector<ParameterName> originalParameterOrder = {
+		ParameterName::L,
+		ParameterName::rho,
+		ParameterName::r,
+		ParameterName::T,
+		ParameterName::E,
+		ParameterName::sigma0,
+		ParameterName::sigma1
+	};
+
+	// Lookup function
+	auto fnGetParamId = [&originalParameterOrder](ParameterName name) {
+		const auto it = std::find(originalParameterOrder.begin(), originalParameterOrder.end(), name);
+		return it == originalParameterOrder.end() ? -1 : static_cast<int>(std::distance(originalParameterOrder.begin(), it));
+	};
+	m_id = fnGetParamId(name);
+
+	const int channel = static_cast<int>(name);
+	m_analogInput = std::make_shared<AnalogInput>(channel, range);
+}
+
+Parameter::Parameter(const ParameterName name, const float value, const std::pair<float, float>& range,
+	const std::string behaviour) : m_name(name), m_value(value), m_range(range), m_behaviour(behaviour)
+{
+	// Order of params in DynamicDSS: L, rho, r, T, E, sigma0, sigma1
+	// Do not change this
+	const std::vector<ParameterName> originalParameterOrder = {
+		ParameterName::L,
+		ParameterName::rho,
+		ParameterName::r,
+		ParameterName::T,
+		ParameterName::E,
+		ParameterName::sigma0,
+		ParameterName::sigma1
+	};
+
+	// Lookup function
+	auto fnGetParamId = [&originalParameterOrder](ParameterName name) {
+		const auto it = std::find(originalParameterOrder.begin(), originalParameterOrder.end(), name);
+		return it == originalParameterOrder.end() ? -1 : static_cast<int>(std::distance(originalParameterOrder.begin(), it));
+	};
+	m_id = fnGetParamId(name);
+
+	const int channel = static_cast<int>(name);
+	m_analogInput = std::make_shared<AnalogInput>(channel, range);
 }
 
 Parameter::Parameter(const ParameterName name, const float value, const std::pair<float, float>& range)
