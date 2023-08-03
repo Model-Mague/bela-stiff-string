@@ -8,11 +8,9 @@
 #include <sstream>
 #include <random>
 
-
-
-
 Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1f), m_screen(context), m_audioBuffer(10)
 {
+	// Setup Bela Globals
 	m_inverseSampleRate = 1.0f / context->audioSampleRate;
 	if (context->analogFrames)
 		m_audioFramesPerAnalogFrame = context->audioFrames / context->analogFrames;
@@ -25,11 +23,14 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 		m_buttons[buttonTypes[i]] = Button(buttonChannel[i]);
 	}
 
+	// Setup Variables for Outputs
 	m_amplitude = 5;
 	m_frequency = 0.1f;
 
+	// Setup Dynamic Stiff String Model
 	m_pDynamicStiffString = std::make_unique<DynamicStiffString>(m_parameters.getDSSParameters(), m_inverseSampleRate);
 
+	// Setup Parameters
 	for (auto& parameters : m_parameters.getParameters())
 	{
 		auto& parameter = parameters.second;
@@ -62,16 +63,14 @@ void Simulation::update(BelaContext* context)
 	// 1. Handle trigger button (should probably be last)
 	if (m_buttons[Button::Type::TRIGGER].isPressed())
 	{
-		sprayValue = Global::f_random(-1, 1) * sprayAmount;
-		sprayedloc = nonsprayloc + sprayValue;
-		sprayedloc = (sprayedloc < 0) ? -sprayedloc : (sprayedloc > 1) ? (1 - (sprayedloc - 1)) : sprayedloc;
+		auto& location = m_parameters.getParameter(ParameterName::loc);
+		auto& fnExcitation = m_fnRaisedCos;
 
-		auto fnExcitation = m_fnRaisedCos;
+		float sprayresult = location.getSprayedParam();
 
-		m_parameters.getParameter(ParameterName::loc).setValue(sprayedloc);
-
-		m_screen.setBrightness(m_parameters.getParameter(ParameterName::loc).getChannel(), sprayedloc);
-		m_pDynamicStiffString->excite(m_parameters.getParameter(ParameterName::loc).getValue(), fnExcitation);
+		location.setValue(sprayresult);
+		m_screen.setBrightness(location.getChannel(), sprayresult);
+		m_pDynamicStiffString->excite(location.getValue(), fnExcitation);
 	}
 
 	// 2. Handle Audio Excitation (Audio Excitation should be triggered unrelated to Trigger Button)
@@ -81,7 +80,7 @@ void Simulation::update(BelaContext* context)
 		m_pDynamicStiffString->excite(m_parameters.getParameter(ParameterName::loc).getValue(), fnExcitation);
 	}
 
-	// 2. Process parameter changes
+	// 3. Process parameter changes
 	if (m_updateFrameCounter == 0)
 	{
 		// Process update queue
@@ -120,15 +119,15 @@ void Simulation::update(BelaContext* context)
 		m_updateFrameCounter = std::max(0, m_updateFrameCounter - 1);
 	}
 
-	// 3. Update DSS simulation
+	// 4. Update DSS simulation
 	m_pDynamicStiffString->refreshCoefficients();
 	m_pDynamicStiffString->calculateScheme();
 	m_pDynamicStiffString->updateStates();
 
-	// 4. Update screen
+	// 5. Update screen
 	m_screen.update(context);
 
-	// 5. Update LFO phase
+	// 6. Update LFO phase
 	for (int channel = 0; channel < sAnalogInputCount; channel++)
 	{
 		m_phase[channel] += 2.0f * (float)M_PI * m_frequency * m_inverseSampleRate;
@@ -171,11 +170,9 @@ void Simulation::readInputs(BelaContext* context, int frame)
 				parameter.activate1VMode();
 
 				for (auto& Other_parameters : m_parameters.getParameters())
-				{
 					// Only one parameter can be made 1V per Octave at the same time
 					if (Other_parameters.second.getName() != parameter.getName())
 						parameter.deactivate1Vmode();
-				}
 			}
 
 			// We will always update the 1V/Octave chosen parameter (pitch requires accuracy)
@@ -185,24 +182,9 @@ void Simulation::readInputs(BelaContext* context, int frame)
 
 			// We will always update channel 7 (excitation loc) as this param is only effective during excitation
 			// So there is no risk of too frequent updates
-			if (parameter.getName() == ParameterName::loc)
-			{
 
-				// Handle Spray button
-				if (m_buttons[Button::Type::SPRAY].isHeld())
-				{
-					sprayAmount = analogIn->getCurrentValueMapped();
-					m_screen.setBrightness(m_parameters.getParameter(ParameterName::loc).getChannel(), sprayAmount);
-					//rt_printf("Spray Amount is %f\n", sprayAmount);
-				}
-
-				nonsprayloc = analogIn->getCurrentValueMapped();
-
-				if (m_buttons[Button::Type::SPRAY].isReleased() || analogIn->hasChanged())
-					m_screen.setBrightness(parameter.getChannel(), nonsprayloc);
-
-				//rt_printf("nonsprayLoc is %f\n", nonsprayloc);
-			}
+			if (m_buttons[Button::Type::SPRAY].isHeld() && (parameter.getBehaviour() == ParameterBehaviour::Spray))
+				parameter.setSprayAmount(m_parameters, m_screen, m_buttons);
 
 
 			else if (analogIn->hasChanged())
@@ -231,7 +213,6 @@ void Simulation::writeOutputs(BelaContext* context, int frame)
 
 void Simulation::writeAudio(BelaContext* context, int frame)
 {
-
 	double output = m_pDynamicStiffString->getOutput();
 
 	if (output >= 10000000.f)

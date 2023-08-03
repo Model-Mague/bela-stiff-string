@@ -1,6 +1,8 @@
 #pragma once
 #include "DynamicStiffString/DynamicStiffString.h"
 #include "../components/AnalogInput.h"
+#include "../components/LEDScreen.h"
+#include "../components/Button.h"
 
 #include <map>
 #include <string>
@@ -68,6 +70,11 @@ public:
 	void deCorrection(Parameter sigma1, DynamicStiffString* DSS);
 	bool gethasCorrected() { return m_hasCorrectedFlag;}
 
+	// Spray-Behaviour Only
+
+	void setSprayAmount(Parameters parameter, LEDScreen screen, std::map<Button::Type, Button> button);
+	float getSprayedParam();
+
 private:
 	ParameterName m_name;
 	ParameterBehaviour m_behaviour;
@@ -78,14 +85,16 @@ private:
 	std::shared_ptr<AnalogInput> m_analogInput;
 
 	// Pitch-behaviour Only
-
 	float m_pitchRatio;
 	int m_octaves;
 	bool m_1Vactive;
 
 	// Correction-behaviour Only
-
 	bool m_hasCorrectedFlag = false;
+
+	// Spray-behaviour Only
+	float m_sprayAmount;
+	float m_nonsprayLoc;
 };
 
 class Parameters {

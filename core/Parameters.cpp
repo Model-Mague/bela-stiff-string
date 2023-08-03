@@ -120,3 +120,27 @@ void Parameter::deCorrection(Parameter sigma1, DynamicStiffString* DSS)
 	if (sigma1dif == 0)
 		m_hasCorrectedFlag = false;
 }
+
+// Spray-Behaviour Functions
+
+void Parameter::setSprayAmount(Parameters parameter, LEDScreen screen, std::map<Button::Type, Button> button)
+{
+	auto& location = parameter.getParameter(ParameterName::loc);
+	m_sprayAmount = getAnalogInput()->getCurrentValueMapped();
+	screen.setBrightness(location.getChannel(), m_sprayAmount);
+	m_nonsprayLoc = getAnalogInput()->getCurrentValueMapped();
+
+	if (button[Button::Type::SPRAY].isReleased() || getAnalogInput()->hasChanged())
+		screen.setBrightness(location.getChannel(), getAnalogInput()->getCurrentValueMapped());
+}
+
+float Parameter::getSprayedParam()
+{
+	float sprayedloc;
+
+	sprayedloc = m_nonsprayLoc + Global::f_random(-1, 1) * m_sprayAmount;;
+	sprayedloc = (sprayedloc < 0) ? -sprayedloc : (sprayedloc > 1) ? (1 - (sprayedloc - 1)) : sprayedloc;
+
+	return sprayedloc;
+}
+
