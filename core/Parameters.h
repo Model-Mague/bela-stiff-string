@@ -62,6 +62,12 @@ public:
 	bool deactivate1Vmode() { m_1Vactive = false; }
 	bool is1Vmodeactive() const { return m_1Vactive; }
 
+	// Correction-Behaviour Only
+
+	void Correction(Parameter sigma1, DynamicStiffString* DSS);
+	void deCorrection(Parameter sigma1, DynamicStiffString* DSS);
+	bool gethasCorrected() { return m_hasCorrectedFlag;}
+
 private:
 	ParameterName m_name;
 	ParameterBehaviour m_behaviour;
@@ -76,6 +82,10 @@ private:
 	float m_pitchRatio;
 	int m_octaves;
 	bool m_1Vactive;
+
+	// Correction-behaviour Only
+
+	bool m_hasCorrectedFlag = false;
 };
 
 class Parameters {

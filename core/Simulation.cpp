@@ -96,29 +96,20 @@ void Simulation::update(BelaContext* context)
 			else
 				mappedValue = parameter.getAnalogInput()->getCurrentValueMapped();
 
+			if (parameter.getBehaviour() == ParameterBehaviour::Correction)
+			{
+				if (clippingFlag == true)
+					parameter.Correction(parameter, m_pDynamicStiffString.get());
+				if (clippingFlag == false && parameter.gethasCorrected() == true)
+					parameter.deCorrection(parameter, m_pDynamicStiffString.get());
+			}
+
 			// Save state and send change to DSS
 			parameter.setValue(mappedValue);
 			m_pDynamicStiffString->refreshParameter(parameter.getId(), mappedValue);
 
 			// Update Screen
 			m_screen.setBrightness(parameter.getChannel(), parameter.getAnalogInput()->unmapValue(mappedValue)); // Passes the parameter's value to the correct channel
-		}
-
-		if (hasCorrectedFlag) //Only After Correction and Once Signal has stabilized
-		{
-			// compares pots with increased updatedValues, then decreases values at speed depending on distance
-
-			auto& sigma1 = m_parameters.getParameter(ParameterName::sigma1);
-			float sigma1pot = sigma1.getAnalogInput()->getCurrentValue(); // min value is 0.0008f
-			float sigma1cor = sigma1.getValue(); // max     value is 1
-			float sigma1dif = sigma1pot - sigma1cor; // max value is 0.9992
-			float sigma1coef = sigma1dif * 0.0002;
-
-			sigma1.setValue(sigma1cor + sigma1coef);
-			m_pDynamicStiffString->refreshParameter(sigma1.getId(), sigma1cor - sigma1coef);
-
-			if (sigma1dif == 0)
-				hasCorrectedFlag = false;
 		}
 
 		m_parametersToUpdate.clear();
@@ -244,13 +235,7 @@ void Simulation::writeAudio(BelaContext* context, int frame)
 	double output = m_pDynamicStiffString->getOutput();
 
 	if (output >= 10000000.f)
-	{
-		auto& sigma1 = m_parameters.getParameter(ParameterName::sigma1);
-		sigma1.setValue(1.f);
-		m_pDynamicStiffString->refreshParameter(sigma1.getId(), 1.f);
-		m_screen.setBrightness(sigma1.getChannel(), 1.f);
-		hasCorrectedFlag = true;
-	}
+		clippingFlag = true;
 
 	Compressor.process(output, output);
 

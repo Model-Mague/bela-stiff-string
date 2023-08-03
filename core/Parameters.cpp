@@ -95,3 +95,28 @@ float Parameter::Volt_perOctave()
 	return getRange().first * powf(2, sign * Value_inVolts);
 }
 
+// Correction-Behaviour Functions
+
+void Parameter::Correction(Parameter sigma1, DynamicStiffString* DSS) // We will make a flag jump and this will happen
+{
+	sigma1.setValue(1.f);
+	DSS->refreshParameter(sigma1.getId(), 1.f);
+	// m_screen.setBrightness(sigma1.getChannel(), 1.f); Screen MAYBE not need to be updated 
+	m_hasCorrectedFlag = true;
+}
+
+void Parameter::deCorrection(Parameter sigma1, DynamicStiffString* DSS)
+{
+	// compares pots with increased updatedValues, then decreases values at speed depending on distance
+
+	float sigma1pot = sigma1.getAnalogInput()->getCurrentValue(); // min value is 0.0008f
+	float sigma1cor = sigma1.getValue(); // max     value is 1
+	float sigma1dif = sigma1pot - sigma1cor; // max value is 0.9992
+	float sigma1coef = sigma1dif * 0.0002;
+
+	sigma1.setValue(sigma1cor + sigma1coef);
+	DSS->refreshParameter(sigma1.getId(), sigma1cor - sigma1coef);
+
+	if (sigma1dif == 0)
+		m_hasCorrectedFlag = false;
+}
