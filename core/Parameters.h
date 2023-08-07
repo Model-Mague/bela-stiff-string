@@ -58,8 +58,8 @@ public:
 
 	float Volt_perOctave();
 
-	bool activate1VMode() { m_1Vactive = true; }
-	bool deactivate1Vmode() { m_1Vactive = false; }
+	void activate1VMode() { m_1Vactive = true; }
+	void deactivate1Vmode() { m_1Vactive = false; }
 	bool is1Vmodeactive() const { return m_1Vactive; }
 
 private:
