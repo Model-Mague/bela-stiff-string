@@ -32,10 +32,11 @@ enum class ParameterBehaviour : uint8_t {
 class Parameter {
 public:
 
-	Parameter(const ParameterName name, 
-		const float value, 
-		const std::pair<float, float>& range, 
-		const std::pair<ParameterBehaviour, float>& behaviour);
+	Parameter(const ParameterName name,
+		const float value,
+		const std::pair<float, float>& range,
+		const ParameterBehaviour behaviour,
+		const float pitchratio);
 
 	float getValue() const { return m_value; }
 	void setValue(const float value) { m_value = value; }
