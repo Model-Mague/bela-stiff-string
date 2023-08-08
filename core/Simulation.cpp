@@ -36,9 +36,7 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 		const auto name = parameter.getName();
 		if (name != ParameterName::loc) m_parametersToUpdate.insert(name); // Force update to read initial values
 		if (name == ParameterName::L) parameter.activate1VMode(); // Forces Length to be 1V at boot
-
-		if (parameter.getBehaviour() == ParameterBehaviour::Pitch) // Available Octaves are calculated
-			parameter.calcOctaves();
+		if (parameter.getBehaviour() == ParameterBehaviour::Pitch) parameter.calcOctaves(); // Available Octaves are calculated
 	}
 
 	// Setup excitation functions
@@ -91,7 +89,7 @@ void Simulation::update(BelaContext* context)
 
 			float mappedValue;
 
-			if (parameter.is1Vmodeactive()) // 1 Volt per Octave
+			if (parameter.is1Vmodeactive() && parameter.getName() != ParameterName::loc) // 1 Volt per Octave
 				mappedValue = parameter.Volt_perOctave();
 			else
 				mappedValue = parameter.getAnalogInput()->getCurrentValueMapped();
@@ -182,14 +180,14 @@ void Simulation::readInputs(BelaContext* context, int frame)
 				for (auto& Other_parameters : m_parameters.getParameters())
 				{
 					// Only one parameter can be made 1V per Octave at the same time
-					if (Other_parameters.second.getName() != parameter.getName())
+					if (Other_parameters.second.getName() != parameter.getName() && Other_parameters.second.getName() != ParameterName::loc)
 						parameter.deactivate1Vmode();
 				}
 			}
 
 			// We will always update the 1V/Octave chosen parameter (pitch requires accuracy)
 
-			if (parameter.is1Vmodeactive())
+			if (parameter.is1Vmodeactive() && parameter.getName() != ParameterName::loc)
 				m_parametersToUpdate.insert(parameter.getName());
 
 			// We will always update channel 7 (excitation loc) as this param is only effective during excitation
