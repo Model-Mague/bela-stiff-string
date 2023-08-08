@@ -71,14 +71,14 @@ void Simulation::update(BelaContext* context)
 		m_parameters.getParameter(ParameterName::loc).setValue(sprayedloc);
 
 		m_screen.setBrightness(m_parameters.getParameter(ParameterName::loc).getChannel(), sprayedloc);
-		m_pDynamicStiffString->excite(m_parameters.getParameter(ParameterName::loc).getValue(), fnExcitation);
+		m_pDynamicStiffString->excite(fnExcitation);
 	}
 
 	// 2. Handle Audio Excitation (Audio Excitation should be triggered unrelated to Trigger Button)
 	if (!m_audioBuffer.containsSilence())
 	{
 		auto fnExcitation = m_fnSampleExcitation;
-		m_pDynamicStiffString->excite(m_parameters.getParameter(ParameterName::loc).getValue(), fnExcitation);
+		m_pDynamicStiffString->excite(fnExcitation);
 	}
 
 	// 2. Process parameter changes

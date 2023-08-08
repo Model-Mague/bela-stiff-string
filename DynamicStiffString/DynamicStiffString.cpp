@@ -42,9 +42,10 @@ DynamicStiffString::DynamicStiffString(const SimulationParameters& parameters, f
     parameterPtrs.push_back(&E);
     parameterPtrs.push_back(&sigma0);
     parameterPtrs.push_back(&sigma1);
+    parameterPtrs.push_back(&loc);
 
     parametersToGoTo.resize(parameterPtrs.size(), 0);
-    for (int i = 0; i < parameterPtrs.size(); ++i)
+    for (int i = 0; i < parameterPtrs.size() - 1; ++i)
         parametersToGoTo[i] = *parameterPtrs[i];
 
     parameterChanged.resize(parameterPtrs.size(), false);
@@ -226,7 +227,7 @@ void DynamicStiffString::updateStates()
     Nprev = N;
 }
 
-void DynamicStiffString::excite(float excitationLoc, std::function<float(int, int)> excitationFunction)
+void DynamicStiffString::excite(std::function<float(int, int)> excitationFunction)
 {
     //// Arbitrary excitation function (raised cosine) ////
 
@@ -234,7 +235,7 @@ void DynamicStiffString::excite(float excitationLoc, std::function<float(int, in
     const int width = 10;
 
     // make sure we're not going out of bounds at the left boundary
-    float component = floor((N + 1) * excitationLoc) - floor((float)width * 0.5f); // @TODO: Verify return type
+    float component = floor((N + 1) * loc) - floor((float)width * 0.5f); // @TODO: Verify return type
     float greater = std::max(component, 1.0f);
 
     int start = static_cast<int>(greater);
@@ -263,7 +264,7 @@ void DynamicStiffString::refreshCoefficients(bool init)
     float NfracNext;
 
     bool needsRefresh = false;
-    for (int i = 0; i < parameterPtrs.size(); ++i)
+    for (int i = 0; i < parameterPtrs.size() - 1; ++i)
     {
         // if parameter hasn't changed, continue to next
         if (!parameterChanged[i])

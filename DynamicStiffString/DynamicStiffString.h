@@ -33,6 +33,7 @@ public:
         float E;
         float sigma0;
         float sigma1;
+        float loc;
     };
 
     DynamicStiffString(const SimulationParameters& parameters, float k);
@@ -53,7 +54,7 @@ public:
     }
 
     // Modification - take custom excitation function
-    void excite(float excitationLoc, std::function<float(int, int)> excitationFunction);
+    void excite(std::function<float(int, int)> excitationFunction);
 
     void addRemovePoint();
     void refreshCustomIp();
@@ -61,7 +62,7 @@ public:
 private:
 
     // Model parameters
-    float L, rho, r, A, T, E, I, cSq, kappaSq, sigma0, sigma1, lambdaSq, muSq, h, k;
+    float L, rho, r, A, T, E, I, cSq, kappaSq, sigma0, sigma1, lambdaSq, muSq, h, k, loc;
     float origR, origL, origE, origT, origRho;
     std::vector<float*> parameterPtrs; // to easily locate parameters
     std::vector<float> parametersToGoTo;
