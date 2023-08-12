@@ -44,6 +44,10 @@ public:
 	ParameterName getName() const { return m_name; }
 	ParameterBehaviour getBehaviour() const { return m_behaviour; }
 
+	// A param is refreshable if it's one of the params in the original DSS equation
+	// Generally this is all params except for loc
+	bool isRefreshable() { return m_id != -1; }
+
 	const std::pair<float, float>& getRange() const { return m_range; }
 	int getId() const { return m_id; }
 	std::shared_ptr<AnalogInput> getAnalogInput() { return m_analogInput; }

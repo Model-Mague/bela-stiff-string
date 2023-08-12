@@ -34,7 +34,7 @@ Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1
 	{
 		auto& parameter = parameters.second;
 		const auto name = parameter.getName();
-		if (name != ParameterName::loc) m_parametersToUpdate.insert(name); // Force update to read initial values
+		m_parametersToUpdate.insert(name); // Force update to read initial values
 		if (name == ParameterName::L) parameter.activate1VMode(); // Forces Length to be 1V at boot
 
 		if (parameter.getBehaviour() == ParameterBehaviour::Pitch) // Available Octaves are calculated
@@ -98,7 +98,8 @@ void Simulation::update(BelaContext* context)
 
 			// Save state and send change to DSS
 			parameter.setValue(mappedValue);
-			m_pDynamicStiffString->refreshParameter(parameter.getId(), mappedValue);
+			if (parameter.isRefreshable())
+				m_pDynamicStiffString->refreshParameter(parameter.getId(), mappedValue);
 
 			// Update Screen
 			m_screen.setBrightness(parameter.getChannel(), parameter.getAnalogInput()->unmapValue(mappedValue)); // Passes the parameter's value to the correct channel
@@ -174,7 +175,6 @@ void Simulation::readInputs(BelaContext* context, int frame)
 			analogIn->read(context, analogFrame);
 
 			// When Mode Button is active and a Pitch-Behaviour Param is changed, it is made 1V/Oct
-
 			if (m_buttons[Button::Type::MODE].isHeld() && analogIn->hasChanged() && (parameter.getBehaviour() == ParameterBehaviour::Pitch))
 			{
 				parameter.activate1VMode();
@@ -188,7 +188,6 @@ void Simulation::readInputs(BelaContext* context, int frame)
 			}
 
 			// We will always update the 1V/Octave chosen parameter (pitch requires accuracy)
-
 			if (parameter.is1Vmodeactive())
 				m_parametersToUpdate.insert(parameter.getName());
 
