@@ -92,7 +92,7 @@ public:
 	Parameters();
 	Parameter& getParameter(const ParameterName name) { return m_parameters.find(name)->second; }
 	DynamicStiffString::SimulationParameters getDSSParameters() const;
-	ParameterMap getParameters() { return m_parameters; }
+	ParameterMap& getParameters() { return m_parameters; }
 
 private:
 	// Maintains an internal state of all the simulation parameters
