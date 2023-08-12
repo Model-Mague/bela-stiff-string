@@ -48,7 +48,8 @@ Parameter::Parameter(const ParameterName name, const float value, const std::pai
 		ParameterName::T,
 		ParameterName::E,
 		ParameterName::sigma0,
-		ParameterName::sigma1
+		ParameterName::sigma1,
+		ParameterName::loc
 	};
 
 	// Lookup function
