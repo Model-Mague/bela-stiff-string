@@ -37,7 +37,7 @@ DynamicStiffString::SimulationParameters Parameters::getDSSParameters() const
 }
 
 Parameter::Parameter(const ParameterName name, const float value, const std::pair<float, float>& range,
-	const ParameterBehaviour behaviour, const float pitchratio) : m_name(name), m_value(value), m_range(range), m_behaviour(behaviour), m_pitchRatio(pitchratio)
+	const ParameterBehaviour behaviour, const float pitchratio) : m_name(name), m_value(value), m_range(range), m_behaviour(behaviour), m_pitchRatio(pitchratio), m_1Vactive(false)
 {
 	// Order of params in DynamicDSS: L, rho, r, T, E, sigma0, sigma1
 	// Do not change this
@@ -66,8 +66,8 @@ Parameter::Parameter(const ParameterName name, const float value, const std::pai
 
 void Parameter::calcOctaves()
 {
-	float greater = (getRange().first > getRange().second ? getRange().first : getRange().second);
-	float smaller = (getRange().first < getRange().second ? getRange().first : getRange().second);
+	float greater = std::max(getRange().first, getRange().second);
+	float smaller = std::min(getRange().first, getRange().second);
 
 	float factor = greater * getpitchRatio();
 	float numOctaves = 1.f;
