@@ -116,6 +116,9 @@
     <ClInclude Include="Compressor\SimpleLimit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="utils\CSVWriter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Compressor\SimpleCompProcess.inl">

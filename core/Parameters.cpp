@@ -1,14 +1,24 @@
 #include "Parameters.h"
 
+#ifdef BUGHUNTING
+#include "utils/CSVWriter.h"
+#endif
+
 #include <algorithm>
 #include <cassert>
 
+
+const std::string parameterNamesAsStrings[8] = { "L", "rho", "r", "T", "E", "sigma0", "sigma1", "loc" };
 
 Parameters::Parameters()
 {
 	// Convenience function for addding a parameter to map.
 	auto fnCreateParameter= [&](const ParameterName name, const float initValue, const std::pair<float, float>& range, const ParameterBehaviour behaviour, const float pitchratio) {
 		m_parameters.emplace(std::make_pair(name, Parameter(name, initValue, range, behaviour, pitchratio)));
+
+#ifdef BUGHUNTING
+		CSVWriter<float>::getInstance().addNamedRow(parameterNamesAsStrings[static_cast<size_t>(name)]);
+#endif
 	};
 
 	// Setup internal state, cloning the DSS values
@@ -60,6 +70,14 @@ Parameter::Parameter(const ParameterName name, const float value, const std::pai
 
 	const int channel = static_cast<int>(name);
 	m_analogInput = std::make_shared<AnalogInput>(channel, range);
+}
+
+void Parameter::setValue(const float value)
+{
+#ifdef BUGHUNTING
+	CSVWriter<float>::getInstance().addValue(parameterNamesAsStrings[static_cast<size_t>(m_name)], value);
+#endif
+	m_value = value;
 }
 
 // Pitch-Behaviour Functions

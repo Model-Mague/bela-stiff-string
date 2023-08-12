@@ -9,6 +9,9 @@
 #include <random>
 
 
+#ifdef BUGHUNTING
+#include "utils/CSVWriter.h"
+#endif
 
 
 Simulation::Simulation(BelaContext* context) : m_amplitude(5.f), m_frequency(0.1f), m_screen(context), m_audioBuffer(10)
@@ -129,6 +132,13 @@ void Simulation::update(BelaContext* context)
 	{
 		m_updateFrameCounter = std::max(0, m_updateFrameCounter - 1);
 	}
+
+#ifdef BUGHUNTING
+	if (context->audioFramesElapsed == 102)
+	{
+		CSVWriter<float>::getInstance().write("102-1V-adjusted.csv");
+	}
+#endif
 
 	// 3. Update DSS simulation
 	m_pDynamicStiffString->refreshCoefficients();

@@ -39,7 +39,7 @@ public:
 		const float pitchratio);
 
 	float getValue() const { return m_value; }
-	void setValue(const float value) { m_value = value; }
+	void setValue(const float value);
 	
 	ParameterName getName() const { return m_name; }
 	ParameterBehaviour getBehaviour() const { return m_behaviour; }
