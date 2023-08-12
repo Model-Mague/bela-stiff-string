@@ -8,7 +8,7 @@
 #include <cassert>
 
 
-const std::string parameterNamesAsStrings[8] = { "L", "rho", "r", "T", "E", "sigma0", "sigma1", "loc" };
+const std::string parameterNamesAsStrings[8] = { "L", "rho", "T", "r", "loc", "E", "sigma0", "sigma1" };
 
 Parameters::Parameters()
 {
